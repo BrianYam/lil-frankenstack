@@ -2,9 +2,9 @@ import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
-import { UserEmailJwtAuthGuard } from '../guards/user-email-jwt-auth/user-email-jwt-auth.guard';
-import { CurrentUser } from '../decorators/current-user.decorator';
-import { User } from './schema/user.schema';
+import { UserEmailJwtAuthGuard } from '../utils/guards/user-email-jwt-auth/user-email-jwt-auth.guard';
+import { CurrentUser } from '../utils/decorators/current-user.decorator';
+import { User } from '../database/schema/user.schema';
 
 @ApiTags('users')
 @Controller('users')

@@ -13,12 +13,12 @@ import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginInDto } from './dto/login-in-dto.dto/login-in-dto.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { PassportLocalEmailGuard } from '../guards/passport-local/passport-local-email.guard';
-import { CurrentUser } from '../decorators/current-user.decorator';
+import { PassportLocalEmailGuard } from '../utils/guards/passport-local/passport-local-email.guard';
+import { CurrentUser } from '../utils/decorators/current-user.decorator';
 import { CreateUserRequestDto } from '../users/dto/create-user.request.dto/create-user.request.dto';
-import { User } from '../users/schema/user.schema';
+import { User } from '../database/schema/user.schema';
 import { Response } from 'express';
-import { JwtRefreshAuthGuard } from '../guards/jwt-refresh-auth/jwt-refresh-auth.guard';
+import { JwtRefreshAuthGuard } from '../utils/guards/jwt-refresh-auth/jwt-refresh-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')

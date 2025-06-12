@@ -3,7 +3,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/users/schema/user.schema';
+import { User } from 'src/database/schema/user.schema';
 import { TokenPayload } from './token-payload.interface';
 import { Response } from 'express'; // Import Response from express
 import { hash } from 'bcryptjs'; // Import hash from bcryptjs
