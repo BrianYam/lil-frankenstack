@@ -1,7 +1,10 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
+import { UserEmailJwtAuthGuard } from '../guards/user-email-jwt-auth/user-email-jwt-auth.guard';
+import { CurrentUser } from '../decorators/current-user.decorator';
+import { User } from './schema/user.schema';
 
 @ApiTags('users')
 @Controller('users')
@@ -17,5 +20,15 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   async create(@Body() createUserRequest: CreateUserRequestDto) {
     return this.usersService.createUser(createUserRequest);
+  }
+
+  @Get()
+  @UseGuards(UserEmailJwtAuthGuard)
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: 200, description: 'Return all users.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async getUser(@CurrentUser() user: User) {
+    console.log('user', user);
+    return this.usersService.findAll();
   }
 }

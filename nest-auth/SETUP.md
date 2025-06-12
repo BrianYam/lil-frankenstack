@@ -21,6 +21,10 @@
    pnpm add @nestjs/passport passport passport-local passport-jwt @nestjs/jwt
    pnpm add -D @types/passport-local @types/passport-jwt
    
+   # Cookie
+   pnpm add cookie-parser
+   pnpm add -D @types/cookie-parser
+   
    ```
 
 #### Users Module
