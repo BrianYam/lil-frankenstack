@@ -1,79 +1,153 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { hash } from 'bcryptjs';
-import { ObjectId } from 'mongodb';
-import { FilterQuery, Model, UpdateQuery } from 'mongoose';
-import { User } from '@/database/schema/user.schema';
+/**
+ * User repository implementation using Drizzle ORM for PostgreSQL
+ */
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { hash, compare } from 'bcryptjs';
+import { eq } from 'drizzle-orm';
+import { DB_PROVIDER } from '@/database/database.module';
+import { users } from '@/database/schema';
+import { User, NewUser, DrizzleDB } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
 
 @Injectable()
 export class UserRepository {
   private readonly logger = new Logger(UserRepository.name);
 
-  constructor(
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) {}
+  constructor(@Inject(DB_PROVIDER) private db: DrizzleDB) {}
 
-  async createUser(createUserRequest: CreateUserRequestDto) {
-    return await new this.userModel({
-      ...createUserRequest,
-      password: await hash(createUserRequest.password, 10),
-    }).save();
+  /**
+   * Creates a new user with hashed password
+   * @param createUserRequest - User creation data
+   * @returns Newly created user
+   */
+  async createUser(createUserRequest: CreateUserRequestDto): Promise<User> {
+    const hashedPassword = await hash(createUserRequest.password, 10);
+
+    const newUser: NewUser = {
+      email: createUserRequest.email,
+      password: hashedPassword,
+    };
+
+    await this.db.insert(users).values(newUser);
+    return this.findUserByEmail(createUserRequest.email);
   }
 
-  async findUser(query: FilterQuery<User>): Promise<User | undefined> {
-    this.logger.debug(`Query: ${JSON.stringify(query)}`);
+  /**
+   * Finds a user by email
+   * @param email - Email to search for
+   * @returns User if found
+   * @throws NotFoundException if user not found
+   */
+  async findUserByEmail(email: string): Promise<User> {
+    this.logger.debug(`Finding user by email: ${email}`);
 
-    // Convert _id to ObjectId if it exists in the query
-    if (query._id && typeof query._id === 'string') {
-      query._id = new ObjectId(query._id);
-    }
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
 
-    const user = await this.userModel.findOne(query);
-    this.logger.log(`User: ${JSON.stringify(user)}`);
+    const user = result[0];
 
     if (!user) {
-      this.logger.warn(`User not found for query: ${JSON.stringify(query)}`);
+      this.logger.warn(`User not found for email: ${email}`);
       throw new NotFoundException('User not found');
     }
-    return user.toObject();
+
+    return user;
   }
 
-  async findAll() {
-    return this.userModel.find({});
+  /**
+   * Finds a user by ID
+   * @param id - UUID of the user
+   * @returns User if found
+   * @throws NotFoundException if user not found
+   */
+  async findUserById(id: string): Promise<User> {
+    this.logger.debug(`Finding user by ID: ${id}`);
+
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    const user = result[0];
+
+    if (!user) {
+      this.logger.warn(`User not found for id: ${id}`);
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
-  async updateUser(query: FilterQuery<User>, data: UpdateQuery<User>) {
-    this.logger.debug(`Query: ${JSON.stringify(query)}`);
+  /**
+   * Updates a user by ID
+   * @param id - ID of the user to update
+   * @param data - Fields to update
+   * @returns Updated user
+   */
+  async updateUser(id: string, data: Partial<NewUser>): Promise<User> {
+    this.logger.debug(`Updating user: ${id}`);
     this.logger.debug(`Data: ${JSON.stringify(data)}`);
 
-    // Convert _id to ObjectId if it's a string
-    if (query._id && typeof query._id === 'string') {
-      query._id = new ObjectId(query._id);
+    // Check if user exists first
+    await this.findUserById(id);
+
+    // Process refresh token if provided (hash it)
+    if (data.refreshToken) {
+      data.refreshToken = await hash(data.refreshToken, 10);
     }
 
-    // Find the user before updating
-    const user = await this.userModel.findOne(query);
-    this.logger.log(`User found: ${JSON.stringify(user)}`);
+    // Always update the updatedAt timestamp
+    data.updatedAt = new Date();
 
-    // If user is found, proceed with the update
-    if (user) {
-      const updatedUser = await this.userModel.findOneAndUpdate(query, data, {
-        new: true,
-      });
-      this.logger.log(`Updated User: ${JSON.stringify(updatedUser)}`);
-      return updatedUser;
-    } else {
-      this.logger.warn(`User not found for query: ${JSON.stringify(query)}`);
-      return null;
+    await this.db.update(users).set(data).where(eq(users.id, id));
+
+    return this.findUserById(id);
+  }
+
+  /**
+   * Gets all users from the database
+   * @returns Array of all users
+   */
+  async findAll(): Promise<User[]> {
+    return this.db.select().from(users);
+  }
+
+  /**
+   * Gets an existing user by email or creates a new one
+   * @param data - User data with email and password
+   * @returns Existing or newly created user
+   */
+  async getOrCreateUser(data: CreateUserRequestDto): Promise<User> {
+    try {
+      return await this.findUserByEmail(data.email);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return this.createUser(data);
+      }
+      throw error;
     }
   }
 
-  async getOrCreateUser(data: CreateUserRequestDto) {
-    const user = await this.userModel.findOne({ email: data.email });
-    if (user) {
-      return user;
+  /**
+   * Validates a refresh token against a stored hash
+   * @param userId - User ID
+   * @param refreshToken - Plain text refresh token to validate
+   * @returns Boolean indicating if the token is valid
+   */
+  async validateRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<boolean> {
+    const user = await this.findUserById(userId);
+
+    if (!user.refreshToken) {
+      return false;
     }
-    return this.createUser(data);
+
+    return compare(refreshToken, user.refreshToken);
   }
 }

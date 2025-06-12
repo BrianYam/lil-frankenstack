@@ -1,8 +1,7 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { UserRepository } from '@/repositories/user/user.repository';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
-import { FilterQuery, UpdateQuery } from 'mongoose';
-import { User } from '../database/schema/user.schema';
+import { UserRepository } from '@/repositories/user/user.repository';
+import { NewUser } from '@/types';
 
 export type Userx = {
   userId: number;
@@ -20,7 +19,7 @@ const users: Userx[] = [
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(public readonly userRepository: UserRepository) {}
 
   async getUserByName(username: string): Promise<Userx | undefined> {
     return users.find((user) => user.username === username);
@@ -30,16 +29,22 @@ export class UsersService {
     return this.userRepository.createUser(createUserRequest);
   }
 
-  async getUser(query: FilterQuery<User>): Promise<User | undefined> {
-    return this.userRepository.findUser(query);
+  async getUser(query: { email?: string; id?: string }) {
+    if (query.email) {
+      return this.userRepository.findUserByEmail(query.email);
+    }
+    if (query.id) {
+      return this.userRepository.findUserById(query.id);
+    }
+    throw new Error('Invalid query - must provide email or id');
   }
 
   async getAllUser() {
     return this.userRepository.findAll();
   }
 
-  async updateUser(query: FilterQuery<User>, data: UpdateQuery<User>) {
-    return this.userRepository.updateUser(query, data);
+  async updateUser(query: { id: string }, data: Partial<NewUser>) {
+    return this.userRepository.updateUser(query.id, data);
   }
 
   async getOrCreateUser(data: CreateUserRequestDto) {

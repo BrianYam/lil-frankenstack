@@ -36,6 +36,6 @@ export class UserEmailJwtStrategy extends PassportStrategy(
 
   async validate(payload: TokenPayload) {
     this.logger.debug(`payload: ${JSON.stringify(payload)}`);
-    return this.userService.getUser({ _id: payload.userId });
+    return this.userService.getUser({ id: payload.userId });
   }
 }

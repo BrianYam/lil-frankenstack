@@ -1,11 +1,17 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { compare, hash } from 'bcryptjs';
+import { compare } from 'bcryptjs';
 import { Response } from 'express';
-import { AuthInput, AuthResult, ENV, SignInData, TokenPayload } from '@/types';
+import {
+  AuthInput,
+  AuthResult,
+  ENV,
+  SignInData,
+  TokenPayload,
+  User,
+} from '@/types';
 import { UsersService } from '@/users/users.service';
-import { User } from 'src/database/schema/user.schema';
 
 const AUTHENTICATION = 'Authentication';
 const REFRESH = 'Refresh';
@@ -95,7 +101,6 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  //async login by email
   async loginByEmail(user: User, response: Response, redirect = false) {
     //set expire time for access token
     const expiresAccessToken = new Date();
@@ -121,7 +126,7 @@ export class AuthService {
 
     //create token payload
     const tokenPayload: TokenPayload = {
-      userId: typeof user._id === 'string' ? user._id : user._id.toHexString(),
+      userId: user.id,
     };
 
     // Generate access and refresh tokens
@@ -132,32 +137,29 @@ export class AuthService {
     //so we want to store the refreshToken in the user's collection in the user database, and store it as a hash value as it is sensitive information
     //and when we validate the refreshToken we will check if the provided token matches the one stored in the user database
     //and if we want to revoke we can just delete the refreshToken from the user database
-    await this.usersService.updateUser(
-      { _id: user._id },
-      { $set: { refreshToken: await hash(refreshToken, 10) } }, //hash the refreshToken before storing it in the user database, 10 is the saltRounds
-    );
+    await this.usersService.updateUser({ id: user.id }, { refreshToken });
     this.logger.debug(`Refresh token: ${refreshToken}`);
-    this.logger.debug(`User Id: ${user._id}`);
+    this.logger.debug(`User Id: ${user.id}`);
 
     //save the access token in the cookie
     response.cookie(AUTHENTICATION, accessToken, {
       expires: expiresAccessToken,
       httpOnly: true, //cookie is not accessible via JavaScript
-      // secure: true, //cookie is only sent over HTTPS
       secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION, //only send cookie over HTTPS in production
-      // sameSite: 'none', //cookie is sent on every request
     });
 
+    // secure: true, //cookie is only sent over HTTPS
     //save the refresh token in the cookie
+    // sameSite: 'none', //cookie is sent on every request
     response.cookie(REFRESH, refreshToken, {
       expires: expiresRefreshToken,
       httpOnly: true, //cookie is not accessible via JavaScript
-      // secure: true, //cookie is only sent over HTTPS
       secure: this.configService.get('NODE_ENV') === PRODUCTION, //only send cookie over HTTPS in production
-      // sameSite: 'none', //cookie is sent on every request
     });
 
+    // secure: true, //cookie is only sent over HTTPS
     //if redirect is true, redirect to the AUTH_UI_REDIRECT, which is the frontend url
+    // sameSite: 'none', //cookie is sent on every request
     if (redirect) {
       response.redirect(
         this.configService.getOrThrow(ENV.AUTH_UI_REDIRECT_URL),
@@ -168,22 +170,18 @@ export class AuthService {
   //async verify user refresh token
   async verifyRefreshToken(refreshToken: string, userId: string) {
     try {
-      //find user by userId
-      const user = await this.usersService.getUser({
-        _id: userId,
-      });
+      //call the repository to validate the token
+      const isValid =
+        await this.usersService.userRepository.validateRefreshToken(
+          userId,
+          refreshToken,
+        );
 
-      // if user not found
-      if (!user?.refreshToken) {
+      if (!isValid) {
         throw new UnauthorizedException('Invalid token');
       }
 
-      //compare refreshToken
-      const authenticated = await compare(refreshToken, user.refreshToken);
-      if (!authenticated) {
-        throw new UnauthorizedException('Invalid token');
-      }
-      return user;
+      return await this.usersService.getUser({ id: userId });
     } catch (error) {
       console.error(error);
       throw new UnauthorizedException('Invalid token');
