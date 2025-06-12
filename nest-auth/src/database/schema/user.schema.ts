@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types, Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { Types, Document } from 'mongoose';
 
 @Schema()
 export class User extends Document {

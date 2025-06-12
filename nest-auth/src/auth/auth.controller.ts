@@ -1,24 +1,19 @@
 import {
-  Body,
   Controller,
   HttpCode,
   HttpStatus,
   Post,
-  Get,
   UseGuards,
-  Request,
   Res,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
-import { LoginInDto } from './dto/login-in-dto.dto/login-in-dto.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { PassportLocalEmailGuard } from '../utils/guards/passport-local/passport-local-email.guard';
-import { CurrentUser } from '../utils/decorators/current-user.decorator';
-import { CreateUserRequestDto } from '../users/dto/create-user.request.dto/create-user.request.dto';
-import { User } from '../database/schema/user.schema';
 import { Response } from 'express';
-import { JwtRefreshAuthGuard } from '../utils/guards/jwt-refresh-auth/jwt-refresh-auth.guard';
+import { AuthService } from './auth.service';
+import { User } from '@/database/schema/user.schema';
+import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
+import { CurrentUser } from '@/utils/decorators/current-user.decorator';
+import { JwtRefreshAuthGuard } from '@/utils/guards/jwt-refresh-auth/jwt-refresh-auth.guard';
+import { PassportLocalEmailGuard } from '@/utils/guards/passport-local/passport-local-email.guard';
 
 @ApiTags('auth')
 @Controller('auth')

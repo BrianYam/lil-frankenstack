@@ -1,20 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import { JwtService } from '@nestjs/jwt';
-import { compare } from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/database/schema/user.schema';
+import { JwtService } from '@nestjs/jwt';
+import { compare, hash } from 'bcryptjs';
+import { Response } from 'express';
 import { TokenPayload } from './token-payload.interface';
-import { Response } from 'express'; // Import Response from express
-import { hash } from 'bcryptjs'; // Import hash from bcryptjs
+import { AuthInput, AuthResult, SignInData } from '@/types';
+import { UsersService } from '@/users/users.service';
+import { User } from 'src/database/schema/user.schema';
 
 //define objects
-//AuthInput
-type AuthInput = { username: string; password: string };
-//SignInData
-type SignInData = { username: string; userId: number };
-//AuthResult
-type AuthResult = { accessToken: string; userId: number; userName: string };
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -23,7 +18,6 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  //async function authenticate, input: AuthInput, output: AuthResult
   async authenticate(input: AuthInput): Promise<AuthResult | null> {
     const user = await this.validateUser(input);
     if (!user) {
@@ -49,7 +43,6 @@ export class AuthService {
     return null;
   }
 
-  //async function signIn, take argument SignInData, return AuthResult
   async signIn(user: SignInData): Promise<AuthResult> {
     const tokenPayload = { username: user.username, sub: user.userId };
     const accessToken = await this.jwtService.sign(tokenPayload);

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from './users/users.module';
+import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { AppController } from '@/app.controller';
+import { UsersModule } from '@/users/users.module';
 
 @Module({
   imports: [

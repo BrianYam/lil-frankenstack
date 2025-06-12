@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, UpdateQuery } from 'mongoose';
-import { User } from '../database/schema/user.schema';
 import { hash } from 'bcryptjs';
 import { ObjectId } from 'mongodb';
+import { FilterQuery, Model, UpdateQuery } from 'mongoose';
+import { User } from '../database/schema/user.schema';
 import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
 
 export type Userx = {
