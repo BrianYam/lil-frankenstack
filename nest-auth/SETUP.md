@@ -6,26 +6,7 @@
     nest new project-name --directory path/to/subdirectory --skip-git
     ```
 2. Add a `.gitignore` file in the root of your NestJS project
-3. 
-
-
-### Package Installation
-   ```bash
-   pnpm i --save @nestjs/mongoose mongoose @nestjs/config
-   pnpm i --save @nestjs/swagger # api url: http://localhost:3000/api
-   pnpm i --save class-validator class-transformer
-   pnpm i --save bcryptjs
-   pnpm add mongodb
-   
-   # Passport
-   pnpm add @nestjs/passport passport passport-local passport-jwt @nestjs/jwt
-   pnpm add -D @types/passport-local @types/passport-jwt
-   
-   # Cookie
-   pnpm add cookie-parser
-   pnpm add -D @types/cookie-parser
-   
-   ```
+3.
 
 #### Users Module
 1. Create a `users` module:
@@ -58,5 +39,12 @@
 1. Create an `auth` resource:
     ```bash
     nest g resource auth --no-spec
+    ```
+   
+
+### Repositories
+1. Create a `repositories` module:
+    ```bash
+    nest g module repositories
     ```
 

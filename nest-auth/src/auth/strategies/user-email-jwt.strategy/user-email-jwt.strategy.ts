@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy, ExtractJwt } from 'passport-jwt';
-import { TokenPayload } from 'src/auth/token-payload.interface';
+import { AUTH_STRATEGY, ENV, TokenPayload } from '@/types';
 import { UsersService } from 'src/users/users.service';
 
 /*
- * Decode a incoming JWT token and validate it and allow the request to proceed
+ * Decode an incoming JWT token and validate it and allow the request to proceed
  * in our case we set the jwt token in the cookie, and we are using the cookie based jwt token
  * so the jwt is in the incoming cookie
  * and we are going to extract the jwt token from the cookie, we're going to use a library called cookie-parser
@@ -16,8 +16,9 @@ import { UsersService } from 'src/users/users.service';
 @Injectable()
 export class UserEmailJwtStrategy extends PassportStrategy(
   Strategy,
-  'user-email-jwt',
+  AUTH_STRATEGY.USER_EMAIL_JWT,
 ) {
+  private readonly logger = new Logger(PassportStrategy.name);
   constructor(
     configService: ConfigService,
     private readonly userService: UsersService,
@@ -27,12 +28,14 @@ export class UserEmailJwtStrategy extends PassportStrategy(
         (request: Request) => request?.cookies?.Authentication,
       ]), //tell passport to extract the jwt token from the cookie
       ignoreExpiration: false, //if the jwt token is expired, it will not allow the request to proceed
-      secretOrKey: configService.getOrThrow<string>('JWT_ACCESS_TOKEN_SECRET'),
+      secretOrKey: configService.getOrThrow<string>(
+        ENV.JWT_ACCESS_TOKEN_SECRET,
+      ),
     });
   }
 
   async validate(payload: TokenPayload) {
-    console.log('payload', payload);
+    this.logger.debug(`payload: ${JSON.stringify(payload)}`);
     return this.userService.findUser({ _id: payload.userId });
   }
 }

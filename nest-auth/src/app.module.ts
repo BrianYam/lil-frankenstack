@@ -5,10 +5,11 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from '@/app.controller';
 import { UsersModule } from '@/users/users.module';
+import { RepositoriesModule } from './repositories/repositories.module';
 
 @Module({
   imports: [
-    // Import config module globally
+    // Import configs module globally
     ConfigModule.forRoot({ isGlobal: true }),
     // Add MongooseModule for MongoDB connection
     MongooseModule.forRootAsync({
@@ -19,6 +20,7 @@ import { UsersModule } from '@/users/users.module';
     }),
     UsersModule,
     AuthModule,
+    RepositoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { hash } from 'bcryptjs';
 import { ObjectId } from 'mongodb';
@@ -20,6 +20,8 @@ const users: Userx[] = [
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
@@ -28,7 +30,6 @@ export class UsersService {
     return users.find((user) => user.username === username);
   }
 
-  //create a new function of createUser
   async createUser(createUserRequest: CreateUserRequestDto) {
     await new this.userModel({
       ...createUserRequest,
@@ -38,7 +39,7 @@ export class UsersService {
 
   //create a new function of findUserByEmail
   async findUser(query: FilterQuery<User>): Promise<User | undefined> {
-    console.log('Query', query);
+    this.logger.debug(`Query: ${JSON.stringify(query)}`);
 
     // Convert _id to ObjectId if it exists in the query
     if (query._id && typeof query._id === 'string') {
@@ -47,9 +48,10 @@ export class UsersService {
 
     const user = await this.userModel.findOne(query);
     console.log('User found', user);
+    this.logger.log(`User: ${JSON.stringify(user)}`);
 
     if (!user) {
-      console.log('User not found xx', query);
+      this.logger.warn(`User not found for query: ${JSON.stringify(query)}`);
       throw new NotFoundException('User not found');
     }
     return user.toObject();
@@ -61,8 +63,8 @@ export class UsersService {
 
   //update user
   async updateUser(query: FilterQuery<User>, data: UpdateQuery<User>) {
-    console.log('Query', query);
-    console.log('Data', data);
+    this.logger.debug(`Query: ${JSON.stringify(query)}`);
+    this.logger.debug(`Data: ${JSON.stringify(data)}`);
 
     // Convert _id to ObjectId if it's a string
     if (query._id && typeof query._id === 'string') {
@@ -71,17 +73,17 @@ export class UsersService {
 
     // Find the user before updating
     const user = await this.userModel.findOne(query);
-    console.log('User found', user);
+    this.logger.log(`User found: ${JSON.stringify(user)}`);
 
     // If user is found, proceed with the update
     if (user) {
       const updatedUser = await this.userModel.findOneAndUpdate(query, data, {
         new: true,
       });
-      console.log('Updated User', updatedUser);
+      this.logger.log(`Updated User: ${JSON.stringify(updatedUser)}`);
       return updatedUser;
     } else {
-      console.log('User not found, update not performed');
+      this.logger.warn(`User not found for query: ${JSON.stringify(query)}`);
       return null;
     }
   }

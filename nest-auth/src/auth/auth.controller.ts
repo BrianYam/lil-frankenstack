@@ -5,6 +5,7 @@ import {
   Post,
   UseGuards,
   Res,
+  Logger,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -18,7 +19,8 @@ import { PassportLocalEmailGuard } from '@/utils/guards/passport-local/passport-
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  private readonly logger = new Logger(AuthController.name);
+  constructor(private readonly authService: AuthService) {}
 
   //login/email
   @HttpCode(HttpStatus.OK)
@@ -39,10 +41,13 @@ export class AuthController {
   @UseGuards(PassportLocalEmailGuard)
   async loginWithEmail(
     @CurrentUser() user: User,
-    //set cookies
+    // Inject Express response object with passthrough mode
+    // This allows us to modify the response (set cookies, headers, etc.)
+    // while still letting NestJS handle sending the final response
+    // The actual cookie setting is done in authService.loginByEmail()
     @Res({ passthrough: true }) response: Response,
   ) {
-    console.log('user', user);
+    this.logger.debug(`loginWithEmail: ${JSON.stringify(user)}`);
     await this.authService.loginByEmail(user, response);
   }
 
