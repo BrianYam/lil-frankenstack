@@ -1,5 +1,5 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Body, Get, UseGuards, Logger } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
 import { UsersService } from './users.service';
 import { User } from '@/database/schema/user.schema';
@@ -9,10 +9,12 @@ import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-e
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name);
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
+  @ApiBody({ type: CreateUserRequestDto })
   @ApiResponse({
     status: 201,
     description: 'The user has been successfully created.',
@@ -28,7 +30,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Return all users.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getUser(@CurrentUser() user: User) {
-    console.log('user', user);
-    return this.usersService.findAll();
+    this.logger.debug(`Current user: ${JSON.stringify(user)}`);
+    return this.usersService.getAllUser();
   }
 }

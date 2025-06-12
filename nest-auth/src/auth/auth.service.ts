@@ -36,7 +36,7 @@ export class AuthService {
   }
 
   async validateUser(input: AuthInput): Promise<SignInData | null> {
-    const user = await this.usersService.findUserByName(input.username);
+    const user = await this.usersService.getUserByName(input.username);
     //if user exists and password matches
     if (user && user.password === input.password) {
       return { username: user.username, userId: user.userId };
@@ -57,7 +57,7 @@ export class AuthService {
   async validateUserByEmail(email: string, password: string): Promise<any> {
     try {
       this.logger.debug(`validateUserByEmail: ${email}`);
-      const user = await this.usersService.findUser({
+      const user = await this.usersService.getUser({
         email,
       });
       if (!user) {
@@ -169,7 +169,7 @@ export class AuthService {
   async verifyRefreshToken(refreshToken: string, userId: string) {
     try {
       //find user by userId
-      const user = await this.usersService.findUser({
+      const user = await this.usersService.getUser({
         _id: userId,
       });
 
