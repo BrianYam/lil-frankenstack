@@ -6,6 +6,7 @@ import {
   UseGuards,
   Res,
   Logger,
+  Get,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -13,6 +14,7 @@ import { AuthService } from './auth.service';
 import { User } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
+import { GoogleAuthGuard } from '@/utils/guards/google-auth/google-auth.guard';
 import { JwtRefreshAuthGuard } from '@/utils/guards/jwt-refresh-auth/jwt-refresh-auth.guard';
 import { PassportLocalEmailGuard } from '@/utils/guards/passport-local/passport-local-email.guard';
 
@@ -22,7 +24,6 @@ export class AuthController {
   private readonly logger = new Logger(AuthController.name);
   constructor(private readonly authService: AuthService) {}
 
-  //login/email
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login with email' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Login with email' })
@@ -72,4 +73,35 @@ export class AuthController {
     console.log('user', user);
     await this.authService.loginByEmail(user, response);
   }
+
+  @ApiOperation({ summary: 'Login with Google' })
+  @ApiResponse({
+    status: HttpStatus.FOUND,
+    description: 'Redirect to Google login',
+  })
+  @Get('google/login')
+  @UseGuards(GoogleAuthGuard)
+  googleLogin() {}
+
+  @ApiOperation({ summary: 'Google login callback' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Handle Google login callback',
+  })
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleCallback(
+    @CurrentUser() user: User,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    console.log('googleCallback');
+    console.log('user', user);
+    console.log('response', response);
+    await this.authService.loginByEmail(user, response, true);
+  }
 }
+
+//TODO
+// sign out
+// reset password
+// forgot password

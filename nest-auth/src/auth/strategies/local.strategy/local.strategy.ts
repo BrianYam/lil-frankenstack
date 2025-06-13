@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { AuthService } from '../../auth.service';
@@ -18,6 +18,8 @@ export class LocalEmailStrategy extends PassportStrategy(
 
   // note any strategy we implement on this 'validate' function, whatever we return here will be available in the request object in the controller, this is a benefit of using passport library
   async validate(email: string, password: string): Promise<any> {
+    if (password === '')
+      throw new UnauthorizedException('Please Provide The Password');
     return this.authService.validateUserByEmail(email, password);
   }
 }

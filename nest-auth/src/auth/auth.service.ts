@@ -154,7 +154,7 @@ export class AuthService {
     response.cookie(REFRESH, refreshToken, {
       expires: expiresRefreshToken,
       httpOnly: true, //cookie is not accessible via JavaScript
-      secure: this.configService.get('NODE_ENV') === PRODUCTION, //only send cookie over HTTPS in production
+      secure: this.configService.get('NODE_ENV') === PRODUCTION, //only send cookie over HTTPS in production. Required for cross-origin cookies with SameSite=None
     });
 
     // secure: true, //cookie is only sent over HTTPS
@@ -162,7 +162,8 @@ export class AuthService {
     // sameSite: 'none', //cookie is sent on every request
     if (redirect) {
       response.redirect(
-        this.configService.getOrThrow(ENV.AUTH_UI_REDIRECT_URL),
+        this.configService.getOrThrow(ENV.AUTH_UI_REDIRECT_URL), //Redirect to the frontend application, welcome page
+        //TODO is it possible that we can set cookies to the FE client link ?? Or it needs to be handled in the FE client side?
       );
     }
   }
