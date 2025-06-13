@@ -5,7 +5,7 @@ import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { hash, compare } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { DB_PROVIDER } from '@/database/database.module';
-import { users } from '@/database/schema';
+import { usersTable } from '@/database/schema';
 import { User, NewUser, DrizzleDB } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
 
@@ -13,7 +13,7 @@ import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create
 export class UserRepository {
   private readonly logger = new Logger(UserRepository.name);
 
-  constructor(@Inject(DB_PROVIDER) private db: DrizzleDB) {}
+  constructor(@Inject(DB_PROVIDER) private readonly db: DrizzleDB) {}
 
   /**
    * Creates a new user with hashed password
@@ -28,7 +28,7 @@ export class UserRepository {
       password: hashedPassword,
     };
 
-    await this.db.insert(users).values(newUser);
+    await this.db.insert(usersTable).values(newUser);
     return this.findUserByEmail(createUserRequest.email);
   }
 
@@ -43,8 +43,8 @@ export class UserRepository {
 
     const result = await this.db
       .select()
-      .from(users)
-      .where(eq(users.email, email))
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
       .limit(1);
 
     const user = result[0];
@@ -68,8 +68,8 @@ export class UserRepository {
 
     const result = await this.db
       .select()
-      .from(users)
-      .where(eq(users.id, id))
+      .from(usersTable)
+      .where(eq(usersTable.id, id))
       .limit(1);
 
     const user = result[0];
@@ -103,7 +103,7 @@ export class UserRepository {
     // Always update the updatedAt timestamp
     data.updatedAt = new Date();
 
-    await this.db.update(users).set(data).where(eq(users.id, id));
+    await this.db.update(usersTable).set(data).where(eq(usersTable.id, id));
 
     return this.findUserById(id);
   }
@@ -113,7 +113,7 @@ export class UserRepository {
    * @returns Array of all users
    */
   async findAll(): Promise<User[]> {
-    return this.db.select().from(users);
+    return this.db.select().from(usersTable);
   }
 
   /**

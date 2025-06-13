@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
-import { UserRepository } from '@/repositories/user/user.repository';
 import { NewUser } from '@/types';
+import { UserRepository } from '@/users/user.repository';
 
 export type Userx = {
   userId: number;

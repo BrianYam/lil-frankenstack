@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { UserRepository } from './user/user.repository';
-import { DatabaseModule } from '@/database/database.module';
+import { ApiKeyRepository } from '@/api-keys/api-key.repository';
+import { UserRepository } from '@/users/user.repository';
 
 @Module({
-  imports: [DatabaseModule],
-  providers: [UserRepository],
-  exports: [UserRepository],
+  providers: [UserRepository, ApiKeyRepository],
+  exports: [UserRepository, ApiKeyRepository],
 })
 export class RepositoriesModule {}

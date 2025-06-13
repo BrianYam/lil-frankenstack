@@ -3,7 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { RepositoriesModule } from './repositories/repositories.module';
+import { ApiKeysModule } from '@/api-keys/api-keys.module';
 import { AppController } from '@/app.controller';
+import { DatabaseModule } from '@/database/database.module';
 import { UsersModule } from '@/users/users.module';
 
 @Module({
@@ -13,6 +15,8 @@ import { UsersModule } from '@/users/users.module';
     UsersModule,
     AuthModule,
     RepositoriesModule,
+    DatabaseModule,
+    ApiKeysModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -76,7 +76,9 @@ export class AuthService {
       }
       return user;
     } catch (error) {
-      console.error(error);
+      this.logger.error(
+        `Authentication failed for email: ${email}, error: ${error.message}`,
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
   }
@@ -184,7 +186,7 @@ export class AuthService {
 
       return await this.usersService.getUser({ id: userId });
     } catch (error) {
-      console.error(error);
+      this.logger.error(`Error verifying refresh token: ${error.message}`);
       throw new UnauthorizedException('Invalid token');
     }
   }

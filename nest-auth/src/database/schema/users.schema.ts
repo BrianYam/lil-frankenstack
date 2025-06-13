@@ -8,7 +8,7 @@ import { pgTable, text, uuid, timestamp } from 'drizzle-orm/pg-core';
  * Users table schema
  * Stores user data including authentication credentials
  */
-export const users = pgTable('users', {
+export const usersTable = pgTable('users', {
   id: uuid('id').defaultRandom().notNull().primaryKey(),
   email: text('email').notNull().unique(),
   // Hashed password

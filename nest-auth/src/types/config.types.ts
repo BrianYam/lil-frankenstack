@@ -15,6 +15,7 @@ import * as schema from '@/database/schema';
 */
 export enum ENV {
   NODE_ENV = 'NODE_ENV',
+  API_KEY = 'API_KEY',
 
   // JWT
   JWT_ACCESS_TOKEN_SECRET = 'JWT_ACCESS_TOKEN_SECRET',

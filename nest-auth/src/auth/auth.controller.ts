@@ -14,12 +14,14 @@ import { AuthService } from './auth.service';
 import { User } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
+import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protector.decorator';
 import { GoogleAuthGuard } from '@/utils/guards/google-auth/google-auth.guard';
 import { JwtRefreshAuthGuard } from '@/utils/guards/jwt-refresh-auth/jwt-refresh-auth.guard';
 import { PassportLocalEmailGuard } from '@/utils/guards/passport-local/passport-local-email.guard';
 
 @ApiTags('auth')
 @Controller('auth')
+@SimpleApiKeyProtected()
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
   constructor(private readonly authService: AuthService) {}
@@ -70,7 +72,7 @@ export class AuthController {
     //set cookies
     @Res({ passthrough: true }) response: Response,
   ) {
-    console.log('user', user);
+    this.logger.debug(`refresh: ${JSON.stringify(user)}`);
     await this.authService.loginByEmail(user, response);
   }
 
@@ -94,9 +96,9 @@ export class AuthController {
     @CurrentUser() user: User,
     @Res({ passthrough: true }) response: Response,
   ) {
-    console.log('googleCallback');
-    console.log('user', user);
-    console.log('response', response);
+    this.logger.debug(`Google callback: ${JSON.stringify(response)}`);
+    this.logger.debug(`Google user: ${JSON.stringify(user)}`);
+    this.logger.debug(`Google callback: ${JSON.stringify(response)}`);
     await this.authService.loginByEmail(user, response, true);
   }
 }
