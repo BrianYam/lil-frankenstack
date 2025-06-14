@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
-import { NewUser } from '@/types';
+import { NewUser, User, DeleteUserResponse } from '@/types';
 import { UserRepository } from '@/users/user.repository';
 
 export type Userx = {
@@ -49,5 +49,22 @@ export class UsersService {
 
   async getOrCreateUser(data: CreateUserRequestDto) {
     return this.userRepository.getOrCreateUser(data);
+  }
+
+  async deleteUser(id: string): Promise<User[]> {
+    this.logger.debug(`Deleting user with ID: ${id}`);
+    return this.userRepository.deleteUser(id);
+  }
+
+  async deleteUserWithResponse(id: string): Promise<DeleteUserResponse> {
+    this.logger.debug(`Deleting user with ID: ${id} and generating response`);
+    const deletedUsers = await this.userRepository.deleteUser(id);
+    const isDeleted = deletedUsers.length > 0;
+
+    return {
+      success: isDeleted,
+      message: isDeleted ? 'User deleted successfully' : 'User not found',
+      deletedUsers: isDeleted ? deletedUsers : undefined,
+    };
   }
 }

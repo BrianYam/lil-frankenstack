@@ -1,10 +1,28 @@
-import { Controller, Post, Body, Get, UseGuards, Logger } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Logger,
+  Delete,
+  Param,
+  HttpCode,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
 import { UsersService } from './users.service';
-import { User } from '@/types';
+import { User, UserRole } from '@/types';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
+import { Roles } from '@/utils/decorators/roles.decorator';
 import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protector.decorator';
+import { RolesGuard } from '@/utils/guards/roles/roles.guard';
 import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-email-jwt-auth.guard';
 
 @ApiTags('users')
@@ -23,6 +41,9 @@ export class UsersController {
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   async create(@Body() createUserRequest: CreateUserRequestDto) {
+    this.logger.debug(
+      `Creating user with email: ${JSON.stringify(createUserRequest)}`,
+    );
     return this.usersService.createUser(createUserRequest);
   }
 
@@ -34,5 +55,20 @@ export class UsersController {
   async getUser(@CurrentUser() user: User) {
     this.logger.debug(`Current user: ${JSON.stringify(user)}`);
     return this.usersService.getAllUser();
+  }
+
+  @Delete(':id')
+  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Delete a user by ID' })
+  @ApiParam({ name: 'id', description: 'User ID to delete' })
+  @ApiResponse({ status: 200, description: 'User successfully deleted.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  @HttpCode(200)
+  async deleteUser(@Param('id') id: string) {
+    this.logger.debug(`Deleting user with ID: ${id}`);
+    return this.usersService.deleteUserWithResponse(id);
   }
 }

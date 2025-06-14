@@ -21,12 +21,17 @@ export class UserRepository {
    * @returns Newly created user
    */
   async createUser(createUserRequest: CreateUserRequestDto): Promise<User> {
+    this.logger.debug(
+      `Creating user with email: ${JSON.stringify(createUserRequest)}`,
+    );
     const hashedPassword = await hash(createUserRequest.password, 10);
 
     const newUser: NewUser = {
       email: createUserRequest.email,
       password: hashedPassword,
+      role: createUserRequest.role,
     };
+    this.logger.debug(`New user data: ${JSON.stringify(newUser)}`);
 
     await this.db.insert(usersTable).values(newUser);
     return this.findUserByEmail(createUserRequest.email);
@@ -149,5 +154,18 @@ export class UserRepository {
     }
 
     return compare(refreshToken, user.refreshToken);
+  }
+
+  /**
+   * Deletes a user by ID
+   * @param id - UUID of the user to delete
+   * @returns Boolean indicating if the user was successfully deleted
+   * @throws NotFoundException if user not found
+   */
+  async deleteUser(id: string): Promise<User[]> {
+    this.logger.debug(`Deleting user with ID: ${id}`);
+
+    // Delete the user
+    return this.db.delete(usersTable).where(eq(usersTable.id, id)).returning();
   }
 }

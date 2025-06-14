@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsStrongPassword } from 'class-validator';
+import { UserRole } from '@/types';
 
 export class CreateUserRequestDto {
   @ApiProperty({
@@ -15,4 +16,14 @@ export class CreateUserRequestDto {
   })
   @IsStrongPassword()
   password: string;
+
+  @ApiProperty({
+    description: 'The role of the user that determines access permissions',
+    example: 'USER',
+    enum: UserRole,
+    enumName: 'UserRole',
+    default: 'USER',
+    required: false,
+  })
+  role?: UserRole;
 }
