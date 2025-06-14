@@ -7,17 +7,21 @@ import {
   Res,
   Logger,
   Get,
+  Body,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { User } from '@/types';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { User, UserRole } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
+import { Roles } from '@/utils/decorators/roles.decorator';
 import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protector.decorator';
 import { GoogleAuthGuard } from '@/utils/guards/google-auth/google-auth.guard';
 import { JwtRefreshAuthGuard } from '@/utils/guards/jwt-refresh-auth/jwt-refresh-auth.guard';
 import { PassportLocalEmailGuard } from '@/utils/guards/passport-local/passport-local-email.guard';
+import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-email-jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -54,7 +58,6 @@ export class AuthController {
     await this.authService.loginByEmail(user, response);
   }
 
-  //refresh
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh Token' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Refresh Token' })
@@ -98,8 +101,39 @@ export class AuthController {
   ) {
     this.logger.debug(`Google callback: ${JSON.stringify(response)}`);
     this.logger.debug(`Google user: ${JSON.stringify(user)}`);
-    this.logger.debug(`Google callback: ${JSON.stringify(response)}`);
     await this.authService.loginByEmail(user, response, true);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password reset email sent if email exists',
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad request' })
+  @UseGuards(UserEmailJwtAuthGuard)
+  @Post('password/request-reset')
+  async requestPasswordReset(@CurrentUser() user: User) {
+    this.logger.debug(`Password reset requested for: ${user.email}`);
+    return this.authService.requestPasswordReset(user);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password with token' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password successfully reset',
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad request' })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or expired token',
+  })
+  @ApiBody({ type: ResetPasswordDto })
+  @Post('password/reset')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    this.logger.debug('Password reset attempt');
+    return this.authService.resetPassword(resetPasswordDto);
   }
 }
 

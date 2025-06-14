@@ -1,8 +1,10 @@
+import { randomBytes } from 'crypto';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { compare } from 'bcryptjs';
+import { compare, hash } from 'bcryptjs';
 import { Response } from 'express';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import {
   AuthInput,
   AuthResult,
@@ -20,45 +22,16 @@ const PRODUCTION = 'production';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly passwordResetTokens: Map<
+    string,
+    { userId: string; expiresAt: Date }
+  > = new Map(); //TODO maybe cahce it properly in redis or NodeCache
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
-
-  async authenticate(input: AuthInput): Promise<AuthResult | null> {
-    const user = await this.validateUser(input);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    return this.signIn(user);
-
-    // return {
-    //   accessToken: 'fake-access-token',
-    //   userId: user.userId,
-    //   userName: user.username,
-    // };
-  }
-
-  async validateUser(input: AuthInput): Promise<SignInData | null> {
-    const user = await this.usersService.getUserByName(input.username);
-    //if user exists and password matches
-    if (user && user.password === input.password) {
-      return { username: user.username, userId: user.userId };
-    }
-    return null;
-  }
-
-  async signIn(user: SignInData): Promise<AuthResult> {
-    const tokenPayload = { username: user.username, sub: user.userId };
-    const accessToken = await this.jwtService.sign(tokenPayload);
-    return {
-      accessToken,
-      userId: user.userId,
-      userName: user.username,
-    };
-  }
 
   async validateUserByEmail(email: string, password: string): Promise<any> {
     try {
@@ -188,6 +161,84 @@ export class AuthService {
     } catch (error) {
       this.logger.error(`Error verifying refresh token: ${error.message}`);
       throw new UnauthorizedException('Invalid token');
+    }
+  }
+
+  async requestPasswordReset(user: User): Promise<{ message: string }> {
+    try {
+      // Generate a secure random token
+      const resetToken = randomBytes(32).toString('hex');
+
+      // Store the token with expiration (1 hour from now)
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1);
+
+      this.passwordResetTokens.set(resetToken, {
+        userId: user.id,
+        expiresAt,
+      });
+
+      this.logger.debug(
+        `Password reset requested for user: ${user.id}, token: ${resetToken}`,
+      );
+
+      //TODO
+      // In a production environment, you would send an email with the reset link
+      // Example: await this.emailService.sendPasswordResetEmail(user.email, resetToken);
+
+      // For development purposes, we'll just log the token
+      this.logger.debug(
+        `[DEV ONLY] Reset token for ${user.email}: ${resetToken}`,
+      );
+
+      return {
+        message: 'If the email exists, a password reset link has been sent.',
+      };
+    } catch (error) {
+      // Don't reveal whether the email exists or not for security reasons
+      this.logger.error(`Error in password reset request: ${error.message}`);
+      return {
+        message: 'If the email exists, a password reset link has been sent.',
+      };
+    }
+  }
+
+  async resetPassword(
+    resetDto: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    // Get token data from storage
+    const tokenData = this.passwordResetTokens.get(resetDto.token);
+
+    if (!tokenData) {
+      throw new UnauthorizedException(
+        'Invalid or expired password reset token',
+      );
+    }
+
+    // Check if token has expired
+    if (tokenData.expiresAt < new Date()) {
+      // Remove expired token
+      this.passwordResetTokens.delete(resetDto.token);
+      throw new UnauthorizedException('Password reset token has expired');
+    }
+
+    try {
+      // Hash the new password
+      const hashedPassword = await hash(resetDto.password, 10);
+
+      // Update the user's password
+      await this.usersService.updateUser(
+        { id: tokenData.userId },
+        { password: hashedPassword },
+      );
+
+      // Remove the used token
+      this.passwordResetTokens.delete(resetDto.token);
+
+      return { message: 'Password has been successfully reset' };
+    } catch (error) {
+      this.logger.error(`Error resetting password: ${error.message}`);
+      throw new UnauthorizedException('Failed to reset password');
     }
   }
 }
