@@ -4,15 +4,10 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { Response } from 'express';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import {
-  AuthInput,
-  AuthResult,
-  ENV,
-  SignInData,
-  TokenPayload,
-  User,
-} from '@/types';
+import { EmailService } from '@/message/email/email.service';
+import { ENV, TokenPayload, User } from '@/types';
 import { UsersService } from '@/users/users.service';
 
 const AUTHENTICATION = 'Authentication';
@@ -22,15 +17,19 @@ const PRODUCTION = 'production';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+
+  //TODO can even consider to move this to a cache service like Redis or NodeCache
+  // or use a database to store the password reset tokens
   private readonly passwordResetTokens: Map<
     string,
     { userId: string; expiresAt: Date }
-  > = new Map(); //TODO maybe cahce it properly in redis or NodeCache
+  > = new Map();
 
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   async validateUserByEmail(email: string, password: string): Promise<any> {
@@ -138,7 +137,6 @@ export class AuthService {
     if (redirect) {
       response.redirect(
         this.configService.getOrThrow(ENV.AUTH_UI_REDIRECT_URL), //Redirect to the frontend application, welcome page
-        //TODO is it possible that we can set cookies to the FE client link ?? Or it needs to be handled in the FE client side?
       );
     }
   }
@@ -239,6 +237,66 @@ export class AuthService {
     } catch (error) {
       this.logger.error(`Error resetting password: ${error.message}`);
       throw new UnauthorizedException('Failed to reset password');
+    }
+  }
+
+  async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
+    try {
+      // Find the user with this email
+      const user = await this.usersService.getUser({
+        email: forgotPasswordDto.email,
+      });
+
+      if (!user) {
+        // For security, don't reveal whether the email exists or not
+        this.logger.warn(
+          `User with email ${forgotPasswordDto.email} not found`,
+        );
+        return {
+          message: 'The password reset link has been sent.',
+        };
+      }
+
+      // Generate a secure random token
+      const resetToken = randomBytes(32).toString('hex');
+
+      // Store the token with expiration (1 hour from now)
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1);
+
+      this.passwordResetTokens.set(resetToken, {
+        userId: user.id,
+        expiresAt,
+      });
+
+      // TODO build in frontend
+      // Build reset link (in a real app, this would point to the frontend)
+      const resetLink = `${this.configService.getOrThrow(
+        ENV.AUTH_UI_REDIRECT_URL,
+      )}/reset-password?token=${resetToken}`;
+
+      // Send email with reset link
+      await this.emailService.sendForgotPasswordEmail(
+        user.email,
+        resetToken,
+        resetLink,
+      );
+
+      this.logger.debug(
+        `Password reset requested for user: ${user.id}, token: ${resetToken}`,
+      );
+
+      return {
+        message: 'The password reset link has been sent.',
+      };
+    } catch (error) {
+      // Don't reveal whether the email exists or not for security reasons
+      this.logger.error(`Error in forgot password request: ${error.message}`);
+      return {
+        message: 'The password reset link has been sent.', //TODO can we make this a constant or refactor to only do it once ?
+      };
     }
   }
 }

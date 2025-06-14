@@ -22,7 +22,8 @@
     "db:migrate": "tsx src/database/migrate.ts",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
-    "db:drop": "drizzle-kit drop"
+    "db:drop": "drizzle-kit drop",
+    "email": "email dev --dir src/message/email/templates --port 3001"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -34,6 +35,9 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/typeorm": "^11.0.0",
+    "@react-email/components": "^0.0.42",
+    "@react-email/render": "^1.1.2",
+    "@types/react": "^19.1.8",
     "bcryptjs": "^3.0.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
@@ -48,7 +52,9 @@
     "passport-local": "^1.0.0",
     "pg": "^8.16.0",
     "postgres": "^3.4.7",
+    "react": "^19.1.0",
     "reflect-metadata": "^0.2.0",
+    "resend": "^4.6.0",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {

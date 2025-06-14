@@ -15,7 +15,6 @@ import * as schema from '@/database/schema';
 */
 export enum ENV {
   NODE_ENV = 'NODE_ENV',
-  API_KEY = 'API_KEY',
 
   // JWT
   JWT_ACCESS_TOKEN_SECRET = 'JWT_ACCESS_TOKEN_SECRET',
@@ -25,11 +24,16 @@ export enum ENV {
 
   // AUTH
   AUTH_UI_REDIRECT_URL = 'AUTH_UI_REDIRECT_URL',
+  API_KEY = 'API_KEY',
 
   // OAUTH
   GOOGLE_AUTH_CLIENT_ID = 'GOOGLE_AUTH_CLIENT_ID',
   GOOGLE_AUTH_CLIENT_SECRET = 'GOOGLE_AUTH_CLIENT_SECRET',
   GOOGLE_AUTH_REDIRECT_URI = 'GOOGLE_AUTH_REDIRECT_URI',
+
+  // EMAIL
+  RESEND_API_KEY = 'RESEND_API_KEY',
+  NO_REPLY_EMAIL_DOMAIN = 'NO_REPLY_EMAIL_DOMAIN',
 }
 
 export type DrizzleDB = NodePgDatabase<typeof schema>;

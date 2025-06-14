@@ -12,11 +12,11 @@ import {
 import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { User, UserRole } from '@/types';
+import { User } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
-import { Roles } from '@/utils/decorators/roles.decorator';
 import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protector.decorator';
 import { GoogleAuthGuard } from '@/utils/guards/google-auth/google-auth.guard';
 import { JwtRefreshAuthGuard } from '@/utils/guards/jwt-refresh-auth/jwt-refresh-auth.guard';
@@ -135,9 +135,23 @@ export class AuthController {
     this.logger.debug('Password reset attempt');
     return this.authService.resetPassword(resetPasswordDto);
   }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Forgot password request' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'If the email exists, a reset link will be sent',
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad request' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @Post('password/forgot')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    this.logger.debug(
+      `Forgot password request for email: ${forgotPasswordDto.email}`,
+    );
+    return this.authService.forgotPassword(forgotPasswordDto);
+  }
 }
 
 //TODO
 // sign out
-// reset password
-// forgot password
