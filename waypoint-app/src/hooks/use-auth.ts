@@ -25,7 +25,8 @@ export function useAuth() {
       return authService.login(credentials);
     },
     onSuccess: () => {
-      router.push('/'); // Redirect to homepage or dashboard
+      console.log('Successfully logged in');
+      router.push('/');
       setIsLoading(false);
     },
     onError: (error: Error) => {
@@ -127,6 +128,7 @@ export function setupAuthInvalidations(queryClient: QueryClient) {
     );
     
     if (hasAuthChange) {
+      console.log('Auth invalidation - Auth change detected in query cache');
       // Invalidate user queries when auth state changes
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       queryClient.invalidateQueries({ queryKey: ['users'] });

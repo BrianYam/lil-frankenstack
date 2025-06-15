@@ -20,7 +20,7 @@ export class ApiClient {
     this.authService = authService;
     this.axiosInstance = axios.create({
       baseURL: baseURL || authService.getApiUrl(),
-      withCredentials: true,
+      withCredentials: true, // This ensures cookies are sent with every request
       headers: {
         'Content-Type': 'application/json',
       },
