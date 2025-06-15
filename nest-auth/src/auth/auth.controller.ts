@@ -151,7 +151,17 @@ export class AuthController {
     );
     return this.authService.forgotPassword(forgotPasswordDto);
   }
-}
 
-//TODO
-// sign out
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Logout' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully logged out',
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad request' })
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) response: Response) {
+    this.logger.debug('User logout');
+    return this.authService.logout(response);
+  }
+}

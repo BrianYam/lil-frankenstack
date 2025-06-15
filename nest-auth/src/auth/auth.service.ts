@@ -299,4 +299,20 @@ export class AuthService {
       };
     }
   }
+
+  async logout(response: Response) {
+    // Clear the authentication cookies
+    response.clearCookie(AUTHENTICATION, {
+      httpOnly: true,
+      secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION,
+    });
+    response.clearCookie(REFRESH, {
+      httpOnly: true,
+      secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION,
+    });
+
+    this.logger.debug('User logged out, cookies cleared');
+
+    return { message: 'Logged out successfully' };
+  }
 }

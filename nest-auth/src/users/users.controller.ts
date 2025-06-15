@@ -57,6 +57,16 @@ export class UsersController {
     return this.usersService.getAllUser();
   }
 
+  @Get('me')
+  @UseGuards(UserEmailJwtAuthGuard)
+  @ApiOperation({ summary: 'Get signed in user profile' })
+  @ApiResponse({ status: 200, description: 'Return the current user profile.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async getCurrentUser(@CurrentUser() user: User) {
+    this.logger.debug(`Fetching profile for current user ID: ${user.id}`);
+    return user; //TODO remove sentitive data later
+  }
+
   @Delete(':id')
   @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
