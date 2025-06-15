@@ -99,7 +99,6 @@ export class AuthController {
     @CurrentUser() user: User,
     @Res({ passthrough: true }) response: Response,
   ) {
-    this.logger.debug(`Google callback: ${JSON.stringify(response)}`);
     this.logger.debug(`Google user: ${JSON.stringify(user)}`);
     await this.authService.loginByEmail(user, response, true);
   }
