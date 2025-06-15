@@ -1,0 +1,58 @@
+
+/**
+ * API configuration
+ */
+export const API_CONFIG = {
+  /**
+   * Base URL for API requests
+   * Falls back to localhost if environment variable is not set
+   */
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  
+  /**
+   * Default timeout for API requests in milliseconds
+   */
+  TIMEOUT: 30000,
+  
+  /**
+   * API version
+   */
+  VERSION: 'v1',
+  
+  /**
+   * Cookie names for authentication
+   */
+  COOKIES: {
+    ACCESS_TOKEN: 'accessToken',
+    REFRESH_TOKEN: 'refreshToken',
+  },
+  
+  /**
+   * Headers
+   */
+  HEADERS: {
+    CONTENT_TYPE: 'application/json',
+    AUTHORIZATION: 'Authorization',
+  }
+};
+
+/**
+ * API endpoints
+ */
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/auth/login/email',
+    REFRESH: '/auth/refresh',
+    LOGOUT: '/auth/logout',
+    GOOGLE_LOGIN: '/auth/google/login',
+    PASSWORD: {
+      FORGOT: '/auth/password/forgot',
+      RESET: '/auth/password/reset',
+    }
+  },
+  USERS: {
+    BASE: '/users',
+    ME: '/users/me',
+    BY_ID: (id: string) => `/users/${id}`
+  }
+};
