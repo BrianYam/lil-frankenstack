@@ -1,5 +1,5 @@
 
-import { useQuery, useMutation, QueryClient } from '@tanstack/react-query';
+import { useMutation, QueryClient } from '@tanstack/react-query';
 import { ApiServices } from '@/services';
 import { LoginRequest, ForgotPasswordRequest, ResetPasswordRequest } from '@/types/auth.types';
 import { useState } from 'react';

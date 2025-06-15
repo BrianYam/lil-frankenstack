@@ -1,4 +1,3 @@
-
 /**
  * API configuration
  */
@@ -33,7 +32,14 @@ export const API_CONFIG = {
   HEADERS: {
     CONTENT_TYPE: 'application/json',
     AUTHORIZATION: 'Authorization',
-  }
+    API_KEY_HEADER: 'frankenstack-api-key',
+  },
+
+  /**
+   * API key for authentication with the backend
+   * Falls back to an empty string which will fail if not provided
+   */
+  API_KEY: process.env.NEXT_PUBLIC_API_KEY || '',
 };
 
 /**

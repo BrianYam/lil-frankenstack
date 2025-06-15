@@ -1,6 +1,6 @@
-
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { AuthService } from './auth.service';
+import { API_CONFIG } from '@/config/api.config';
 
 /**
  * ApiClient class for making HTTP requests
@@ -47,7 +47,7 @@ export class ApiClient {
    * @param config - Optional Axios config
    * @returns Promise with the response data
    */
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async post<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.axiosInstance.post<T>(url, data, config);
     return response.data;
   }
@@ -59,7 +59,7 @@ export class ApiClient {
    * @param config - Optional Axios config
    * @returns Promise with the response data
    */
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async put<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.axiosInstance.put<T>(url, data, config);
     return response.data;
   }
@@ -80,10 +80,12 @@ export class ApiClient {
    * Handles token refreshing and authentication errors
    */
   private setupInterceptors(): void {
-    // Request interceptor - simplified since we're using cookie-based auth
+    // Request interceptor - add API key header to all requests
     this.axiosInstance.interceptors.request.use(
       (config) => {
-        // No need to add Authorization header - backend uses cookie authentication
+        // Add the API key header to all requests
+        config.headers = config.headers || {};
+        config.headers[API_CONFIG.HEADERS.API_KEY_HEADER] = API_CONFIG.API_KEY;
         return config;
       },
       (error) => {
@@ -97,29 +99,27 @@ export class ApiClient {
       async (error) => {
         const originalRequest = error.config;
 
-        // If error is 401 Unauthorized and we haven't tried to refresh yet
+        // If error is 401 Unauthorized, and we haven't tried to refresh yet
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
           // Prevent multiple refresh attempts
-          if (!this.refreshingPromise) {
-            this.refreshingPromise = new Promise<void>(async (resolve, reject) => {
-              try {
-                await this.authService.refreshTokens();
-                resolve();
-              } catch (refreshError) {
-                // If refresh fails, redirect to login
-                this.authService.logout();
-                // Redirect to login page if needed
-                if (typeof window !== 'undefined') {
-                  window.location.href = '/login';
-                }
-                reject(refreshError);
-              } finally {
-                this.refreshingPromise = null;
+          this.refreshingPromise ??= new Promise<void>(async (resolve, reject) => {
+            try {
+              await this.authService.refreshTokens();
+              resolve();
+            } catch (refreshError) {
+              // If refresh fails, redirect to log in
+              this.authService.logout();
+              // Redirect to login page if needed
+              if (typeof window !== 'undefined') {
+                window.location.href = '/login';
               }
-            });
-          }
+              reject(refreshError);
+            } finally {
+              this.refreshingPromise = null;
+            }
+          });
 
           try {
             await this.refreshingPromise;
