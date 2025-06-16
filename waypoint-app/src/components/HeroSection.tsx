@@ -1,6 +1,17 @@
 "use client";
-import Image from 'next/image';
 import { useEffect, useState, useCallback } from 'react';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/container';
+import { Spinner } from '@/components/ui/spinner';
+import { PaginationDots } from '@/components/ui/pagination-dots';
+
+// Fallback images for when the API fails to fetch images
+const FALLBACK_IMAGES = [
+  'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1200',
+  'https://images.unsplash.com/photo-1530789253388-582c481c54b0?q=80&w=1200',
+  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=1200'
+];
 
 export function HeroSection() {
   const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
@@ -24,22 +35,12 @@ export function HeroSection() {
         if (imageUrls.length > 0) {
           setBackgroundImages(imageUrls);
         } else {
-          // Fallback images in case API fails
-          setBackgroundImages([
-            'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1200',
-            'https://images.unsplash.com/photo-1530789253388-582c481c54b0?q=80&w=1200',
-            'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=1200'
-          ]);
+          setBackgroundImages(FALLBACK_IMAGES);
         }
-        setLoading(false);
       } catch (error) {
         console.error('Failed to fetch background images:', error);
-        // Set fallback images
-        setBackgroundImages([
-          'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1200',
-          'https://images.unsplash.com/photo-1530789253388-582c481c54b0?q=80&w=1200',
-          'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=1200'
-        ]);
+        setBackgroundImages(FALLBACK_IMAGES);
+      } finally {
         setLoading(false);
       }
     };
@@ -122,25 +123,18 @@ export function HeroSection() {
           </div>
           
           {/* Indicator dots */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-            {backgroundImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`w-3 h-3 rounded-full transition-transform ${
-                  currentImageIndex === index 
-                    ? 'bg-white scale-125' 
-                    : 'bg-white/50 hover:bg-white/80'
-                }`}
-                aria-label={`Go to image ${index + 1}`}
-              />
-            ))}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+            <PaginationDots 
+              total={backgroundImages.length}
+              activeIndex={currentImageIndex}
+              onDotClick={setCurrentImageIndex}
+            />
           </div>
         </>
       )}
       
       <div className="absolute inset-0 bg-black/30">
-        <div className="container mx-auto px-4 relative z-10 h-full flex items-center">
+        <Container className="relative z-10 h-full flex items-center">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-5xl font-bold text-white mb-6 drop-shadow-lg">
               WayPoint: Your Smart Travel Companion
@@ -149,20 +143,28 @@ export function HeroSection() {
               Real-time travel planning that adapts to weather, events, and your preferences
             </p>
             <div className="space-x-4">
-              <button className="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-blue-50 transition-colors transform hover:scale-105 duration-300">
+              <Button
+                variant="default"
+                size="pillLg"
+                className="bg-white text-blue-600 hover:bg-blue-50 transform hover:scale-105 duration-300"
+              >
                 Get Started
-              </button>
-              <button className="text-white border-2 border-white px-8 py-3 rounded-full font-semibold hover:bg-white/20 transition-colors">
+              </Button>
+              <Button
+                variant="outline" 
+                size="pillLg"
+                className="text-white border-2 border-white hover:bg-white/20"
+              >
                 Learn More
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
+        </Container>
       </div>
       
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+          <Spinner size="lg" variant="light" />
         </div>
       )}
     </section>

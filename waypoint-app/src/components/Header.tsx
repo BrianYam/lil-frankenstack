@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { useUser } from '@/contexts/user-context';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/container';
+import { Menu, X, User, LogOut, Home, Map, Info } from 'lucide-react';
 
 export function Header() {
   const { user, isAuthenticated, logout } = useUser();
@@ -14,7 +17,7 @@ export function Header() {
 
   return (
     <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
-      <div className="container mx-auto px-4">
+      <Container>
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
@@ -23,14 +26,17 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="text-gray-700 hover:text-indigo-600 transition-colors">
-              Home
+            <Link href="/" className="text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-1">
+              <Home size={16} />
+              <span>Home</span>
             </Link>
-            <Link href="/destinations" className="text-gray-700 hover:text-indigo-600 transition-colors">
-              Destinations
+            <Link href="/destinations" className="text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-1">
+              <Map size={16} />
+              <span>Destinations</span>
             </Link>
-            <Link href="/about" className="text-gray-700 hover:text-indigo-600 transition-colors">
-              About
+            <Link href="/about" className="text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-1">
+              <Info size={16} />
+              <span>About</span>
             </Link>
           </nav>
 
@@ -39,56 +45,58 @@ export function Header() {
             {isAuthenticated && user ? (
               <div className="flex items-center space-x-4">
                 <div className="flex flex-col items-end">
-                  <Link href="/me" className="text-sm font-medium text-gray-900 hover:text-indigo-600">{user.email}</Link>
+                  <Link href="/me" className="text-sm font-medium text-gray-900 hover:text-indigo-600 flex items-center">
+                    <User size={14} className="mr-1" />
+                    {user.email}
+                  </Link>
                   <span className="text-xs text-gray-500 capitalize">{user.role}</span>
                 </div>
-                <button
+                <Button
                   onClick={logout}
-                  className="px-4 py-2 text-sm font-medium text-indigo-700 hover:text-indigo-800 transition-colors"
+                  variant="ghost"
+                  className="text-indigo-700"
+                  size="sm"
                 >
+                  <LogOut size={14} className="mr-1" />
                   Logout
-                </button>
+                </Button>
               </div>
             ) : (
               <>
-                <Link
-                  href="/login"
-                  className="px-4 py-2 text-sm font-medium text-indigo-700 hover:text-indigo-800 transition-colors"
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="text-indigo-700"
+                  size="sm"
                 >
-                  Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+                  <Link href="/login">
+                    Login
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="indigo"
+                  size="sm"
                 >
-                  Sign Up
-                </Link>
+                  <Link href="/signup">
+                    Sign Up
+                  </Link>
+                </Button>
               </>
             )}
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <button
+            <Button
               onClick={toggleMenu}
-              className="text-gray-700 hover:text-indigo-600 focus:outline-none"
+              variant="ghost"
+              size="icon"
+              className="text-gray-700 hover:text-indigo-600"
+              aria-label="Toggle menu"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {isMenuOpen ? (
-                  <path d="M6 18L18 6M6 6l12 12"></path>
-                ) : (
-                  <path d="M4 6h16M4 12h16M4 18h16"></path>
-                )}
-              </svg>
-            </button>
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </Button>
           </div>
         </div>
 
@@ -98,23 +106,26 @@ export function Header() {
             <nav className="flex flex-col space-y-4 px-2 py-3">
               <Link
                 href="/"
-                className="text-gray-700 hover:text-indigo-600 transition-colors"
+                className="text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
                 onClick={() => setIsMenuOpen(false)}
               >
+                <Home size={16} />
                 Home
               </Link>
               <Link
                 href="/destinations"
-                className="text-gray-700 hover:text-indigo-600 transition-colors"
+                className="text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
                 onClick={() => setIsMenuOpen(false)}
               >
+                <Map size={16} />
                 Destinations
               </Link>
               <Link
                 href="/about"
-                className="text-gray-700 hover:text-indigo-600 transition-colors"
+                className="text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
                 onClick={() => setIsMenuOpen(false)}
               >
+                <Info size={16} />
                 About
               </Link>
               
@@ -123,45 +134,60 @@ export function Header() {
                   <div className="py-2 border-t border-gray-100">
                     <Link 
                       href="/me" 
-                      className="text-sm font-medium text-gray-900 hover:text-indigo-600 block"
+                      className="text-sm font-medium text-gray-900 hover:text-indigo-600 flex items-center gap-2"
                       onClick={() => setIsMenuOpen(false)}
                     >
+                      <User size={14} />
                       {user.email}
                     </Link>
-                    <span className="text-xs text-gray-500 capitalize block">{user.role}</span>
+                    <span className="text-xs text-gray-500 capitalize block pl-6 mt-1">{user.role}</span>
                   </div>
-                  <button
+                  <Button
                     onClick={() => {
                       logout();
                       setIsMenuOpen(false);
                     }}
-                    className="text-indigo-700 hover:text-indigo-800 transition-colors"
+                    variant="ghost"
+                    className="text-indigo-700 justify-start pl-0"
+                    size="sm"
                   >
+                    <LogOut size={16} className="mr-2" />
                     Logout
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <div className="flex flex-col space-y-3 pt-2 border-t border-gray-100">
-                  <Link
-                    href="/login"
-                    className="text-indigo-700 hover:text-indigo-800 transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="text-indigo-700 justify-start pl-0"
+                    size="sm"
                   >
-                    Login
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="px-4 py-2 text-sm font-medium text-center text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="indigo"
+                    size="sm"
                   >
-                    Sign Up
-                  </Link>
+                    <Link
+                      href="/signup"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                  </Button>
                 </div>
               )}
             </nav>
           </div>
         )}
-      </div>
+      </Container>
     </header>
   );
 }
