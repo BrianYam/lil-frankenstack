@@ -10,12 +10,12 @@ export function ProcessingModal({ isVisible, title, description }: ProcessingMod
   if (!isVisible) return null;
   
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+    <div className="fixed inset-0 bg-indigo-900 bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full border border-blue-100">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
-          <p className="text-sm text-gray-500 text-center">{description}</p>
+          <div className="animate-spin rounded-full h-14 w-14 border-4 border-blue-100 border-b-indigo-600 mb-6"></div>
+          <h3 className="text-xl font-semibold text-indigo-700 mb-3">{title}</h3>
+          <p className="text-base text-gray-600 text-center">{description}</p>
         </div>
       </div>
     </div>

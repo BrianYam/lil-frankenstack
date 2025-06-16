@@ -43,6 +43,7 @@ export default function LoginPage() {
         href: '/signup',
         description: 'create a new account'
       }}
+      bgClass="bg-gradient-to-b from-blue-50 to-indigo-50" // Using a gradient background
     >
       <AuthForm
         formType="login"
