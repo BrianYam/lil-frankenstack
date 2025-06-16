@@ -4,14 +4,14 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { 
   LoginRequest,
-  AuthResponse,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  ApiResponse 
+  ApiResponse
 } from '@/types/auth.types';
 import { ApiClient } from './api-client';
 import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
 
+const AUTHENTICATED = 'authenticated';
 /**
  * Auth Service
  * Handles authentication-related API requests and token management
@@ -29,7 +29,7 @@ export class AuthService {
   constructor(apiUrl?: string) {
     this.baseUrl = apiUrl || API_CONFIG.BASE_URL;
   }
-  
+
   /**
    * Get the API client instance
    * @returns ApiClient instance
@@ -52,51 +52,39 @@ export class AuthService {
   /**
    * Logs in a user with email and password
    * @param credentials - The login credentials (email and password)
-   * @returns Promise with the authentication response
    */
-  async login(credentials: LoginRequest): Promise<AuthResponse> {
+  async login(credentials: LoginRequest): Promise<void> {
+    console.log(`Logging in with credentials: ${JSON.stringify(credentials)}`);
     try {
-      const response = await axios.post<AuthResponse>(
+      // Backend doesn't return any body, just sets HTTP-only cookies
+      await axios.post(
         `${this.baseUrl}${API_ENDPOINTS.AUTH.LOGIN}`,
         credentials,
         { withCredentials: true }  // Essential for cookie-based auth
       );
 
-      // Set client-side authentication markers
-      // The actual secure tokens are set by the server as HTTP-only cookies
-      // This is just for client-side state tracking
-      if (response.data.accessToken) {
-        this.setAccessToken(response.data.accessToken);
-      }
-      if (response.data.refreshToken) {
-        this.setRefreshToken(response.data.refreshToken);
-      }
-
-      return response.data;
+      // Set a client-side marker for auth state tracking
+      this.setAccessToken(AUTHENTICATED);
     } catch (error) {
       this.handleError('Login failed', error);
-      throw error;
+      throw error; // Re-throw so the calling code can handle it
     }
   }
 
   /**
    * Refreshes the authentication tokens
-   * @returns Promise with the new authentication response
    */
-  async refreshTokens(): Promise<AuthResponse> {
+  async refreshTokens(): Promise<void> {
     try {
-      const response = await axios.post<AuthResponse>(
+      // Backend doesn't return any body, just refreshes HTTP-only cookies
+      await axios.post(
         `${this.baseUrl}${API_ENDPOINTS.AUTH.REFRESH}`,
         {},
         { withCredentials: true }
       );
 
-      // Store tokens if they're returned directly
-      if (response.data.accessToken) {
-        this.setAccessToken(response.data.accessToken);
-      }
-      
-      return response.data;
+      // Reset client-side marker for auth state tracking
+      this.setAccessToken(AUTHENTICATED);
     } catch (error) {
       this.logout();
       this.handleError('Token refresh failed', error);
@@ -157,7 +145,7 @@ export class AuthService {
   /**
    * Checks if the user is authenticated
    * @returns Boolean indicating if user is authenticated
-   * 
+   *
    * Note: This doesn't check the actual token as we're using cookie-based auth.
    * Instead, it relies on the presence of the cookie which the browser will
    * automatically send with requests when withCredentials is true.
@@ -206,6 +194,14 @@ export class AuthService {
    * @param error - The error object
    */
   private handleError(message: string, error: unknown): void {
-    console.error(`${message}:`, error);
+    // Extract the error message from axios error if available
+    let errorMessage = message;
+    if (axios.isAxiosError(error) && error.response) {
+      const serverError = error.response.data;
+      errorMessage = serverError?.message ?? `${message} (${error.response.status})`;
+    }
+    
+    console.error(`${errorMessage}:`, error);
   }
 }
+

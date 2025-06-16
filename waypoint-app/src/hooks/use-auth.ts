@@ -19,18 +19,26 @@ export function useAuth() {
    * Login mutation 
    */
   const loginMutation = useMutation({
-    mutationFn: (credentials: LoginRequest) => {
+    mutationFn: async (credentials: LoginRequest) => {
       setIsLoading(true);
       setError(null);
-      return authService.login(credentials);
+      console.log('Auth service login called with:', credentials);
+      try {
+        await authService.login(credentials);
+        return true;
+      } catch (err) {
+        console.error('Error in login mutation function:', err);
+        throw err; // Re-throw to be caught by onError
+      }
     },
     onSuccess: () => {
       console.log('Successfully logged in');
       router.push('/');
       setIsLoading(false);
     },
-    onError: (error: Error) => {
-      setError(error);
+    onError: (error: unknown) => {
+      console.error('Login mutation error:', error);
+      setError(error instanceof Error ? error : new Error('Login failed'));
       setIsLoading(false);
     },
   });

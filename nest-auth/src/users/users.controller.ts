@@ -44,6 +44,8 @@ export class UsersController {
     this.logger.debug(
       `Creating user with email: ${JSON.stringify(createUserRequest)}`,
     );
+
+    //TODO to implement email verification, else random users can be created
     return this.usersService.createUser(createUserRequest);
   }
 

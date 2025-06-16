@@ -13,6 +13,8 @@ import { UsersService } from '@/users/users.service';
 const AUTHENTICATION = 'Authentication';
 const REFRESH = 'Refresh';
 const PRODUCTION = 'production';
+const AUTHENTICATION_FE_COOKIE = 'Authentication-fe';
+const AUTHENTICATED = 'authenticated';
 
 @Injectable()
 export class AuthService {
@@ -128,15 +130,25 @@ export class AuthService {
     response.cookie(REFRESH, refreshToken, {
       expires: expiresRefreshToken,
       httpOnly: true, //cookie is not accessible via JavaScript
-      secure: this.configService.get('NODE_ENV') === PRODUCTION, //only send cookie over HTTPS in production. Required for cross-origin cookies with SameSite=None
+      secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION, //only send cookie over HTTPS in production. Required for cross-origin cookies with SameSite=None
     });
 
     // secure: true, //cookie is only sent over HTTPS
     //if redirect is true, redirect to the AUTH_UI_REDIRECT, which is the frontend url
     // sameSite: 'none', //cookie is sent on every request
     if (redirect) {
+      // Set a non-HTTP-only cookie that the frontend can read to detect auth state
+      response.cookie(AUTHENTICATION_FE_COOKIE, AUTHENTICATED, {
+        httpOnly: false, // Allow JavaScript access
+        secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION,
+        path: '/',
+        sameSite:
+          this.configService.get(ENV.NODE_ENV) === PRODUCTION ? 'none' : 'lax',
+      });
+
+      // Redirect to frontend
       response.redirect(
-        this.configService.getOrThrow(ENV.AUTH_UI_REDIRECT_URL), //Redirect to the frontend application, welcome page
+        this.configService.getOrThrow(ENV.AUTH_UI_REDIRECT_URL),
       );
     }
   }

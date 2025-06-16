@@ -22,8 +22,8 @@ export const API_CONFIG = {
    * Cookie names for authentication
    */
   COOKIES: {
-    ACCESS_TOKEN: 'Authentication',
-    REFRESH_TOKEN: 'Refresh',
+    ACCESS_TOKEN: 'Authentication-fe',
+    REFRESH_TOKEN: 'Refresh-fe',
   },
   
   /**
