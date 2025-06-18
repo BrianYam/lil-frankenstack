@@ -14,9 +14,9 @@ import {
  * Handles user management API requests
  */
 export class UsersService {
-  private baseUrl: string;
-  private authService: AuthService;
-  private apiClient: ApiClient;
+  private readonly baseUrl: string;
+  private readonly authService: AuthService;
+  private readonly apiClient: ApiClient;
 
   /**
    * Creates a new instance of UsersService
@@ -25,7 +25,7 @@ export class UsersService {
    */
   constructor(authService: AuthService, apiUrl?: string) {
     this.authService = authService;
-    this.baseUrl = apiUrl || API_CONFIG.BASE_URL;
+    this.baseUrl = apiUrl ?? API_CONFIG.BASE_URL;
     this.apiClient = this.authService.getApiClient();
   }
 
@@ -49,6 +49,7 @@ export class UsersService {
    */
   async getAllUsers(): Promise<User[]> {
     try {
+      console.log('Fetching all users from:', API_ENDPOINTS.USERS.BASE);
       return await this.apiClient.get<User[]>(API_ENDPOINTS.USERS.BASE);
     } catch (error) {
       this.handleError('Failed to fetch users', error);

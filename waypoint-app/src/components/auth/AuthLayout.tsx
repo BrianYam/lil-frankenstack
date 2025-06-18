@@ -20,7 +20,7 @@ export function AuthLayout({
   subtitle,
   alternateLink,
   bgClass = 'bg-blue-50' // Default to a light blue background
-}: AuthLayoutProps) {
+}: Readonly<AuthLayoutProps>) {
   return (
     <div className={cn("flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8", bgClass)}>
       <div className="w-full max-w-md">

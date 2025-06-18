@@ -16,8 +16,15 @@ export function useUsers() {
    */
   const usersQuery = useQuery({
     queryKey: ['users'],
-    queryFn: () => usersService.getAllUsers(),
-    enabled: ApiServices.getAuthService().isAuthenticated(),
+    queryFn: async () => {
+      console.log('Fetching all users...');
+      const result = await usersService.getAllUsers();
+      console.log('Users fetched:', result.length);
+      return result;
+    },
+    // enabled: ApiServices.getAuthService().isAuthenticated(),
+    // Disable automatic query execution - will only fetch users when manually triggered
+    enabled: false
   });
 
   /**
@@ -38,7 +45,11 @@ export function useUsers() {
     },
     onSuccess: () => {
       // Invalidate users query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+        .catch(error => {
+          console.error('Error invalidating currentUser queries:', error);
+        });
+
     },
   });
 
@@ -51,7 +62,10 @@ export function useUsers() {
     },
     onSuccess: () => {
       // Invalidate users query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+        .catch(error => {
+          console.error('Error invalidating currentUser queries:', error);
+        });
     },
   });
 

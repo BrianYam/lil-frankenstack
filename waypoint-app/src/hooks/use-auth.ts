@@ -1,4 +1,3 @@
-
 import { useMutation, QueryClient } from '@tanstack/react-query';
 import { ApiServices } from '@/services';
 import { LoginRequest, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest } from '@/types/auth.types';
@@ -154,9 +153,10 @@ export function setupAuthInvalidations(queryClient: QueryClient) {
     
     if (hasAuthChange) {
       console.log('Auth invalidation - Auth change detected in query cache');
-      // Invalidate user queries when auth state changes
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+        .catch(error => {
+          console.error('Error invalidating currentUser queries:', error);
+        });
     }
   });
 }

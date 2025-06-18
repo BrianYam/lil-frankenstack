@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState, useMemo, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useUsers } from '@/hooks/use-users';
 import { User } from '@/types/users.types';
@@ -24,10 +24,10 @@ interface UserProviderProps {
   children: ReactNode;
 }
 
-export function UserProvider({ children }: UserProviderProps) {
+export function UserProvider({ children }: Readonly<UserProviderProps>) {
   const [user, setUser] = useState<User | null>(null);
   const auth = useAuth();
-  const { 
+  const {
     login: authLogin,
     logout,
     googleLogin, 
@@ -41,46 +41,40 @@ export function UserProvider({ children }: UserProviderProps) {
   const { currentUser, isLoadingCurrentUser, currentUserError, refetchCurrentUser } = useUsers();
 
   // Wrap the login function to ensure it correctly passes credentials
-  const login = (email: string, password: string) => {
+  const login = useCallback((email: string, password: string) => {
     console.log("UserContext login called with:", email, password);
     return authLogin({ email, password });
-  };
+  }, [authLogin]);
 
   // Wrap the forgotPassword function to make it awaitable
-  const forgotPassword = async (data: { email: string }) => {
+  const forgotPassword = useCallback(async (data: { email: string }) => {
     return new Promise<void>((resolve, reject) => {
-      try {
-        authForgotPassword(data);
-        resolve();
-      } catch (error) {
-        reject(error);
-      }
+      const onSuccess = () => resolve();
+      const onError = (error: Error) => reject(error);
+
+      authForgotPassword(data, { onSuccess, onError });
     });
-  };
+  }, [authForgotPassword]);
 
   // Wrap the resetPassword function to make it awaitable
-  const resetPassword = async (data: { token: string; password: string }) => {
+  const resetPassword = useCallback(async (data: { token: string; password: string }) => {
     return new Promise<void>((resolve, reject) => {
-      try {
-        authResetPassword(data);
-        resolve();
-      } catch (error) {
-        reject(error);
-      }
+      const onSuccess = () => resolve();
+      const onError = (error: Error) => reject(error);
+
+      authResetPassword(data, { onSuccess, onError });
     });
-  };
+  }, [authResetPassword]);
 
   // Handle password change
-  const changePassword = async (data: { currentPassword: string; newPassword: string }) => {
+  const changePassword = useCallback(async (data: { currentPassword: string; newPassword: string }) => {
     return new Promise<void>((resolve, reject) => {
-      try {
-        authChangePassword(data);
-        resolve();
-      } catch (error) {
-        reject(error);
-      }
+      const onSuccess = () => resolve();
+      const onError = (error: Error) => reject(error);
+
+      authChangePassword(data, { onSuccess, onError });
     });
-  };
+  }, [authChangePassword]);
 
   // Update user when current user data changes
   useEffect(() => {
@@ -94,11 +88,18 @@ export function UserProvider({ children }: UserProviderProps) {
   // Fetch user data when auth state changes
   useEffect(() => {
     if (isAuthenticated) {
-      refetchCurrentUser();
+      // Using an IIFE (Immediately Invoked Function Expression) to handle the Promise
+      (async () => {
+        try {
+          await refetchCurrentUser();
+        } catch (error) {
+          console.error("Failed to fetch current user:", error);
+        }
+      })();
     }
   }, [isAuthenticated, refetchCurrentUser]);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     isLoading: authLoading || isLoadingCurrentUser,
     error: authError || currentUserError,
@@ -109,7 +110,20 @@ export function UserProvider({ children }: UserProviderProps) {
     resetPassword,
     changePassword,
     isAuthenticated,
-  };
+  }), [
+    user,
+    authLoading,
+    isLoadingCurrentUser,
+    authError,
+    currentUserError,
+    login,
+    logout,
+    googleLogin,
+    forgotPassword,
+    resetPassword,
+    changePassword,
+    isAuthenticated
+  ]);
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
@@ -121,3 +135,5 @@ export function useUser() {
   }
   return context;
 }
+
+//TODO check all the usage, i dont think we need to combine user context and users hook

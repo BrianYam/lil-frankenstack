@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Spinner } from '@/components/ui/spinner';
 import { PaginationDots } from '@/components/ui/pagination-dots';
+import { cn } from '@/lib/utils';
 
 // Fallback images for when the API fails to fetch images
 const FALLBACK_IMAGES = [
@@ -18,6 +19,7 @@ export function HeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchBackgrounds = async () => {
@@ -45,7 +47,29 @@ export function HeroSection() {
       }
     };
 
-    fetchBackgrounds();
+    // Handle the promise correctly to avoid the warning
+    fetchBackgrounds().catch(error => {
+      console.error('Failed to initialize background images:', error);
+      setBackgroundImages(FALLBACK_IMAGES);
+      setLoading(false);
+    });
+  }, []);
+
+  // Monitor hover state without directly attaching events to the section
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const handleMouseEnter = () => setIsHovering(true);
+    const handleMouseLeave = () => setIsHovering(false);
+
+    section.addEventListener('mouseenter', handleMouseEnter);
+    section.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      section.removeEventListener('mouseenter', handleMouseEnter);
+      section.removeEventListener('mouseleave', handleMouseLeave);
+    };
   }, []);
 
   // Auto-cycle through images unless user is hovering
@@ -78,17 +102,17 @@ export function HeroSection() {
   return (
     <section 
       className="relative h-[600px] overflow-hidden"
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      ref={sectionRef}
     >
       {backgroundImages.length > 0 && (
         <>
           {backgroundImages.map((image, index) => (
             <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                currentImageIndex === index ? 'opacity-100' : 'opacity-0'
-              }`}
+              key={`image-${image.split('?')[0].slice(-20)}-${index}`}
+              className={cn("absolute inset-0 transition-opacity duration-1000", {
+                "opacity-100": currentImageIndex === index,
+                "opacity-0": currentImageIndex !== index
+              })}
             >
               <Image
                 src={image}

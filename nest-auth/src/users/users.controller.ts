@@ -50,7 +50,8 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return all users.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
@@ -84,3 +85,5 @@ export class UsersController {
     return this.usersService.deleteUserWithResponse(id);
   }
 }
+
+//TODO invite admin, then will have isActive field, defualt true, for admin invite will be false, then need admin to activate password

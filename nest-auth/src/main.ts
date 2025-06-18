@@ -27,5 +27,7 @@ async function bootstrap() {
     credentials: true,
   });
   await app.listen(4000);
+
+  //TODO rate limiting, security headers, etc.
 }
 bootstrap();

@@ -8,8 +8,8 @@ import { AUTH_CONFIG } from '@/config/auth.config';
  * Handles authentication, token refreshing, and other common API operations
  */
 export class ApiClient {
-  private axiosInstance: AxiosInstance;
-  private authService: AuthService;
+  private readonly axiosInstance: AxiosInstance;
+  private readonly authService: AuthService;
   private refreshingPromise: Promise<void> | null = null;
 
   /**
@@ -20,7 +20,7 @@ export class ApiClient {
   constructor(authService: AuthService, baseURL?: string) {
     this.authService = authService;
     this.axiosInstance = axios.create({
-      baseURL: baseURL || authService.getApiUrl(),
+      baseURL: baseURL ?? authService.getApiUrl(),
       withCredentials: true, // This ensures cookies are sent with every request
       headers: {
         'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ export class ApiClient {
         return config;
       },
       (error) => {
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new Error(JSON.stringify(error)));
       }
     );
 
@@ -105,9 +105,9 @@ export class ApiClient {
           originalRequest._retry = true;
 
           // Prevent multiple refresh attempts
-          this.refreshingPromise ??= new Promise<void>(async (resolve, reject) => {
+          this.refreshingPromise ??= new Promise<void>((resolve, reject) => {
             try {
-              await this.authService.refreshTokens();
+              this.authService.refreshTokens();
               resolve();
             } catch (refreshError) {
               // If refresh fails, logout
@@ -121,7 +121,7 @@ export class ApiClient {
                   window.location.href = '/login';
                 }
               }
-              reject(refreshError);
+              reject(refreshError instanceof Error ? refreshError : new Error(JSON.stringify(refreshError)));
             } finally {
               this.refreshingPromise = null;
             }
@@ -133,11 +133,11 @@ export class ApiClient {
             // Retry the original request - no need to add token since we're using cookies
             return axios(originalRequest);
           } catch (refreshError) {
-            return Promise.reject(refreshError);
+            return Promise.reject(refreshError instanceof Error ? refreshError : new Error(JSON.stringify(refreshError)));
           }
         }
 
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new Error(JSON.stringify(error)));
       }
     );
   }

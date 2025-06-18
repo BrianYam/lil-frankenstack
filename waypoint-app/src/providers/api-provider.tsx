@@ -14,7 +14,7 @@ interface ApiProviderProps {
  * API Provider that sets up React Query
  * This provider should wrap the app to provide API functionality
  */
-export function ApiProvider({ children }: ApiProviderProps) {
+export function ApiProvider({ children }: Readonly<ApiProviderProps>) {
   const [queryClient] = useState(() => {
     const client = new QueryClient({
       defaultOptions: {

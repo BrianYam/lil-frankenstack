@@ -6,7 +6,7 @@ export const API_CONFIG = {
    * Base URL for API requests
    * Falls back to localhost if environment variable is not set
    */
-  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001/api',
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4001/api',
   
   /**
    * Default timeout for API requests in milliseconds
@@ -38,7 +38,7 @@ export const API_CONFIG = {
    * API key for authentication with the backend
    * Falls back to an empty string which will fail if not provided
    */
-  API_KEY: process.env.NEXT_PUBLIC_AUTH_API_KEY || '',
+  API_KEY: process.env.NEXT_PUBLIC_AUTH_API_KEY ?? '',
 };  /**
    * API endpoints
    */
