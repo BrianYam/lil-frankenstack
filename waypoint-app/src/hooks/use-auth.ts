@@ -1,7 +1,7 @@
 
 import { useMutation, QueryClient } from '@tanstack/react-query';
 import { ApiServices } from '@/services';
-import { LoginRequest, ForgotPasswordRequest, ResetPasswordRequest } from '@/types/auth.types';
+import { LoginRequest, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest } from '@/types/auth.types';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -87,7 +87,6 @@ export function useAuth() {
       return authService.resetPassword(data);
     },
     onSuccess: () => {
-      router.push('/login');
       setIsLoading(false);
     },
     onError: (error: Error) => {
@@ -96,6 +95,23 @@ export function useAuth() {
     },
   });
 
+  /**
+   * Change password mutation
+   */
+  const changePasswordMutation = useMutation({
+    mutationFn: (data: ChangePasswordRequest) => {
+      setIsLoading(true);
+      return authService.changePassword(data);
+    },
+    onSuccess: () => {
+      setIsLoading(false);
+    },
+    onError: (error: Error) => {
+      setError(error);
+      setIsLoading(false);
+    },
+  });
+  
   /**
    * Get authentication state
    */
@@ -113,6 +129,7 @@ export function useAuth() {
     logout: logoutMutation.mutate,
     forgotPassword: forgotPasswordMutation.mutate,
     resetPassword: resetPasswordMutation.mutate,
+    changePassword: changePasswordMutation.mutate,
     googleLogin,
     isAuthenticated,
     isLoading,

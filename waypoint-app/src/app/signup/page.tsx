@@ -6,6 +6,7 @@ import { useUsers } from '@/hooks/use-users';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { ProcessingModal } from '@/components/ui/processing-modal';
+import { AuthFormType } from "@/types";
 
 export default function SignupPage() {
   const [formError, setFormError] = useState('');
@@ -28,7 +29,7 @@ export default function SignupPage() {
     
     try {
       // Create user
-      await createUser({ email: data.email, password: data.password });
+      createUser({ email: data.email, password: data.password });
       console.log('User created successfully, now logging in');
 
       // Show the processing modal
@@ -78,7 +79,7 @@ export default function SignupPage() {
         bgClass="bg-gradient-to-b from-indigo-50 to-blue-50" // Gradient background
       >
         <AuthForm
-          formType="signup"
+          formType={AuthFormType.SIGNUP}
           onSubmit={handleSubmit}
           onGoogleAuth={handleGoogleLogin}
           isLoading={isCreatingUser}

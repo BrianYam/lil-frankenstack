@@ -2,17 +2,19 @@
 
 import { useUser } from '@/contexts/user-context';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { UserRole } from "@/types";
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Spinner } from '@/components/ui/spinner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LockKeyhole, UserCog, Users, Settings, Activity } from 'lucide-react';
+import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm';
 
 export default function ProfilePage() {
   const { user, isLoading, isAuthenticated } = useUser();
   const router = useRouter();
+  const [showChangePassword, setShowChangePassword] = useState(false);
   
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -58,24 +60,36 @@ export default function ProfilePage() {
               
               <div className="border-b border-blue-100 pb-6">
                 <h2 className="text-xl font-semibold text-gray-700 mb-4">Account Settings</h2>
-                <div className="space-x-4">
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 border-indigo-200 hover:bg-indigo-50 text-indigo-700 bg-white"
-                  >
-                    <LockKeyhole size={16} />
-                    Change Password
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 border-indigo-200 hover:bg-indigo-50 text-indigo-700 bg-white"
-                  >
-                    <UserCog size={16} />
-                    Update Profile
-                  </Button>
-                </div>
+                {showChangePassword ? (
+                  <div className="mb-6">
+                    <ChangePasswordForm 
+                      onSuccess={() => {
+                        setShowChangePassword(false);
+                      }}
+                      onCancel={() => setShowChangePassword(false)}
+                    />
+                  </div>
+                ) : (
+                  <div className="space-x-4">
+                    <Button 
+                      onClick={() => setShowChangePassword(true)}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2 border-indigo-200 hover:bg-indigo-50 text-indigo-700 bg-white"
+                    >
+                      <LockKeyhole size={16} />
+                      Change Password
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2 border-indigo-200 hover:bg-indigo-50 text-indigo-700 bg-white"
+                    >
+                      <UserCog size={16} />
+                      Update Profile
+                    </Button>
+                  </div>
+                )}
               </div>
               
               {user.role === UserRole.ADMIN && (

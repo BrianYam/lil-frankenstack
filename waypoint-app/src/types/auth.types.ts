@@ -28,6 +28,14 @@ export interface ResetPasswordRequest {
 }
 
 /**
+ * Request to change password
+ */
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+/**
  * Generic API response
  */
 export interface ApiResponse<T = unknown> {
@@ -35,3 +43,9 @@ export interface ApiResponse<T = unknown> {
   message: string;
   data?: T;
 }
+
+export enum AuthFormType {
+  LOGIN = 'login',
+  SIGNUP = 'signup',
+}
+

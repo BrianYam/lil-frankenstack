@@ -1,11 +1,11 @@
 // filepath: /Users/brianyam/Documents/BrianLabProject/lil-frankenstack/waypoint-app/src/services/auth.service.ts
-
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { 
   LoginRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  ChangePasswordRequest,
   ApiResponse
 } from '@/types/auth.types';
 import { ApiClient } from './api-client';
@@ -17,9 +17,8 @@ const AUTHENTICATED = 'authenticated';
  * Handles authentication-related API requests and token management
  */
 export class AuthService {
-  private baseUrl: string;
-  private accessTokenKey = API_CONFIG.COOKIES.ACCESS_TOKEN;
-  private refreshTokenKey = API_CONFIG.COOKIES.REFRESH_TOKEN;
+  private readonly baseUrl: string;
+  private readonly accessTokenKey = API_CONFIG.COOKIES.ACCESS_TOKEN;
   private apiClient?: ApiClient;
 
   /**
@@ -27,7 +26,7 @@ export class AuthService {
    * @param apiUrl - Base URL for API requests
    */
   constructor(apiUrl?: string) {
-    this.baseUrl = apiUrl || API_CONFIG.BASE_URL;
+    this.baseUrl = apiUrl ?? API_CONFIG.BASE_URL;
   }
 
   /**
@@ -35,9 +34,7 @@ export class AuthService {
    * @returns ApiClient instance
    */
   getApiClient(): ApiClient {
-    if (!this.apiClient) {
-      this.apiClient = new ApiClient(this, this.baseUrl);
-    }
+    this.apiClient ??= new ApiClient(this, this.baseUrl);
     return this.apiClient;
   }
 
@@ -136,6 +133,20 @@ export class AuthService {
   }
 
   /**
+   * Changes the user's password
+   * @param data - Contains the current password and new password
+   * @returns Promise with the API response
+   */
+  async changePassword(data: ChangePasswordRequest): Promise<ApiResponse> {
+    try {
+      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.CHANGE, data);
+    } catch (error) {
+      this.handleError('Password change failed', error);
+      throw error;
+    }
+  }
+
+  /**
    * Initiates Google OAuth login
    */
   googleLogin(): void {
@@ -171,13 +182,6 @@ export class AuthService {
     Cookies.set(this.accessTokenKey, token, { path: '/', sameSite: 'strict' });
   }
 
-  /**
-   * Sets the refresh token cookie marker
-   * @param token - The token value
-   */
-  private setRefreshToken(token: string): void {
-    Cookies.set(this.refreshTokenKey, token, { path: '/', sameSite: 'strict' });
-  }
 
   /**
    * Clears authentication token markers
@@ -185,7 +189,6 @@ export class AuthService {
    */
   private clearTokens(): void {
     Cookies.remove(this.accessTokenKey, { path: '/' });
-    Cookies.remove(this.refreshTokenKey, { path: '/' });
   }
 
   /**

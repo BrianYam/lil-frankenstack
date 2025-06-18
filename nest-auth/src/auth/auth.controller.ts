@@ -12,6 +12,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { User } from '@/types';
@@ -86,7 +87,9 @@ export class AuthController {
   })
   @Get('google/login')
   @UseGuards(GoogleAuthGuard)
-  googleLogin() {}
+  googleLogin() {
+    /* TODO document why this method 'googleLogin' is empty */
+  }
 
   @ApiOperation({ summary: 'Google login callback' })
   @ApiResponse({
@@ -104,7 +107,11 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Request password reset' })
+  @ApiOperation({
+    summary: 'Deprecated: Request password reset',
+    description: 'This endpoint is deprecated. Use /password/forgot instead.',
+    deprecated: true,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Password reset email sent if email exists',
@@ -149,6 +156,31 @@ export class AuthController {
       `Forgot password request for email: ${forgotPasswordDto.email}`,
     );
     return this.authService.forgotPassword(forgotPasswordDto);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change password' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password successfully changed',
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad request' })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized or incorrect current password',
+  })
+  @ApiBody({ type: ChangePasswordDto })
+  @UseGuards(UserEmailJwtAuthGuard)
+  @Post('password/change')
+  async changePassword(
+    @CurrentUser() user: User,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    this.logger.debug(`Password change attempt for user: ${user.email}`);
+    this.logger.debug(
+      `Change Password DTO: ${JSON.stringify(changePasswordDto)}`,
+    );
+    return this.authService.changePassword(user, changePasswordDto);
   }
 
   @HttpCode(HttpStatus.OK)

@@ -12,6 +12,9 @@ interface UserContextType {
   login: (email: string, password: string) => void;
   logout: () => void;
   googleLogin: () => void;
+  forgotPassword: (data: { email: string }) => Promise<void>;
+  resetPassword: (data: { token: string; password: string }) => Promise<void>;
+  changePassword: (data: { currentPassword: string; newPassword: string }) => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -24,13 +27,59 @@ interface UserProviderProps {
 export function UserProvider({ children }: UserProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const auth = useAuth();
-  const { login: authLogin, logout, googleLogin, isAuthenticated, isLoading: authLoading, error: authError } = auth;
+  const { 
+    login: authLogin,
+    logout,
+    googleLogin, 
+    forgotPassword: authForgotPassword,
+    resetPassword: authResetPassword,
+    changePassword: authChangePassword,
+    isAuthenticated, 
+    isLoading: authLoading, 
+    error: authError 
+  } = auth;
   const { currentUser, isLoadingCurrentUser, currentUserError, refetchCurrentUser } = useUsers();
 
   // Wrap the login function to ensure it correctly passes credentials
   const login = (email: string, password: string) => {
     console.log("UserContext login called with:", email, password);
     return authLogin({ email, password });
+  };
+
+  // Wrap the forgotPassword function to make it awaitable
+  const forgotPassword = async (data: { email: string }) => {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        authForgotPassword(data);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  // Wrap the resetPassword function to make it awaitable
+  const resetPassword = async (data: { token: string; password: string }) => {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        authResetPassword(data);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  // Handle password change
+  const changePassword = async (data: { currentPassword: string; newPassword: string }) => {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        authChangePassword(data);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
   };
 
   // Update user when current user data changes
@@ -56,6 +105,9 @@ export function UserProvider({ children }: UserProviderProps) {
     login,
     logout,
     googleLogin,
+    forgotPassword,
+    resetPassword,
+    changePassword,
     isAuthenticated,
   };
 

@@ -23,7 +23,6 @@ export const API_CONFIG = {
    */
   COOKIES: {
     ACCESS_TOKEN: 'Authentication-fe',
-    REFRESH_TOKEN: 'Refresh-fe',
   },
   
   /**
@@ -40,22 +39,21 @@ export const API_CONFIG = {
    * Falls back to an empty string which will fail if not provided
    */
   API_KEY: process.env.NEXT_PUBLIC_AUTH_API_KEY || '',
-};
-
-/**
- * API endpoints
- */
-export const API_ENDPOINTS = {
-  AUTH: {
-    LOGIN: '/auth/login/email',
-    REFRESH: '/auth/refresh',
-    LOGOUT: '/auth/logout',
-    GOOGLE_LOGIN: '/auth/google/login',
-    PASSWORD: {
-      FORGOT: '/auth/password/forgot',
-      RESET: '/auth/password/reset',
-    }
-  },
+};  /**
+   * API endpoints
+   */
+  export const API_ENDPOINTS = {
+    AUTH: {
+      LOGIN: '/auth/login/email',
+      REFRESH: '/auth/refresh',
+      LOGOUT: '/auth/logout',
+      GOOGLE_LOGIN: '/auth/google/login',
+      PASSWORD: {
+        FORGOT: '/auth/password/forgot',
+        RESET: '/auth/password/reset',
+        CHANGE: '/auth/password/change',
+      }
+    },
   USERS: {
     BASE: '/users',
     ME: '/users/me',

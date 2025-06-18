@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { Response } from 'express';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { EmailService } from '@/message/email/email.service';
@@ -22,6 +23,7 @@ export class AuthService {
 
   //TODO can even consider to move this to a cache service like Redis or NodeCache
   // or use a database to store the password reset tokens
+  //TODO also check, we need to ensure we are only storing 1 token per user, so we can remove the old one when a new one is requested
   private readonly passwordResetTokens: Map<
     string,
     { userId: string; expiresAt: Date }
@@ -41,11 +43,13 @@ export class AuthService {
         email,
       });
       if (!user) {
+        this.logger.warn(`User not found for email: ${email}`);
         throw new UnauthorizedException('User not found');
       }
 
       const authenticated = await compare(password, user.password);
       if (!authenticated) {
+        this.logger.warn(`Invalid password for email: ${email}`);
         throw new UnauthorizedException('Invalid credentials');
       }
       return user;
@@ -164,6 +168,9 @@ export class AuthService {
         );
 
       if (!isValid) {
+        this.logger.warn(
+          `Invalid refresh token for user ID: ${userId}, token: ${refreshToken}`,
+        );
         throw new UnauthorizedException('Invalid token');
       }
 
@@ -174,45 +181,6 @@ export class AuthService {
     }
   }
 
-  async requestPasswordReset(user: User): Promise<{ message: string }> {
-    try {
-      // Generate a secure random token
-      const resetToken = randomBytes(32).toString('hex');
-
-      // Store the token with expiration (1 hour from now)
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 1);
-
-      this.passwordResetTokens.set(resetToken, {
-        userId: user.id,
-        expiresAt,
-      });
-
-      this.logger.debug(
-        `Password reset requested for user: ${user.id}, token: ${resetToken}`,
-      );
-
-      //TODO
-      // In a production environment, you would send an email with the reset link
-      // Example: await this.emailService.sendPasswordResetEmail(user.email, resetToken);
-
-      // For development purposes, we'll just log the token
-      this.logger.debug(
-        `[DEV ONLY] Reset token for ${user.email}: ${resetToken}`,
-      );
-
-      return {
-        message: 'If the email exists, a password reset link has been sent.',
-      };
-    } catch (error) {
-      // Don't reveal whether the email exists or not for security reasons
-      this.logger.error(`Error in password reset request: ${error.message}`);
-      return {
-        message: 'If the email exists, a password reset link has been sent.',
-      };
-    }
-  }
-
   async resetPassword(
     resetDto: ResetPasswordDto,
   ): Promise<{ message: string }> {
@@ -220,6 +188,7 @@ export class AuthService {
     const tokenData = this.passwordResetTokens.get(resetDto.token);
 
     if (!tokenData) {
+      this.logger.warn(`Invalid password reset token: ${resetDto.token}.`);
       throw new UnauthorizedException(
         'Invalid or expired password reset token',
       );
@@ -229,6 +198,9 @@ export class AuthService {
     if (tokenData.expiresAt < new Date()) {
       // Remove expired token
       this.passwordResetTokens.delete(resetDto.token);
+      this.logger.warn(
+        `Password reset token expired for user ID: ${tokenData.userId}`,
+      );
       throw new UnauthorizedException('Password reset token has expired');
     }
 
@@ -283,11 +255,28 @@ export class AuthService {
         expiresAt,
       });
 
-      // TODO build in frontend
-      // Build reset link (in a real app, this would point to the frontend)
-      const resetLink = `${this.configService.getOrThrow(
+      /**
+       * Builds a password reset link for the user
+       *
+       * @remarks
+       * Using hash fragments (#) instead of query parameters (?) provides several security benefits:
+       * - Hash fragments are not sent to the server in HTTP requests
+       * - They don't appear in server logs or analytics
+       * - They're not stored in browser history in the same way as query parameters
+       * - They're not included in Referer headers when navigating away
+       * - They provide better protection against token leakage
+       *
+       * Implementation example:
+       * `/reset-password#token=${resetToken}` instead of `/reset-password?token=${resetToken}`
+       *
+       * The frontend must parse the token from location.hash instead of from URL parameters.
+       *
+       * @param {string} resetToken - The generated password reset token
+       * @returns {string} The complete reset password URL
+       */ const resetLink = `${this.configService.getOrThrow(
         ENV.AUTH_UI_REDIRECT_URL,
-      )}/reset-password?token=${resetToken}`;
+      )}/reset-password#token=${resetToken}`; //TODO handle this in a constant config ?
+      // TODO consider doing in the # instead of ?
 
       // Send email with reset link
       await this.emailService.sendForgotPasswordEmail(
@@ -326,5 +315,106 @@ export class AuthService {
     this.logger.debug('User logged out, cookies cleared');
 
     return { message: 'Logged out successfully' };
+  }
+
+  async changePassword(
+    user: User,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    try {
+      // Get the user with their current password hash
+      const userWithPassword = await this.usersService.getUser({
+        id: user.id,
+      });
+
+      if (!userWithPassword) {
+        this.logger.warn(`User not found for ID: ${user.id}`);
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Verify the current password
+      const isPasswordValid = await compare(
+        changePasswordDto.currentPassword,
+        userWithPassword.password,
+      );
+
+      if (!isPasswordValid) {
+        this.logger.warn(`Invalid current password for user: ${user.email}`);
+        throw new UnauthorizedException('Current password is incorrect'); //TODO might wanna consider a more generic error message for security reasons
+      }
+
+      // Hash the new password
+      const hashedPassword = await hash(changePasswordDto.newPassword, 10);
+
+      // Update the user's password
+      await this.usersService.updateUser(
+        { id: user.id },
+        { password: hashedPassword },
+      );
+
+      this.logger.debug(
+        `Password changed successfully for user: ${user.email}`,
+      );
+
+      return { message: 'Password changed successfully' };
+    } catch (error) {
+      this.logger.error(`Error changing password: ${error.message}`);
+
+      if (error instanceof UnauthorizedException) {
+        this.logger.warn(`Unauthorized access: ${error.message}`);
+        throw error;
+      }
+      this.logger.error(`Failed to change password for user: ${user.email}`);
+      throw new UnauthorizedException('Failed to change password');
+    }
+  }
+
+  /**
+   * DEPRECATES GOES HERE !
+   */
+
+  /**
+   * Request a password reset for a user
+   * @deprecated Use the forgotPassword() method instead as it provides a more secure flow
+   * @param user The user requesting password reset
+   * @returns An object containing a message about the operation
+   */
+  async requestPasswordReset(user: User): Promise<{ message: string }> {
+    try {
+      // Generate a secure random token
+      const resetToken = randomBytes(32).toString('hex');
+
+      // Store the token with expiration (1 hour from now)
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1);
+
+      this.passwordResetTokens.set(resetToken, {
+        userId: user.id,
+        expiresAt,
+      });
+
+      this.logger.debug(
+        `Password reset requested for user: ${user.id}, token: ${resetToken}`,
+      );
+
+      //TODO
+      // In a production environment, you would send an email with the reset link
+      // Example: await this.emailService.sendPasswordResetEmail(user.email, resetToken);
+
+      // For development purposes, we'll just log the token
+      this.logger.debug(
+        `[DEV ONLY] Reset token for ${user.email}: ${resetToken}`,
+      );
+
+      return {
+        message: 'If the email exists, a password reset link has been sent.',
+      };
+    } catch (error) {
+      // Don't reveal whether the email exists or not for security reasons
+      this.logger.error(`Error in password reset request: ${error.message}`);
+      return {
+        message: 'If the email exists, a password reset link has been sent.',
+      };
+    }
   }
 }

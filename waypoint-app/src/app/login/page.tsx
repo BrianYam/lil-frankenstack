@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useUser } from '@/contexts/user-context';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { AuthFormType } from "@/types";
 
 export default function LoginPage() {
   const [formError, setFormError] = useState('');
@@ -46,7 +47,7 @@ export default function LoginPage() {
       bgClass="bg-gradient-to-b from-blue-50 to-indigo-50" // Using a gradient background
     >
       <AuthForm
-        formType="login"
+        formType={AuthFormType.LOGIN}
         onSubmit={handleSubmit}
         onGoogleAuth={handleGoogleLogin}
         isLoading={isLoading}

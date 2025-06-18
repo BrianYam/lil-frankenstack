@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { AuthService } from './auth.service';
 import { API_CONFIG } from '@/config/api.config';
+import { AUTH_CONFIG } from '@/config/auth.config';
 
 /**
  * ApiClient class for making HTTP requests
@@ -109,11 +110,16 @@ export class ApiClient {
               await this.authService.refreshTokens();
               resolve();
             } catch (refreshError) {
-              // If refresh fails, redirect to log in
+              // If refresh fails, logout
               this.authService.logout();
-              // Redirect to login page if needed
+
+              // Only redirect if we're in the browser and the current URL is not whitelisted
               if (typeof window !== 'undefined') {
-                window.location.href = '/login';
+                const shouldRedirectToLogin = this.shouldRedirectToLogin();
+
+                if (shouldRedirectToLogin) {
+                  window.location.href = '/login';
+                }
               }
               reject(refreshError);
             } finally {
@@ -133,6 +139,19 @@ export class ApiClient {
 
         return Promise.reject(error);
       }
+    );
+  }
+
+  /**
+   * Determines if the current URL should trigger a redirect to login
+   * @returns boolean indicating whether to redirect
+   */
+  private shouldRedirectToLogin(): boolean {
+    const currentPath = window.location.pathname;
+
+    // Don't redirect if the current path is in the whitelist
+    return !AUTH_CONFIG.NON_AUTH_REDIRECT_URLS.some(path =>
+      path === currentPath || currentPath.startsWith(`${path}/`)
     );
   }
 }
