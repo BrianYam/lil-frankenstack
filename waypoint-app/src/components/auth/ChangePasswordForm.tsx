@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useUser } from '@/contexts/user-context';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { PasswordInput } from '@/components/ui/password-input';
 import { ChangePasswordFormRequest, changePasswordSchema } from '@/lib/schemas';
+import { useAuth } from "@/hooks";
 
 interface ChangePasswordProps {
   onSuccess?: () => void;
@@ -17,7 +17,7 @@ interface ChangePasswordProps {
 export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePasswordProps>) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { changePassword, isLoading } = useUser();
+  const { changePassword, isLoading } = useAuth();
 
   const {
     register,

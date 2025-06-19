@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiServices } from '@/services';
 import { CreateUserRequest } from '@/types/users.types';
@@ -7,6 +6,11 @@ const usersService = ApiServices.getUsersService();
 
 /**
  * Custom hook for user operations
+ * This hook handles operations related to users management including:
+ * - Fetching all users
+ * - Fetching the current logged-in user
+ * - Creating new users
+ * - Deleting users
  */
 export function useUsers() {
   const queryClient = useQueryClient();
@@ -22,7 +26,6 @@ export function useUsers() {
       console.log('Users fetched:', result.length);
       return result;
     },
-    // enabled: ApiServices.getAuthService().isAuthenticated(),
     // Disable automatic query execution - will only fetch users when manually triggered
     enabled: false
   });
@@ -47,7 +50,7 @@ export function useUsers() {
       // Invalidate users query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['users'] })
         .catch(error => {
-          console.error('Error invalidating currentUser queries:', error);
+          console.error('Error invalidating users queries:', error);
         });
 
     },
@@ -64,7 +67,7 @@ export function useUsers() {
       // Invalidate users query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['users'] })
         .catch(error => {
-          console.error('Error invalidating currentUser queries:', error);
+          console.error('Error invalidating users queries:', error);
         });
     },
   });

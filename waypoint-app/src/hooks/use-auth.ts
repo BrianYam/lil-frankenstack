@@ -122,17 +122,67 @@ export function useAuth() {
   const googleLogin = () => {
     authService.googleLogin();
   };
+  
+  /**
+   * Login with email and password
+   */
+  const login = (email: string, password: string) => {
+    console.log("useAuth login called with:", email, password);
+    loginMutation.mutate({ email, password });
+  };
+
+  /**
+   * Forgot password with email
+   * Returns a promise for better handling in components
+   */
+  const forgotPassword = (data: { email: string }) => {
+    return new Promise<void>((resolve, reject) => {
+      forgotPasswordMutation.mutate(data, {
+        onSuccess: () => resolve(),
+        onError: (error) => reject(error),
+      });
+    });
+  };
+
+  /**
+   * Reset password with token and new password
+   * Returns a promise for better handling in components
+   */
+  const resetPassword = (data: { token: string; password: string }) => {
+    return new Promise<void>((resolve, reject) => {
+      resetPasswordMutation.mutate(data, {
+        onSuccess: () => resolve(),
+        onError: (error) => reject(error),
+      });
+    });
+  };
+
+  /**
+   * Change password
+   * Returns a promise for better handling in components
+   */
+  const changePassword = (data: { currentPassword: string; newPassword: string }) => {
+    return new Promise<void>((resolve, reject) => {
+      changePasswordMutation.mutate(data, {
+        onSuccess: () => resolve(),
+        onError: (error) => reject(error),
+      });
+    });
+  };
 
   return {
-    login: loginMutation.mutate,
-    logout: logoutMutation.mutate,
-    forgotPassword: forgotPasswordMutation.mutate,
-    resetPassword: resetPasswordMutation.mutate,
-    changePassword: changePasswordMutation.mutate,
-    googleLogin,
+    // Auth state
     isAuthenticated,
     isLoading,
     error,
+    
+    // Auth actions
+    login,
+    logout: logoutMutation.mutate,
+    googleLogin,
+    forgotPassword,
+    resetPassword,
+    changePassword,
   };
 }
 

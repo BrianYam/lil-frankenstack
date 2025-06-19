@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useUser } from '@/contexts/user-context';
+import { useAuth } from '@/hooks/use-auth';  // Changed from useUser to useAuth
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -13,7 +13,7 @@ import { ResetPasswordFormRequest, resetPasswordSchema } from '@/lib/schemas';
 export default function ResetPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const { resetPassword, isLoading, error } = useUser();
+  const { resetPassword, isLoading, error } = useAuth();  // Changed from useUser to useAuth
 
   // Parse token from hash on component mount
   /**

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useUser } from '@/contexts/user-context';
+import { useAuth } from '@/hooks/use-auth';  // Changed from useUser to useAuth
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { ForgotPasswordFormRequest, forgotPasswordSchema } from '@/lib/schemas';
 
 export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { forgotPassword, isLoading, error } = useUser();
+  const { forgotPassword, isLoading, error } = useAuth();  // Changed from useUser to useAuth
   
   const {
     register,

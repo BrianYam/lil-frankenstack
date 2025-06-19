@@ -1,14 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useUser } from '@/contexts/user-context';
+import { useUserContext } from '@/contexts/user-context';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Menu, X, User, LogOut, Home, Map, Info } from 'lucide-react';
+import { useAuth } from "@/hooks";
 
 export function Header() {
-  const { user, isAuthenticated, logout } = useUser();
+  const { user, isAuthenticated } = useUserContext();
+  const { logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -52,7 +54,7 @@ export function Header() {
                   <span className="text-xs text-gray-500 capitalize">{user.role}</span>
                 </div>
                 <Button
-                  onClick={logout}
+                  onClick={() => logout()}
                   variant="ghost"
                   className="text-indigo-700"
                   size="sm"

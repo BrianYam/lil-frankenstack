@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser } from '@/contexts/user-context';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthFormType } from "@/types";
+import { useAuth } from '@/hooks/use-auth'; // Use useAuth for all login-related functionality
 
 export default function LoginPage() {
   const [formError, setFormError] = useState('');
-  const { login, googleLogin, isLoading, error } = useUser();
+  const { login, googleLogin, isLoading, error } = useAuth(); // Use this for auth actions
 
   const handleSubmit = async (data: { email: string; password: string }) => {
     setFormError('');

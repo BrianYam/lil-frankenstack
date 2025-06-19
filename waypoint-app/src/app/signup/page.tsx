@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser } from '@/contexts/user-context';
-import { useUsers } from '@/hooks/use-users';
+import { useAuth } from '@/hooks/use-auth'; // Use useAuth for login functionality
+import { useUsers } from '@/hooks/use-users'; // Use useUsers for user creation
 import { AuthForm } from '@/components/auth/AuthForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { ProcessingModal } from '@/components/ui/processing-modal';
@@ -11,7 +11,7 @@ import { AuthFormType } from "@/types";
 export default function SignupPage() {
   const [formError, setFormError] = useState('');
   const [showProcessingModal, setShowProcessingModal] = useState(false);
-  const { login, googleLogin } = useUser();
+  const { login, googleLogin } = useAuth(); // Auth operations from useAuth
   const { createUser, isCreatingUser, createUserError } = useUsers();
 
   const handleSubmit = async (data: { email: string; password: string; confirmPassword?: string }) => {

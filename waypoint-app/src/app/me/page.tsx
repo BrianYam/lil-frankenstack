@@ -1,18 +1,18 @@
 'use client';
 
-import { useUser } from '@/contexts/user-context';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { UserRole } from "@/types";
-import { Button } from '@/components/ui/button';
-import { Container } from '@/components/ui/container';
+import { useUserContext } from '@/contexts/user-context';
 import { Spinner } from '@/components/ui/spinner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Container } from '@/components/ui/container';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { UserRole } from '@/types/users.types';
 import { LockKeyhole, UserCog, Users, Settings, Activity } from 'lucide-react';
 import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm';
 
 export default function ProfilePage() {
-  const { user, isLoading, isAuthenticated } = useUser();
+  const { user, isLoading, isAuthenticated } = useUserContext(); // Get user state from context
   const router = useRouter();
   const [showChangePassword, setShowChangePassword] = useState(false);
   
