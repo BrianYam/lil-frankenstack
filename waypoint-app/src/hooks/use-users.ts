@@ -62,7 +62,7 @@ export function useUsers() {
     },
     onSuccess: () => {
       // Invalidate users query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: ['users'] }) //TODO dont do this since we need them to confirm the user creation
         .catch(error => {
           console.error('Error invalidating users queries:', error);
         });

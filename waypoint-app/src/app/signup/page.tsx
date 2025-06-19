@@ -43,6 +43,7 @@ export default function SignupPage() {
 
       // Login with the newly created credentials
       login(data.email, data.password);
+      //TODO dont login, ask to verify in email
       
       // The auth hook will redirect if successful
     } catch (err) {

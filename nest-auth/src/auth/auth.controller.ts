@@ -15,6 +15,7 @@ import { AuthService } from './auth.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 import { User } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
@@ -194,5 +195,23 @@ export class AuthController {
   async logout(@Res({ passthrough: true }) response: Response) {
     this.logger.debug('User logout');
     return this.authService.logout(response);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify email' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Email successfully verified',
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad request' })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or expired verification token',
+  })
+  @ApiBody({ type: VerifyEmailDto })
+  @Post('email/verify')
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    this.logger.debug('Email verification attempt');
+    return this.authService.verifyEmail(verifyEmailDto.token);
   }
 }

@@ -3,11 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import type { ReactElement } from 'react';
 import { Resend } from 'resend';
 import { ForgotPasswordEmail } from './templates/forgot-password-email';
+import { VerificationEmail } from './templates/verification-email';
 import { ENV } from '@/types';
 
 @Injectable()
 export class EmailService {
-  private resend: Resend;
+  private readonly resend: Resend;
   private readonly logger = new Logger(EmailService.name);
   private readonly fromEmail: string;
 
@@ -97,6 +98,31 @@ export class EmailService {
         userEmail: to,
         resetToken,
         resetLink,
+      }),
+    });
+
+    return result.success;
+  }
+
+  /**
+   * Send a verification email with a verification link
+   * @param to Recipient email
+   * @param verificationToken Verification token
+   * @param verificationLink Verification link URL
+   * @returns Boolean indicating success or failure
+   */
+  async sendVerificationEmail(
+    to: string,
+    verificationToken: string,
+    verificationLink: string,
+  ): Promise<boolean> {
+    const result = await this.sendEmail({
+      to,
+      subject: 'Verify Your Email Address',
+      react: VerificationEmail({
+        userEmail: to,
+        verificationToken,
+        verificationLink,
       }),
     });
 

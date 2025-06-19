@@ -18,9 +18,13 @@ export class UserRepository {
   /**
    * Creates a new user with hashed password
    * @param createUserRequest - User creation data
+   * @param isOAuth - When true, automatically activates the user (for OAuth flows)
    * @returns Newly created user
    */
-  async createUser(createUserRequest: CreateUserRequestDto): Promise<User> {
+  async createUser(
+    createUserRequest: CreateUserRequestDto,
+    isOAuth: boolean = false,
+  ): Promise<User> {
     this.logger.debug(
       `Creating user with email: ${JSON.stringify(createUserRequest)}`,
     );
@@ -30,6 +34,7 @@ export class UserRepository {
       email: createUserRequest.email,
       password: hashedPassword,
       role: createUserRequest.role,
+      isActive: isOAuth, // Activate immediately if from OAuth
     };
     this.logger.debug(`New user data: ${JSON.stringify(newUser)}`);
 
@@ -124,14 +129,18 @@ export class UserRepository {
   /**
    * Gets an existing user by email or creates a new one
    * @param data - User data with email and password
+   * @param isOAuth - When true, automatically activates the user (for OAuth flows)
    * @returns Existing or newly created user
    */
-  async getOrCreateUser(data: CreateUserRequestDto): Promise<User> {
+  async getOrCreateUser(
+    data: CreateUserRequestDto,
+    isOAuth: boolean = false,
+  ): Promise<User> {
     try {
       return await this.findUserByEmail(data.email);
     } catch (error) {
       if (error instanceof NotFoundException) {
-        return this.createUser(data);
+        return this.createUser(data, isOAuth);
       }
       throw error;
     }

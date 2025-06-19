@@ -8,6 +8,7 @@ import {
   Delete,
   Param,
   HttpCode,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,6 +18,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
+import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { UsersService } from './users.service';
 import { User, UserRole } from '@/types';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
@@ -44,8 +46,6 @@ export class UsersController {
     this.logger.debug(
       `Creating user with email: ${JSON.stringify(createUserRequest)}`,
     );
-
-    //TODO to implement email verification, else random users can be created
     return this.usersService.createUser(createUserRequest);
   }
 
@@ -68,6 +68,29 @@ export class UsersController {
   async getCurrentUser(@CurrentUser() user: User) {
     this.logger.debug(`Fetching profile for current user ID: ${user.id}`);
     return user; //TODO remove sentitive data later
+  }
+
+  @Patch(':id')
+  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update a user by ID' })
+  @ApiParam({ name: 'id', description: 'User ID to update' })
+  @ApiBody({ type: UpdateUserRequestDto })
+  @ApiResponse({ status: 200, description: 'User successfully updated.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  async updateUser(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserRequestDto,
+    @CurrentUser() currentUser: User,
+  ) {
+    this.logger.debug(`Updating user with ID: ${id}`);
+    this.logger.debug(`Update data: ${JSON.stringify(updateUserDto)}`);
+    this.logger.debug(`Request made by admin: ${currentUser.id}`);
+
+    return this.usersService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')

@@ -39,9 +39,7 @@ export class AuthService {
   async validateUserByEmail(email: string, password: string): Promise<any> {
     try {
       this.logger.debug(`validateUserByEmail: ${email}`);
-      const user = await this.usersService.getUser({
-        email,
-      });
+      const user = await this.usersService.getUser({ email });
       if (!user) {
         this.logger.warn(`User not found for email: ${email}`);
         throw new UnauthorizedException('User not found');
@@ -117,7 +115,7 @@ export class AuthService {
     //so we want to store the refreshToken in the user's collection in the user database, and store it as a hash value as it is sensitive information
     //and when we validate the refreshToken we will check if the provided token matches the one stored in the user database
     //and if we want to revoke we can just delete the refreshToken from the user database
-    await this.usersService.updateUser({ id: user.id }, { refreshToken });
+    await this.usersService.updateUser(user.id, { refreshToken });
     this.logger.debug(`Refresh token: ${refreshToken}`);
     this.logger.debug(`User Id: ${user.id}`);
 
@@ -209,10 +207,9 @@ export class AuthService {
       const hashedPassword = await hash(resetDto.password, 10);
 
       // Update the user's password
-      await this.usersService.updateUser(
-        { id: tokenData.userId },
-        { password: hashedPassword },
-      );
+      await this.usersService.updateUser(tokenData.userId, {
+        password: hashedPassword,
+      });
 
       // Remove the used token
       this.passwordResetTokens.delete(resetDto.token);
@@ -275,8 +272,7 @@ export class AuthService {
        * @returns {string} The complete reset password URL
        */ const resetLink = `${this.configService.getOrThrow(
         ENV.AUTH_UI_REDIRECT_URL,
-      )}/reset-password#token=${resetToken}`; //TODO handle this in a constant config ?
-      // TODO consider doing in the # instead of ?
+      )}/reset-password#token=${resetToken}`; //TODO handle path this in a constant or config ?
 
       // Send email with reset link
       await this.emailService.sendForgotPasswordEmail(
@@ -298,6 +294,21 @@ export class AuthService {
       return {
         message: 'The password reset link has been sent.', //TODO can we make this a constant or refactor to only do it once ?
       };
+    }
+  }
+
+  /**
+   * Verify a user email with a verification token
+   * @param token - Email verification token
+   * @returns Message indicating success
+   */
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    try {
+      this.logger.debug(`Verifying email with token: ${token}`);
+      return await this.usersService.verifyEmail(token);
+    } catch (error) {
+      this.logger.error(`Email verification failed: ${error.message}`);
+      throw error;
     }
   }
 
@@ -347,10 +358,7 @@ export class AuthService {
       const hashedPassword = await hash(changePasswordDto.newPassword, 10);
 
       // Update the user's password
-      await this.usersService.updateUser(
-        { id: user.id },
-        { password: hashedPassword },
-      );
+      await this.usersService.updateUser(user.id, { password: hashedPassword });
 
       this.logger.debug(
         `Password changed successfully for user: ${user.email}`,
