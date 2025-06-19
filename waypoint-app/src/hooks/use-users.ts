@@ -35,8 +35,22 @@ export function useUsers() {
    */
   const currentUserQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => usersService.getCurrentUser(),
-    enabled: ApiServices.getAuthService().isAuthenticated(),
+    queryFn: async () => {
+      const isAuthenticated = ApiServices.getAuthService().isAuthenticated();
+      console.log('Fetching current user, auth status:', isAuthenticated);
+      if (!isAuthenticated) {
+        return null;
+      }
+      return usersService.getCurrentUser();
+    },
+    // Don't cache null results when not authenticated
+    meta: {
+      skipCache: !ApiServices.getAuthService().isAuthenticated(),
+    },
+    // Run the query immediately when mounted, regardless of cache
+    refetchOnMount: 'always',
+    // Cache time reduced for more responsive auth state updates
+    gcTime: 1000 * 30, // 30 seconds (formerly cacheTime)
   });
 
   /**
@@ -80,16 +94,16 @@ export function useUsers() {
     isLoadingCurrentUser: currentUserQuery.isLoading,
     usersError: usersQuery.error,
     currentUserError: currentUserQuery.error,
-    
+
     // Mutations
     createUser: createUserMutation.mutate,
     isCreatingUser: createUserMutation.isPending,
     createUserError: createUserMutation.error,
-    
+
     deleteUser: deleteUserMutation.mutate,
     isDeletingUser: deleteUserMutation.isPending,
     deleteUserError: deleteUserMutation.error,
-    
+
     // Refetch methods
     refetchUsers: usersQuery.refetch,
     refetchCurrentUser: currentUserQuery.refetch,

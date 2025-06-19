@@ -1,4 +1,4 @@
-import { useMutation, QueryClient } from '@tanstack/react-query';
+import { useMutation, QueryClient, useQueryClient } from '@tanstack/react-query';
 import { ApiServices } from '@/services';
 import { LoginRequest, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest } from '@/types/auth.types';
 import { useState } from 'react';
@@ -13,6 +13,7 @@ export function useAuth() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
   /**
    * Login mutation 
@@ -32,6 +33,8 @@ export function useAuth() {
     },
     onSuccess: () => {
       console.log('Successfully logged in');
+      // Immediately invalidate current user query to update UI
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       router.push('/');
       setIsLoading(false);
     },
@@ -51,6 +54,8 @@ export function useAuth() {
       return authService.logout();
     },
     onSuccess: () => {
+      // Immediately invalidate current user query to update UI
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       router.push('/login');
       setIsLoading(false);
     },
@@ -191,19 +196,22 @@ export function useAuth() {
  * @param queryClient - React Query client
  */
 export function setupAuthInvalidations(queryClient: QueryClient) {
-  // Invalidate user queries on auth events
-  queryClient.getQueryCache().subscribe(() => {
-    const activeQueries = [...queryClient.getQueryCache().getAll()];
+  // Set up a mutation cache listener to detect auth changes
+  queryClient.getMutationCache().subscribe((event) => {
+    // Check if the mutation is related to authentication
+    const mutation = event.mutation;
+    if (!mutation) return;
     
-    // Check if there's a recent auth-related mutation
-    const hasAuthChange = activeQueries.some(query => 
-      query.options.queryKey?.[0] === 'login' || 
-      query.options.queryKey?.[0] === 'logout'
-    );
+    // Check if it's a login or logout mutation
+    const isAuthMutation = 
+      mutation.options.mutationFn?.toString().includes('authService.login') ||
+      mutation.options.mutationFn?.toString().includes('authService.logout');
     
-    if (hasAuthChange) {
-      console.log('Auth invalidation - Auth change detected in query cache');
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+    if (isAuthMutation && mutation.state.status === 'success') {
+      console.log('Auth invalidation - Auth change detected in mutation cache');
+      
+      // Force an immediate refresh of the currentUser data
+      queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' })
         .catch(error => {
           console.error('Error invalidating currentUser queries:', error);
         });

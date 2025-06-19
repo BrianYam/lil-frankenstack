@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/user-context';
-import { Spinner } from '@/components/ui/spinner';
+import { LockKeyhole, Users, Settings, Activity } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Container } from '@/components/ui/container';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { UserRole } from '@/types/users.types';
-import { LockKeyhole, UserCog, Users, Settings, Activity } from 'lucide-react';
 import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm';
 
 export default function ProfilePage() {
@@ -50,9 +50,7 @@ export default function ProfilePage() {
                     <div>
                       <p className="text-sm text-indigo-600 font-medium mb-1">User Role</p>
                       <p className="text-lg font-medium text-gray-800 capitalize">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200">
-                          {user.role || 'user'}
-                        </span>
+                        {user.role}
                       </p>
                     </div>
                   </div>
@@ -79,14 +77,6 @@ export default function ProfilePage() {
                     >
                       <LockKeyhole size={16} />
                       Change Password
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 border-indigo-200 hover:bg-indigo-50 text-indigo-700 bg-white"
-                    >
-                      <UserCog size={16} />
-                      Update Profile
                     </Button>
                   </div>
                 )}
@@ -122,9 +112,8 @@ export default function ProfilePage() {
                   Account Activity
                 </h2>
                 <div className="bg-blue-50 p-5 rounded-lg border border-blue-100">
-                  <p className="text-gray-700 mb-2">Account created: <span className="font-medium text-indigo-700">June 10, 2025</span></p>
-                  <p className="text-gray-700">Last login: <span className="font-medium text-indigo-700">Today</span></p>
-                </div>
+                  <p className="text-gray-700 mb-2">Account created: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
+                  <p className="text-gray-700">Last login: {user.updatedAt ? new Date(user.updatedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}</p>                </div>
               </div>
             </div>
           ) : (
