@@ -1,5 +1,3 @@
-// filepath: /Users/brianyam/Documents/BrianLabProject/lil-frankenstack/waypoint-app/src/types/auth.types.ts
-
 /**
  * Authentication related type definitions for the Waypoint application
  */
@@ -36,6 +34,13 @@ export interface ChangePasswordRequest {
 }
 
 /**
+ * Request to verify email address
+ */
+export interface VerifyEmailRequest {
+  token: string;
+}
+
+/**
  * Generic API response
  */
 export interface ApiResponse<T = unknown> {
@@ -48,4 +53,3 @@ export enum AuthFormType {
   LOGIN = 'login',
   SIGNUP = 'signup',
 }
-

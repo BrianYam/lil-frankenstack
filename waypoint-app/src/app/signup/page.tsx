@@ -1,18 +1,40 @@
 'use client';
 
-import { useState } from 'react';
-import { useAuth } from '@/hooks/use-auth'; // Use useAuth for login functionality
-import { useUsers } from '@/hooks/use-users'; // Use useUsers for user creation
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/use-auth';
+import { useUsers } from '@/hooks/use-users';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { ProcessingModal } from '@/components/ui/processing-modal';
-import { AuthFormType } from "@/types";
+import { ApiError, AuthFormType } from "@/types";
 
 export default function SignupPage() {
   const [formError, setFormError] = useState('');
   const [showProcessingModal, setShowProcessingModal] = useState(false);
-  const { login, googleLogin } = useAuth(); // Auth operations from useAuth
+  const [isSignupComplete, setIsSignupComplete] = useState(false);
+  const { googleLogin } = useAuth();
   const { createUser, isCreatingUser, createUserError } = useUsers();
+
+  // Effect to handle errors from createUser mutation
+  useEffect(() => {
+    if (createUserError) {
+      setShowProcessingModal(false);
+      const apiError = createUserError as ApiError;
+      setFormError(
+        apiError.response?.data?.message ?? createUserError.message
+      );
+    }
+  }, [createUserError]);
+
+  // Effect to handle successful user creation
+  useEffect(() => {
+    if (!isCreatingUser && showProcessingModal && !createUserError) {
+      // If we're no longer creating a user, the modal is showing, and there's no error,
+      // then the user creation was successful
+      setShowProcessingModal(false);
+      setIsSignupComplete(true);
+    }
+  }, [isCreatingUser, showProcessingModal, createUserError]);
 
   const handleSubmit = async (data: { email: string; password: string; confirmPassword?: string }) => {
     setFormError('');
@@ -27,30 +49,11 @@ export default function SignupPage() {
       return;
     }
     
-    try {
-      // Create user
-      createUser({ email: data.email, password: data.password });
-      console.log('User created successfully, now logging in');
+    // Show the processing modal
+    setShowProcessingModal(true);
 
-      // Show the processing modal
-      setShowProcessingModal(true);
-
-      // Add a delay to ensure user creation is processed
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      
-      // Hide the modal
-      setShowProcessingModal(false);
-
-      // Login with the newly created credentials
-      login(data.email, data.password);
-      //TODO dont login, ask to verify in email
-      
-      // The auth hook will redirect if successful
-    } catch (err) {
-      setShowProcessingModal(false);
-      console.error('Signup error:', err);
-      setFormError(err instanceof Error ? err.message : 'Failed to create account');
-    }
+    // Create user - the effects will handle success/error states
+    createUser({ email: data.email, password: data.password });
   };
 
   const handleGoogleLogin = () => {
@@ -60,6 +63,32 @@ export default function SignupPage() {
       console.error('Google login error:', err);
     }
   };
+
+  // Show a success message after signing up, prompting the user to check their email
+  if (isSignupComplete) {
+    return (
+      <AuthLayout
+        title="Account Created Successfully!"
+        subtitle="Please check your email"
+        alternateLink={{
+          text: 'return to login',
+          href: '/login',
+          description: 'return to login page'
+        }}
+        bgClass="bg-gradient-to-b from-indigo-50 to-blue-50"
+      >
+        <div className="p-8 bg-white rounded-lg shadow-md text-center">
+          <h2 className="text-2xl font-bold text-green-600 mb-4">Verification Email Sent</h2>
+          <p className="mb-4 text-gray-700">
+            We&#39;ve sent a verification email to your inbox. Please check your email and click the verification link to activate your account.
+          </p>
+          <p className="text-sm text-gray-500">
+            If you don&#39;t see the email, check your spam folder or try to log in to request a new verification link.
+          </p>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <>

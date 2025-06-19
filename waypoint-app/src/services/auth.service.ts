@@ -6,6 +6,7 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
+  VerifyEmailRequest,
   ApiResponse
 } from '@/types/auth.types';
 import { ApiClient } from './api-client';
@@ -147,6 +148,20 @@ export class AuthService {
   }
 
   /**
+   * Verifies a user's email with the provided token
+   * @param data - Contains the verification token
+   * @returns Promise with the API response
+   */
+  async verifyEmail(data: VerifyEmailRequest): Promise<ApiResponse> {
+    try {
+      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.EMAIL.VERIFY, data);
+    } catch (error) {
+      this.handleError('Email verification failed', error);
+      throw error;
+    }
+  }
+
+  /**
    * Initiates Google OAuth login
    */
   googleLogin(): void {
@@ -207,4 +222,3 @@ export class AuthService {
     console.error(`${errorMessage}:`, error);
   }
 }
-

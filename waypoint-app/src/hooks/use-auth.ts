@@ -1,6 +1,6 @@
 import { useMutation, QueryClient, useQueryClient } from '@tanstack/react-query';
 import { ApiServices } from '@/services';
-import { LoginRequest, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest } from '@/types/auth.types';
+import { LoginRequest, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest, VerifyEmailRequest } from '@/types/auth.types';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -115,7 +115,24 @@ export function useAuth() {
       setIsLoading(false);
     },
   });
-  
+
+  /**
+   * Email verification mutation
+   */
+  const verifyEmailMutation = useMutation({
+    mutationFn: (data: VerifyEmailRequest) => {
+      setIsLoading(true);
+      return authService.verifyEmail(data);
+    },
+    onSuccess: () => {
+      setIsLoading(false);
+    },
+    onError: (error: Error) => {
+      setError(error);
+      setIsLoading(false);
+    },
+  });
+
   /**
    * Get authentication state
    */
@@ -175,6 +192,19 @@ export function useAuth() {
     });
   };
 
+  /**
+   * Verify email with token
+   * Returns a promise for better handling in components
+   */
+  const verifyEmail = (token: string) => {
+    return new Promise<void>((resolve, reject) => {
+      verifyEmailMutation.mutate({ token }, {
+        onSuccess: () => resolve(),
+        onError: (error) => reject(error),
+      });
+    });
+  };
+
   return {
     // Auth state
     isAuthenticated,
@@ -188,6 +218,7 @@ export function useAuth() {
     forgotPassword,
     resetPassword,
     changePassword,
+    verifyEmail,
   };
 }
 

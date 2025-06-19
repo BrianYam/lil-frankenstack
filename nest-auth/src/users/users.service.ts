@@ -43,10 +43,18 @@ export class UsersService {
   }
 
   async createUser(createUserRequest: CreateUserRequestDto) {
-    const user = await this.userRepository.createUser(createUserRequest);
+    const user = await this.userRepository.getOrCreateUser(createUserRequest);
 
     if (!user.isActive) {
+      this.logger.log(`New user created but not active: ${user.email}`);
       await this.sendVerificationEmail(user);
+    } else {
+      this.logger.warn(
+        `User already exists and is active: ${user.email}. Please login instead.`,
+      );
+      throw new UnauthorizedException(
+        'User already exists and is active. Please login instead.',
+      );
     }
 
     return user;

@@ -52,6 +52,9 @@ export const API_CONFIG = {
         FORGOT: '/auth/password/forgot',
         RESET: '/auth/password/reset',
         CHANGE: '/auth/password/change',
+      },
+      EMAIL: {
+        VERIFY: '/auth/email/verify',
       }
     },
   USERS: {
