@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 
-export default function VerifyEmailPage() {
+// Wrapped component that uses useSearchParams
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { verifyEmail, isLoading } = useAuth();
@@ -142,5 +143,37 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </AuthLayout>
+  );
+}
+
+// Loading fallback component
+function LoadingVerification() {
+  return (
+    <AuthLayout
+      title="Loading Verification"
+      subtitle="Please wait"
+      bgClass="bg-gradient-to-b from-indigo-50 to-blue-50"
+      alternateLink={{
+        text: 'return to login',
+        href: '/login',
+        description: 'return to login page'
+      }}
+    >
+      <div className="p-8 bg-white rounded-lg shadow-md text-center">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
+          <p>Loading verification page...</p>
+        </div>
+      </div>
+    </AuthLayout>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<LoadingVerification />}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
