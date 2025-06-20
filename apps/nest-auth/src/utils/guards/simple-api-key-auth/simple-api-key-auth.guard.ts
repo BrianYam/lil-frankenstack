@@ -8,6 +8,13 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { ENV, FRANKENSTACK_API_KEY_HEADER } from '@/types';
 
+// Define OAuth login routes as a constant array for easier maintenance
+const OAUTH_LOGIN_ROUTES = [
+  '/auth/google/login',
+  '/auth/google/callback',
+  '/auth/facebook/login',
+];
+
 @Injectable()
 export class SimpleApiKeyAuthGuard implements CanActivate {
   constructor(private readonly configService: ConfigService) {}
@@ -15,6 +22,15 @@ export class SimpleApiKeyAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const apiKey = request.header(FRANKENSTACK_API_KEY_HEADER);
+
+    const path = request.path;
+
+    // Check if the current path is an OAuth login route
+    const isOAuthLoginRoute = OAUTH_LOGIN_ROUTES.includes(path);
+
+    if (isOAuthLoginRoute) {
+      return true; // Skip API key check for OAuth login routes
+    }
 
     if (!apiKey) {
       throw new UnauthorizedException('API key missing');

@@ -54,12 +54,11 @@ export class AuthService {
   async login(credentials: LoginRequest): Promise<void> {
     console.log(`Logging in with credentials: ${JSON.stringify(credentials)}`);
     try {
+      // Use a temporary API client that has the API key interceptor
+      const tempClient = new ApiClient(this, this.baseUrl);
+
       // Backend doesn't return any body, just sets HTTP-only cookies
-      await axios.post(
-        `${this.baseUrl}${API_ENDPOINTS.AUTH.LOGIN}`,
-        credentials,
-        { withCredentials: true }  // Essential for cookie-based auth
-      );
+      await tempClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
 
       // Set a client-side marker for auth state tracking
       this.setAccessToken(AUTHENTICATED);
@@ -74,12 +73,11 @@ export class AuthService {
    */
   async refreshTokens(): Promise<void> {
     try {
+      // Use a temporary API client that has the API key interceptor
+      const tempClient = new ApiClient(this, this.baseUrl);
+
       // Backend doesn't return any body, just refreshes HTTP-only cookies
-      await axios.post(
-        `${this.baseUrl}${API_ENDPOINTS.AUTH.REFRESH}`,
-        {},
-        { withCredentials: true }
-      );
+      await tempClient.post(API_ENDPOINTS.AUTH.REFRESH, {});
 
       // Reset client-side marker for auth state tracking
       this.setAccessToken(AUTHENTICATED);
@@ -163,6 +161,7 @@ export class AuthService {
 
   /**
    * Initiates Google OAuth login
+   * Uses the Next.js API as a proxy to securely add the API key to the request
    */
   googleLogin(): void {
     window.location.href = `${this.baseUrl}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`;
