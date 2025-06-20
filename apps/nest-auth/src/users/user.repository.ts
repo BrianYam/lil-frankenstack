@@ -3,7 +3,7 @@
  */
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { hash, compare } from 'bcryptjs';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, and } from 'drizzle-orm';
 import { DB_PROVIDER } from '@/database/database.module';
 import { usersTable } from '@/database/schema';
 import { User, NewUser, DrizzleDB } from '@/types';
@@ -54,7 +54,12 @@ export class UserRepository {
     const result = await this.db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.email, email))
+      .where(
+        and(
+          eq(usersTable.email, email),
+          eq(usersTable.isDeleted, false), // Only get non-deleted users
+        ),
+      )
       .limit(1);
 
     const user = result[0];
@@ -79,7 +84,12 @@ export class UserRepository {
     const result = await this.db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.id, id))
+      .where(
+        and(
+          eq(usersTable.id, id),
+          eq(usersTable.isDeleted, false), // Only get non-deleted users
+        ),
+      )
       .limit(1);
 
     const user = result[0];
@@ -113,7 +123,10 @@ export class UserRepository {
     // Always update the updatedAt timestamp
     data.updatedAt = new Date();
 
-    await this.db.update(usersTable).set(data).where(eq(usersTable.id, id));
+    await this.db
+      .update(usersTable)
+      .set(data)
+      .where(and(eq(usersTable.id, id), eq(usersTable.isDeleted, false)));
 
     return this.findUserById(id);
   }
@@ -123,8 +136,8 @@ export class UserRepository {
    * @returns Array of all users
    */
   async findAll(): Promise<User[]> {
-    // return this.db.select().from(usersTable);
     return this.db.query.usersTable.findMany({
+      where: eq(usersTable.isDeleted, false),
       orderBy: [desc(usersTable.createdAt)],
     });
   }
@@ -169,15 +182,26 @@ export class UserRepository {
   }
 
   /**
-   * Deletes a user by ID
+   * Soft deletes a user by ID
    * @param id - UUID of the user to delete
-   * @returns Boolean indicating if the user was successfully deleted
+   * @returns User object that was soft deleted
    * @throws NotFoundException if user not found
    */
   async deleteUser(id: string): Promise<User[]> {
-    this.logger.debug(`Deleting user with ID: ${id}`);
+    this.logger.debug(`Soft deleting user with ID: ${id}`);
 
-    // Delete the user
-    return this.db.delete(usersTable).where(eq(usersTable.id, id)).returning();
+    // Check if user exists and is not already deleted
+    await this.findUserById(id);
+
+    // Soft delete the user
+    return this.db
+      .update(usersTable)
+      .set({
+        isDeleted: true,
+        deletedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(usersTable.id, id))
+      .returning();
   }
 }
