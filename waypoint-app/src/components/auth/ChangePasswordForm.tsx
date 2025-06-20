@@ -111,7 +111,7 @@ export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePassw
                   type="button"
                   variant="outline"
                   onClick={onCancel}
-                  className="border-gray-200 hover:bg-gray-50 text-gray-700"
+                  className="border-gray-200 hover:bg-gray-700 text-white"
                 >
                   Cancel
                 </Button>

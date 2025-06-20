@@ -27,13 +27,16 @@ export class GoogleStrategy extends PassportStrategy(
 
   async validate(_accessToken: string, _refreshToken: string, profile: any) {
     this.logger.debug(`Google profile: ${JSON.stringify(profile)}`);
-    return this.usersService.getOrCreateUser({
-      email: profile.emails[0]?.value,
-      //TODO get other details from profile
-      // firstName: profile.name.givenName,
-      // lastName: profile.name.familyName,
-      // avatarUrl: profile.photos[0].value,
-      password: '',
-    });
+    return this.usersService.getOrCreateUser(
+      {
+        email: profile.emails[0]?.value,
+        //TODO get other details from profile
+        // firstName: profile.name.givenName,
+        // lastName: profile.name.familyName,
+        // avatarUrl: profile.photos[0].value,
+        password: '',
+      },
+      true,
+    );
   }
 }
