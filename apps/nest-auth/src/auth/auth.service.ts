@@ -203,12 +203,9 @@ export class AuthService {
     }
 
     try {
-      // Hash the new password
-      const hashedPassword = await hash(resetDto.password, 10);
-
-      // Update the user's password
+      // Update the user's password - let usersService handle the hashing
       await this.usersService.updateUser(tokenData.userId, {
-        password: hashedPassword,
+        password: resetDto.password,
       });
 
       // Remove the used token
@@ -354,11 +351,10 @@ export class AuthService {
         throw new UnauthorizedException('Current password is incorrect'); //TODO might wanna consider a more generic error message for security reasons
       }
 
-      // Hash the new password
-      const hashedPassword = await hash(changePasswordDto.newPassword, 10);
-
       // Update the user's password
-      await this.usersService.updateUser(user.id, { password: hashedPassword });
+      await this.usersService.updateUser(user.id, {
+        password: changePasswordDto.newPassword,
+      });
 
       this.logger.debug(
         `Password changed successfully for user: ${user.email}`,

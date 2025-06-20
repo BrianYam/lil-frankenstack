@@ -17,7 +17,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { User } from '@/types';
-import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
+import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
 import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protector.decorator';
 import { GoogleAuthGuard } from '@/utils/guards/google-auth/google-auth.guard';

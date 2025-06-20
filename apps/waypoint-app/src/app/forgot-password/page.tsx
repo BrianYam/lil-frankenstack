@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-indigo-700"
+                className="border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-indigo-700 bg-blue-300"
                 onClick={() => window.location.href = '/login'}
               >
                 Return to login

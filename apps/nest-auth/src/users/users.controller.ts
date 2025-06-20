@@ -17,7 +17,7 @@ import {
   ApiBody,
   ApiParam,
 } from '@nestjs/swagger';
-import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
+import { CreateUserRequestDto } from './dto/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { UsersService } from './users.service';
 import { User, UserRole } from '@/types';

@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { hash } from 'bcryptjs';
-import { CreateUserRequestDto } from './dto/create-user.request.dto/create-user.request.dto';
+import { CreateUserRequestDto } from './dto/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { EmailService } from '@/message/email/email.service';
 import { User, DeleteUserResponse, UserRole, ENV } from '@/types';

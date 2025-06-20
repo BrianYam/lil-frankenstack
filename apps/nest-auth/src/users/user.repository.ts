@@ -7,7 +7,7 @@ import { desc, eq } from 'drizzle-orm';
 import { DB_PROVIDER } from '@/database/database.module';
 import { usersTable } from '@/database/schema';
 import { User, NewUser, DrizzleDB } from '@/types';
-import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto/create-user.request.dto';
+import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto';
 
 @Injectable()
 export class UserRepository {
