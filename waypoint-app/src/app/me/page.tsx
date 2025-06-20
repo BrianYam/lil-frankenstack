@@ -90,6 +90,7 @@ export default function ProfilePage() {
                       variant="default"
                       size="sm"
                       className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+                      onClick={() => router.push('/admin/users')}
                     >
                       <Users size={16} />
                       Manage Users

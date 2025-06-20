@@ -6,7 +6,8 @@ import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
 import { 
   User, 
   CreateUserRequest, 
-  DeleteUserResponse
+  DeleteUserResponse,
+  UpdateUserRequest
 } from '@/types/users.types';
 
 /**
@@ -66,6 +67,21 @@ export class UsersService {
       return await this.apiClient.get<User>(API_ENDPOINTS.USERS.ME);
     } catch (error) {
       this.handleError('Failed to fetch current user', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Updates a user by ID
+   * @param userId - The ID of the user to update
+   * @param userData - The user data to update
+   * @returns Promise with the updated user
+   */
+  async updateUser(userId: string, userData: UpdateUserRequest): Promise<User> {
+    try {
+      return await this.apiClient.patch<User>(API_ENDPOINTS.USERS.BY_ID(userId), userData);
+    } catch (error) {
+      this.handleError(`Failed to update user ${userId}`, error);
       throw error;
     }
   }

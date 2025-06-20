@@ -66,6 +66,18 @@ export class ApiClient {
   }
 
   /**
+   * Makes a PATCH request
+   * @param url - The URL to request
+   * @param data - The data to send
+   * @param config - Optional Axios config
+   * @returns Promise with the response data
+   */
+  async patch<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.axiosInstance.patch<T>(url, data, config);
+    return response.data;
+  }
+
+  /**
    * Makes a DELETE request
    * @param url - The URL to request
    * @param config - Optional Axios config

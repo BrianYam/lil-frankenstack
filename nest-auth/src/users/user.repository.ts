@@ -3,7 +3,7 @@
  */
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { hash, compare } from 'bcryptjs';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { DB_PROVIDER } from '@/database/database.module';
 import { usersTable } from '@/database/schema';
 import { User, NewUser, DrizzleDB } from '@/types';
@@ -123,7 +123,10 @@ export class UserRepository {
    * @returns Array of all users
    */
   async findAll(): Promise<User[]> {
-    return this.db.select().from(usersTable);
+    // return this.db.select().from(usersTable);
+    return this.db.query.usersTable.findMany({
+      orderBy: [desc(usersTable.createdAt)],
+    });
   }
 
   /**

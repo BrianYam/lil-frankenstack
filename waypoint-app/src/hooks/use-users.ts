@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiServices } from '@/services';
-import { CreateUserRequest } from '@/types/users.types';
+import { CreateUserRequest, UpdateUserRequest } from '@/types/users.types';
 
 const usersService = ApiServices.getUsersService();
 
@@ -10,6 +10,7 @@ const usersService = ApiServices.getUsersService();
  * - Fetching all users
  * - Fetching the current logged-in user
  * - Creating new users
+ * - Updating users
  * - Deleting users
  */
 export function useUsers() {
@@ -66,7 +67,23 @@ export function useUsers() {
         .catch(error => {
           console.error('Error invalidating users queries:', error);
         });
+    },
+  });
 
+  /**
+   * Update user mutation
+   */
+  const updateUserMutation = useMutation({
+    mutationFn: ({ userId, userData }: { userId: string; userData: UpdateUserRequest }) => {
+      return usersService.updateUser(userId, userData);
+    },
+    onSuccess: () => {
+      // Invalidate users query and manually trigger refetch since enabled: false
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+        .then(() => usersQuery.refetch())
+        .catch(error => {
+          console.error('Error invalidating and refetching users queries:', error);
+        });
     },
   });
 
@@ -78,10 +95,11 @@ export function useUsers() {
       return usersService.deleteUser(userId);
     },
     onSuccess: () => {
-      // Invalidate users query to refresh the list
+      // Invalidate users query and manually trigger refetch since enabled: false
       queryClient.invalidateQueries({ queryKey: ['users'] })
+        .then(() => usersQuery.refetch())
         .catch(error => {
-          console.error('Error invalidating users queries:', error);
+          console.error('Error invalidating and refetching users queries:', error);
         });
     },
   });
@@ -100,6 +118,10 @@ export function useUsers() {
     isCreatingUser: createUserMutation.isPending,
     createUserError: createUserMutation.error,
 
+    updateUser: updateUserMutation.mutate,
+    isUpdatingUser: updateUserMutation.isPending,
+    updateUserError: updateUserMutation.error,
+
     deleteUser: deleteUserMutation.mutate,
     isDeletingUser: deleteUserMutation.isPending,
     deleteUserError: deleteUserMutation.error,
@@ -109,3 +131,5 @@ export function useUsers() {
     refetchCurrentUser: currentUserQuery.refetch,
   };
 }
+
+
