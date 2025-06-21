@@ -215,3 +215,5 @@ export class AuthController {
     return this.authService.verifyEmail(verifyEmailDto.token);
   }
 }
+
+//TODO introduce account lock ?
