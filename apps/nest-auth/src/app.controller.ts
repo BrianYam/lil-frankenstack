@@ -1,9 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { ApiKeyProtected } from './utils/decorators/api-key-protected.decorator';
+import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protector.decorator';
 
 @Controller()
-@ApiKeyProtected() // Apply to all routes in this controller
+// @ApiKeyProtected() // Apply to all routes in this controller
+@SimpleApiKeyProtected()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
