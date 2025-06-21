@@ -31,7 +31,8 @@ export const getDatabaseConfig = (): DatabaseConfig => {
 
   const nodeEnv = process.env.NODE_ENV;
 
-  const isProdOrStaging = ['production', 'staging'].includes(nodeEnv || '');
+  // const isProdOrStaging = ['production', 'staging'].includes(nodeEnv || '');
+  const isProdOrStaging = ['production'].includes(nodeEnv || ''); //TODO remove staging
 
   const ssl = isProdOrStaging
     ? {

@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { compare, hash } from 'bcryptjs';
+import { compare } from 'bcryptjs';
 import { Response } from 'express';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -14,6 +14,7 @@ import { UsersService } from '@/users/users.service';
 const AUTHENTICATION = 'Authentication';
 const REFRESH = 'Refresh';
 const PRODUCTION = 'production';
+const STAGING = 'staging';
 const AUTHENTICATION_FE_COOKIE = 'Authentication-fe';
 const AUTHENTICATED = 'authenticated';
 
@@ -35,6 +36,12 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
   ) {}
+
+  // Helper method to check if environment requires HTTPS
+  private isSecureEnvironment(): boolean {
+    const env = this.configService.get(ENV.NODE_ENV);
+    return env === PRODUCTION || env === STAGING;
+  }
 
   async validateUserByEmail(email: string, password: string): Promise<any> {
     try {
@@ -123,7 +130,7 @@ export class AuthService {
     response.cookie(AUTHENTICATION, accessToken, {
       expires: expiresAccessToken,
       httpOnly: true, //cookie is not accessible via JavaScript
-      secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION, //only send cookie over HTTPS in production
+      secure: this.isSecureEnvironment(), //only send cookie over HTTPS in production or staging
     });
 
     // secure: true, //cookie is only sent over HTTPS
@@ -132,7 +139,7 @@ export class AuthService {
     response.cookie(REFRESH, refreshToken, {
       expires: expiresRefreshToken,
       httpOnly: true, //cookie is not accessible via JavaScript
-      secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION, //only send cookie over HTTPS in production. Required for cross-origin cookies with SameSite=None
+      secure: this.isSecureEnvironment(), //only send cookie over HTTPS in production or staging. Required for cross-origin cookies with SameSite=None
     });
 
     // secure: true, //cookie is only sent over HTTPS
@@ -142,10 +149,9 @@ export class AuthService {
       // Set a non-HTTP-only cookie that the frontend can read to detect auth state
       response.cookie(AUTHENTICATION_FE_COOKIE, AUTHENTICATED, {
         httpOnly: false, // Allow JavaScript access
-        secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION,
+        secure: this.isSecureEnvironment(),
         path: '/',
-        sameSite:
-          this.configService.get(ENV.NODE_ENV) === PRODUCTION ? 'none' : 'lax',
+        sameSite: this.isSecureEnvironment() ? 'none' : 'lax',
       });
 
       // Redirect to frontend
@@ -313,11 +319,11 @@ export class AuthService {
     // Clear the authentication cookies
     response.clearCookie(AUTHENTICATION, {
       httpOnly: true,
-      secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION,
+      secure: this.isSecureEnvironment(),
     });
     response.clearCookie(REFRESH, {
       httpOnly: true,
-      secure: this.configService.get(ENV.NODE_ENV) === PRODUCTION,
+      secure: this.isSecureEnvironment(),
     });
 
     this.logger.debug('User logged out, cookies cleared');
