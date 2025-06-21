@@ -17,6 +17,7 @@ const PRODUCTION = 'production';
 const STAGING = 'staging';
 const AUTHENTICATION_FE_COOKIE = 'Authentication-fe';
 const AUTHENTICATED = 'authenticated';
+const AUTH_REDIRECT = 'auth-redirect';
 
 @Injectable()
 export class AuthService {
@@ -126,37 +127,54 @@ export class AuthService {
     this.logger.debug(`Refresh token: ${refreshToken}`);
     this.logger.debug(`User Id: ${user.id}`);
 
-    //save the access token in the cookie
-    response.cookie(AUTHENTICATION, accessToken, {
-      expires: expiresAccessToken,
-      httpOnly: true, //cookie is not accessible via JavaScript
-      secure: this.isSecureEnvironment(), //only send cookie over HTTPS in production or staging
-      sameSite: this.isSecureEnvironment() ? 'none' : 'lax', // Add sameSite='none' for cross-origin requests in secure environments
-    });
-
-    //save the refresh token in the cookie
-    response.cookie(REFRESH, refreshToken, {
-      expires: expiresRefreshToken,
-      httpOnly: true, //cookie is not accessible via JavaScript
-      secure: this.isSecureEnvironment(), //only send cookie over HTTPS in production or staging. Required for cross-origin cookies with SameSite=None
-      sameSite: this.isSecureEnvironment() ? 'none' : 'lax', // Add sameSite='none' for cross-origin requests in secure environments
-    });
-
-    // if redirect is true, redirect to the AUTH_UI_REDIRECT, which is the frontend url
-    // sameSite: 'none', //cookie is sent on every request
-    if (redirect) {
-      // Set a non-HTTP-only cookie that the frontend can read to detect auth state
-      response.cookie(AUTHENTICATION_FE_COOKIE, AUTHENTICATED, {
-        httpOnly: false, // Allow JavaScript access
-        secure: this.isSecureEnvironment(),
-        path: '/',
-        sameSite: this.isSecureEnvironment() ? 'none' : 'lax',
+    // If this is not a redirect (regular login), set cookies directly
+    if (!redirect) {
+      //save the access token in the cookie
+      response.cookie(AUTHENTICATION, accessToken, {
+        expires: expiresAccessToken,
+        httpOnly: true, //cookie is not accessible via JavaScript
+        secure: this.isSecureEnvironment(), //only send cookie over HTTPS in production or staging
+        sameSite: this.isSecureEnvironment() ? 'none' : 'lax', // Add sameSite='none' for cross-origin requests in secure environments
       });
 
-      // Redirect to frontend
-      response.redirect(
-        this.configService.getOrThrow(ENV.AUTH_UI_REDIRECT_URL),
+      //save the refresh token in the cookie
+      response.cookie(REFRESH, refreshToken, {
+        expires: expiresRefreshToken,
+        httpOnly: true, //cookie is not accessible via JavaScript
+        secure: this.isSecureEnvironment(), //only send cookie over HTTPS in production or staging. Required for cross-origin cookies with SameSite=None
+        sameSite: this.isSecureEnvironment() ? 'none' : 'lax', // Add sameSite='none' for cross-origin requests in secure environments
+      });
+
+      //TODO i dont think we need this anymore
+      // Set a non-HTTP-only cookie that the frontend can read to detect auth state
+      // response.cookie(AUTHENTICATION_FE_COOKIE, AUTHENTICATED, {
+      //   httpOnly: false, // Allow JavaScript access
+      //   secure: this.isSecureEnvironment(),
+      //   path: '/',
+      //   sameSite: this.isSecureEnvironment() ? 'none' : 'lax',
+      // });
+    } else {
+      // This is a redirect from OAuth - we need to use the token approach
+      // Create a special auth token for cross-domain auth that will be valid for a brief period
+      //TODO consider moving this to a function and rename tempAuthToken
+      const tempAuthToken = this.jwtService.sign(
+        { userId: user.id, purpose: AUTH_REDIRECT },
+        {
+          secret: this.configService.getOrThrow<string>(
+            ENV.JWT_ACCESS_TOKEN_SECRET,
+          ),
+          expiresIn: '2m', // Short expiration, just enough for the redirect flow
+        },
       );
+
+      this.logger.debug(
+        `Temporary auth token generated for redirect: ${tempAuthToken}`,
+      );
+      // Redirect to frontend with the token as a hash fragment
+      // The frontend can then use this token to make an API call to complete authentication
+      const redirectUrl = `${this.configService.getOrThrow(ENV.AUTH_UI_REDIRECT_URL)}/auth-callback#token=${tempAuthToken}`;
+      this.logger.debug(`Redirecting to: ${redirectUrl}`);
+      response.redirect(redirectUrl);
     }
   }
 
@@ -434,6 +452,54 @@ export class AuthService {
       return {
         message: 'If the email exists, a password reset link has been sent.',
       };
+    }
+  }
+
+  /**
+   * Complete OAuth authentication process
+   * This method is called by the frontend after being redirected from an OAuth provider
+   * with a temporary authentication token
+   *
+   * @param token The temporary authentication token from the redirect
+   * @param response Express response object to set cookies
+   * @returns Authentication success message
+   */
+  async completeOAuthAuthentication(
+    token: string,
+    response: Response,
+  ): Promise<{ message: string }> {
+    try {
+      // Verify the temporary token
+      const decoded = this.jwtService.verify(token, {
+        secret: this.configService.getOrThrow<string>(
+          ENV.JWT_ACCESS_TOKEN_SECRET,
+        ),
+      });
+
+      // Check if this is indeed an auth-redirect token
+      if (!decoded || decoded.purpose !== AUTH_REDIRECT) {
+        this.logger.warn('Invalid token purpose for OAuth completion');
+        throw new UnauthorizedException('Invalid authentication token');
+      }
+
+      // Get the user
+      const user = await this.usersService.getUser({ id: decoded.userId });
+      if (!user) {
+        this.logger.warn(`User not found for ID: ${decoded.userId}`);
+        throw new UnauthorizedException('Invalid authentication token');
+      }
+
+      // Login the user (sets cookies) but don't redirect since we're already on the frontend
+      await this.loginByEmail(user, response, false);
+
+      return { message: 'Authentication completed successfully' };
+    } catch (error) {
+      this.logger.error(
+        `OAuth authentication completion failed: ${error.message}`,
+      );
+      throw new UnauthorizedException(
+        'Invalid or expired authentication token',
+      );
     }
   }
 }

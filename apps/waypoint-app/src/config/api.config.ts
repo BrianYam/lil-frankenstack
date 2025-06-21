@@ -48,6 +48,7 @@ export const API_CONFIG = {
       REFRESH: '/auth/refresh',
       LOGOUT: '/auth/logout',
       GOOGLE_LOGIN: '/auth/google/login',
+      COMPLETE_OAUTH: '/auth/complete-oauth',
       PASSWORD: {
         FORGOT: '/auth/password/forgot',
         RESET: '/auth/password/reset',
