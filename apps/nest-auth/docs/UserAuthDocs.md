@@ -91,11 +91,82 @@ Allows users to authenticate using their Google account.
    - Requests profile and email scopes
    - On successful authentication, creates or retrieves the corresponding user
 
-2. Flow:
+2. Updated OAuth Flow:
+   - Frontend calls `/auth/google/login` to initiate authentication
    - User is redirected to Google's consent page
-   - After granting permission, Google redirects back with profile data
-   - Strategy's validate method processes the profile and finds/creates the user
-   - User is logged in and JWT tokens are issued
+   - After granting permission, Google redirects back to backend's `/auth/google/callback` endpoint
+   - Backend generates a JWT token and redirects to frontend with the token
+   - Frontend uses the token to authenticate with backend by calling `/auth/complete-oauth`
+   - Backend validates the token and sets cookies for authenticated session
+
+3. Visual Representation of the OAuth Flow:
+
+```ascii
+┌──────────┐          ┌───────────┐          ┌──────────┐          ┌───────────────┐
+│ Frontend │          │  Backend  │          │  Google  │          │ User's Browser │
+└────┬─────┘          └─────┬─────┘          └────┬─────┘          └───────┬───────┘
+     │                      │                     │                        │
+     │                      │                     │                        │
+     │   1. User clicks     │                     │                        │
+     │   "Login with        │                     │                        │
+     │    Google" button    │                     │                        │
+     │                      │                     │                        │
+     │  2. Request          │                     │                        │
+     │  /auth/google/login  │                     │                        │
+     │ ─────────────────────>                     │                        │
+     │                      │                     │                        │
+     │                      │  3. Redirect to     │                        │
+     │                      │  Google OAuth URL   │                        │
+     │                      │ ────────────────────────────────────────────>│
+     │                      │                     │                        │
+     │                      │                     │  4. User logs in       │
+     │                      │                     │  and authorizes app    │
+     │                      │                     │ <────────────────────────
+     │                      │                     │                        │
+     │                      │  5. Callback with   │                        │
+     │                      │  authorization code │                        │
+     │                      │ <─────────────────────────────────────────────
+     │                      │                     │                        │
+     │                      │  6. Exchange code   │                        │
+     │                      │  for user profile   │                        │
+     │                      │ ────────────────────>                        │
+     │                      │                     │                        │
+     │                      │  7. Return user     │                        │
+     │                      │  profile data       │                        │
+     │                      │ <────────────────────                        │
+     │                      │                     │                        │
+     │                      │  8. Generate JWT    │                        │
+     │                      │  token & redirect   │                        │
+     │                      │  to frontend with   │                        │
+     │                      │  token              │                        │
+     │                      │ ─────────────────────────────────────────────>
+     │                      │                     │                        │
+     │  9. Frontend         │                     │                        │
+     │  receives token      │                     │                        │
+     │ <─────────────────────────────────────────────────────────────────────
+     │                      │                     │                        │
+     │  10. Call            │                     │                        │
+     │  /auth/complete-oauth │                     │                        │
+     │  with token          │                     │                        │
+     │ ─────────────────────>                     │                        │
+     │                      │                     │                        │
+     │  11. Return cookies  │                     │                        │
+     │  & session info      │                     │                        │
+     │ <─────────────────────                     │                        │
+     │                      │                     │                        │
+     │  12. User is now     │                     │                        │
+     │  authenticated       │                     │                        │
+     │                      │                     │                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+Implementation Details:
+
+- The `GoogleStrategy` in `google.strategy.ts` handles the OAuth flow with Passport.js
+- The `google/callback` endpoint generates a temporary token and redirects to frontend
+- The `complete-oauth` endpoint validates the temporary token and establishes a session
+- Users created through OAuth are automatically activated (`isActive: true`)
+- The frontend must securely handle the temporary token and complete the authentication
 
 ## Token Management
 
@@ -206,6 +277,63 @@ The system uses Resend API for sending transactional emails:
 - Forgot password emails
 - Email verification link
 
+## OAuth Authentication Flow (Detailed)
+
+The OAuth authentication flow has been updated to provide a more secure and seamless experience between the frontend and backend:
+
+1. **Initiation**: Frontend redirects user to `/auth/google/login` endpoint
+   - The backend is protected with API key authentication
+   - GoogleAuthGuard handles the initial redirect to Google
+
+2. **Google Authentication**: User authenticates with Google
+   - Grants permission to requested scopes (email, profile)
+   - Google redirects back to our callback URL with authorization code
+
+3. **Backend Processing**: `/auth/google/callback` endpoint
+   - Validates the callback and exchanges code for tokens with Google
+   - Retrieves user profile information
+   - Creates or retrieves the user account in our database
+   - Sets the user as active (`isActive: true`)
+   - Generates a temporary authentication token
+   - Redirects to frontend with this token
+
+4. **Frontend Completion**: Frontend receives token and completes authentication
+   - Frontend extracts token from URL
+   - Calls `/auth/complete-oauth` endpoint with the token
+   - Receives standard authentication cookies
+
+5. **Session Establishment**: Backend sets up user session
+   - Validates the temporary OAuth token
+   - Generates standard access and refresh tokens
+   - Sets cookies for authenticated session
+   - Returns user information to frontend
+
+6. **Security Considerations**:
+   - The temporary token has a short expiration time
+   - The frontend should immediately exchange it for permanent session
+   - All communication should be over HTTPS
+
+7. **Code Implementation**:
+
+```typescript
+// Frontend code to complete OAuth flow
+async function completeOAuthAuthentication(token) {
+  const response = await fetch('/api/auth/complete-oauth', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ token }),
+    credentials: 'include', // Important for cookies
+  });
+  
+  if (response.ok) {
+    // User is now authenticated
+    // Redirect to dashboard or home page
+  }
+}
+```
+
 ## Integration with Frontend
 
 The authentication system is designed to work with frontend applications through:
@@ -213,6 +341,7 @@ The authentication system is designed to work with frontend applications through
 1. **Cookie-based authentication**: Secure HttpOnly cookies for token storage
 2. **Frontend redirect support**: Configurable redirect URLs after authentication
 3. **CORS configuration**: Properly configured to work with separate frontend domains
+4. **OAuth token exchange**: Temporary token exchange for permanent session
 
 ## Configuration
 
@@ -267,4 +396,3 @@ GOOGLE_AUTH_REDIRECT_URI=http://localhost:3000/auth/google/callback
 12. Implement user session management dashboard for admins (Invalidate sessions, view active sessions)
 13. Add support for custom user fields and metadata
 14. Implement user activity logging for security and analytics
-15. 
