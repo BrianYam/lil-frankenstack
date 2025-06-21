@@ -131,19 +131,18 @@ export class AuthService {
       expires: expiresAccessToken,
       httpOnly: true, //cookie is not accessible via JavaScript
       secure: this.isSecureEnvironment(), //only send cookie over HTTPS in production or staging
+      sameSite: this.isSecureEnvironment() ? 'none' : 'lax', // Add sameSite='none' for cross-origin requests in secure environments
     });
 
-    // secure: true, //cookie is only sent over HTTPS
     //save the refresh token in the cookie
-    // sameSite: 'none', //cookie is sent on every request
     response.cookie(REFRESH, refreshToken, {
       expires: expiresRefreshToken,
       httpOnly: true, //cookie is not accessible via JavaScript
       secure: this.isSecureEnvironment(), //only send cookie over HTTPS in production or staging. Required for cross-origin cookies with SameSite=None
+      sameSite: this.isSecureEnvironment() ? 'none' : 'lax', // Add sameSite='none' for cross-origin requests in secure environments
     });
 
-    // secure: true, //cookie is only sent over HTTPS
-    //if redirect is true, redirect to the AUTH_UI_REDIRECT, which is the frontend url
+    // if redirect is true, redirect to the AUTH_UI_REDIRECT, which is the frontend url
     // sameSite: 'none', //cookie is sent on every request
     if (redirect) {
       // Set a non-HTTP-only cookie that the frontend can read to detect auth state
@@ -320,10 +319,20 @@ export class AuthService {
     response.clearCookie(AUTHENTICATION, {
       httpOnly: true,
       secure: this.isSecureEnvironment(),
+      sameSite: this.isSecureEnvironment() ? 'none' : 'lax',
     });
     response.clearCookie(REFRESH, {
       httpOnly: true,
       secure: this.isSecureEnvironment(),
+      sameSite: this.isSecureEnvironment() ? 'none' : 'lax',
+    });
+
+    // Also clear the frontend cookie if it exists
+    response.clearCookie(AUTHENTICATION_FE_COOKIE, {
+      httpOnly: false,
+      secure: this.isSecureEnvironment(),
+      sameSite: this.isSecureEnvironment() ? 'none' : 'lax',
+      path: '/',
     });
 
     this.logger.debug('User logged out, cookies cleared');
