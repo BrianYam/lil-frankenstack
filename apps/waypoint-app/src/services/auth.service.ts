@@ -179,6 +179,28 @@ export class AuthService {
     return !!Cookies.get(this.accessTokenKey);
   }
 
+  /**
+   * Completes the OAuth authentication process after redirect
+   * @param token - The temporary token received in the URL hash
+   * @returns Promise with the API response
+   */
+  async completeOAuthAuthentication(token: string): Promise<ApiResponse> {
+    try {
+      const response = await this.getApiClient().post<ApiResponse>(
+        API_ENDPOINTS.AUTH.COMPLETE_OAUTH,
+        { token }
+      );
+
+      // Set a client-side marker for auth state tracking
+      this.setAccessToken(AUTHENTICATED);
+
+      return response;
+    } catch (error) {
+      this.handleError('OAuth authentication completion failed', error);
+      throw error;
+    }
+  }
+
   // Private methods
 
   /**

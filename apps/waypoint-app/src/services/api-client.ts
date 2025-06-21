@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { AuthService } from './auth.service';
-import { API_CONFIG } from '@/config/api.config';
+import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
 import { AUTH_CONFIG } from '@/config/auth.config';
 
 /**
@@ -112,18 +112,23 @@ export class ApiClient {
       async (error) => {
         const originalRequest = error.config;
 
-        // If error is 401 Unauthorized, and we haven't tried to refresh yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Check if this is the refresh token endpoint - if so, don't try to refresh again
+        const isRefreshEndpoint = originalRequest?.url === API_ENDPOINTS.AUTH.REFRESH;
+        // If error is 401 Unauthorized, not from the refresh endpoint, and we haven't tried to refresh yet
+        if (error.response?.status === 401 && !originalRequest._retry && !isRefreshEndpoint) {
           originalRequest._retry = true;
 
           // Prevent multiple refresh attempts
-          this.refreshingPromise ??= new Promise<void>((resolve, reject) => {
+          this.refreshingPromise ??= new Promise<void>(async (resolve, reject) => {
             try {
-              this.authService.refreshTokens();
+              // Make sure to await the token refresh
+              console.log('Refreshing tokens due to 401 Unauthorized error');
+              await this.authService.refreshTokens();
               resolve();
             } catch (refreshError) {
+              console.log('Token refresh failed, logging out user');
               // If refresh fails, logout
-              this.authService.logout();
+              await this.authService.logout();
 
               // Only redirect if we're in the browser and the current URL is not whitelisted
               if (typeof window !== 'undefined') {
@@ -142,8 +147,8 @@ export class ApiClient {
           try {
             await this.refreshingPromise;
             
-            // Retry the original request - no need to add token since we're using cookies
-            return axios(originalRequest);
+            // Use the axiosInstance to make the request to ensure all interceptors are applied
+            return this.axiosInstance(originalRequest);
           } catch (refreshError) {
             return Promise.reject(refreshError instanceof Error ? refreshError : new Error(JSON.stringify(refreshError)));
           }

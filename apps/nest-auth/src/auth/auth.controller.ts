@@ -214,6 +214,22 @@ export class AuthController {
     this.logger.debug('Email verification attempt');
     return this.authService.verifyEmail(verifyEmailDto.token);
   }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Complete OAuth authentication' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Authentication completed successfully',
+  })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @Post('complete-oauth')
+  async completeOAuthAuthentication(
+    @Body('token') token: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    this.logger.debug('Completing OAuth authentication');
+    return this.authService.completeOAuthAuthentication(token, response);
+  }
 }
 
 //TODO introduce account lock ?

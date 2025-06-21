@@ -205,6 +205,31 @@ export function useAuth() {
     });
   };
 
+  /**
+   * Complete OAuth authentication after redirect
+   * @param token - The token from the URL hash
+   * @returns Promise that resolves when authentication is complete
+   */
+  const completeOAuthAuthentication = async (token: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      await authService.completeOAuthAuthentication(token);
+
+      // Invalidate queries to refresh user data
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+
+      setIsLoading(false);
+      return true;
+    } catch (err) {
+      console.error('OAuth authentication completion error:', err);
+      setError(err instanceof Error ? err : new Error('Authentication failed'));
+      setIsLoading(false);
+      throw err;
+    }
+  };
+
   return {
     // Auth state
     isAuthenticated,
@@ -219,6 +244,7 @@ export function useAuth() {
     resetPassword,
     changePassword,
     verifyEmail,
+    completeOAuthAuthentication,
   };
 }
 
