@@ -23,10 +23,13 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors({
-    origin: 'http://localhost:3000', //TODO move to config
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     credentials: true,
   });
-  await app.listen(4000);
+
+  const port = process.env.PORT || 4000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`Application is running on port: ${port}`);
 
   //TODO rate limiting, security headers, etc.
 }
