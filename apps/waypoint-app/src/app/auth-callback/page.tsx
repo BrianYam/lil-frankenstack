@@ -52,8 +52,8 @@ export default function AuthCallbackPage() {
   if (status === 'loading' || isLoading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-indigo-50">
-        <h1 className="text-2xl font-bold mb-4">Completing your sign in...</h1>
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <h1 className="text-2xl font-bold mb-4 text-gray-700">Completing your sign in...</h1>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-3 border-b-3 border-blue-400"></div>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export default function AuthCallbackPage() {
   if (status === 'error' || error) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-indigo-50">
-        <h1 className="text-2xl font-bold mb-4">Authentication Failed</h1>
+        <h1 className="text-2xl font-bold mb-4 text-red-500">Authentication Failed</h1>
         <p className="text-red-500 mb-4">{errorMessage || (error instanceof Error ? error.message : 'An error occurred')}</p>
         <button
           className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
@@ -75,7 +75,7 @@ export default function AuthCallbackPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-indigo-50">
-      <h1 className="text-2xl font-bold mb-4">Authentication Successful</h1>
+      <h1 className="text-2xl font-bold mb-4 text-green-500">Authentication Successful</h1>
       <p className="mb-4">Redirecting you to your profile...</p>
     </div>
   );

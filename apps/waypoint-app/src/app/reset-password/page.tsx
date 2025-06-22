@@ -126,7 +126,7 @@ export default function ResetPasswordPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-indigo-700"
+                className="border-blue-200 bg-blue-300 hover:border-blue-500 hover:bg-blue-400 text-indigo-700"
                 onClick={() => window.location.href = '/login'}
               >
                 Go to login
