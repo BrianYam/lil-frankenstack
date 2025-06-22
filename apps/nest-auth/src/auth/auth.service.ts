@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcryptjs';
@@ -7,6 +7,7 @@ import { Response } from 'express';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { EmailService } from '@/message/email/email.service';
 import { ENV, TokenPayload, User } from '@/types';
 import { UsersService } from '@/users/users.service';
@@ -20,7 +21,7 @@ const AUTH_REDIRECT = 'auth-redirect';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
+  private readonly logger = new CustomLoggerService(AuthService.name);
 
   //TODO can even consider to move this to a cache service like Redis or NodeCache
   // or use a database to store the password reset tokens

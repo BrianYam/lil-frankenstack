@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppService } from './app.service';
@@ -7,6 +7,7 @@ import { RepositoriesModule } from './repositories/repositories.module';
 import { ApiKeysModule } from '@/api-keys/api-keys.module';
 import { AppController } from '@/app.controller';
 import { DatabaseModule } from '@/database/database.module';
+import { LoggerModule } from '@/logger/logger.module';
 import { UsersModule } from '@/users/users.module';
 import { LoggingInterceptor } from '@/utils/interceptors/logging.interceptor';
 
@@ -14,6 +15,7 @@ import { LoggingInterceptor } from '@/utils/interceptors/logging.interceptor';
   imports: [
     // Import configs module globally
     ConfigModule.forRoot({ isGlobal: true }),
+    LoggerModule,
     UsersModule,
     AuthModule,
     RepositoriesModule,
