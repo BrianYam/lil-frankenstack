@@ -1,17 +1,29 @@
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, LogLevel } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Define log levels based on environment variable
+  const logLevels: LogLevel[] = ['error', 'warn', 'log']; // Default to 'info' level (NestJS uses 'log' for info)
 
-  app.useGlobalPipes(new ValidationPipe()); // This will enable the validation pipe for all routes
+  // Only add debug and verbose if LOG_LEVEL allows it
+  if (
+    process.env.LOG_LEVEL === 'debug' ||
+    process.env.LOG_LEVEL === 'verbose'
+  ) {
+    logLevels.push('debug');
+    if (process.env.LOG_LEVEL === 'verbose') {
+      logLevels.push('verbose');
+    }
+  }
 
-  //the cookie parser is gonna be run as a middleware, so a middleware is a function that runs before the request hits the route handler
-  //middleware can do things like logging, get access to the request and response object, modify the request and response object, add properties to the request and response object, authenticate
-  //register the cookie parser middleware globally
+  const app = await NestFactory.create(AppModule, {
+    logger: logLevels,
+  });
+
+  app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
 
   const config = new DocumentBuilder()

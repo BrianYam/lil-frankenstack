@@ -47,7 +47,7 @@ export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePassw
   };
 
   return (
-    <Card className="w-full p-6 border border-blue-100 bg-white">
+    <Card className="w-full p-4 sm:p-6 border border-blue-100 bg-white overflow-hidden">
       {isSubmitted ? (
         <div className="text-center py-4">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
@@ -56,11 +56,12 @@ export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePassw
             </svg>
           </div>
           <h3 className="mt-3 text-lg font-medium text-gray-900">Password changed successfully</h3>
+          <p className="text-sm text-gray-500 mt-1">Returning to profile...</p>
         </div>
       ) : (
         <>
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium shadow-sm">
+            <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium shadow-sm">
               {error}
             </div>
           )}
@@ -73,7 +74,7 @@ export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePassw
               <PasswordInput
                 id="currentPassword" 
                 autoComplete="current-password"
-                className="border-blue-200 bg-white hover:border-blue-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black"
+                className="border-blue-200 bg-white hover:border-blue-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black w-full"
                 error={errors.currentPassword?.message}
                 {...register('currentPassword')}
               />
@@ -86,7 +87,7 @@ export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePassw
               <PasswordInput
                 id="newPassword" 
                 autoComplete="new-password"
-                className="border-blue-200 bg-white hover:border-blue-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black"
+                className="border-blue-200 bg-white hover:border-blue-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black w-full"
                 error={errors.newPassword?.message}
                 {...register('newPassword')}
               />
@@ -99,19 +100,19 @@ export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePassw
               <PasswordInput
                 id="confirmPassword"
                 autoComplete="new-password"
-                className="border-blue-200 bg-white hover:border-blue-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black"
+                className="border-blue-200 bg-white hover:border-blue-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black w-full"
                 error={errors.confirmPassword?.message}
                 {...register('confirmPassword')}
               />
             </div>
 
-            <div className="flex justify-end space-x-3 pt-2">
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:space-x-3 pt-2">
               {onCancel && (
                 <Button
                   type="button"
                   variant="outline"
                   onClick={onCancel}
-                  className="border-gray-200 hover:bg-gray-700 text-white"
+                  className="border-gray-200 text-white hover:bg-gray-100 w-full sm:w-auto"
                 >
                   Cancel
                 </Button>
@@ -120,9 +121,9 @@ export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePassw
                 type="submit"
                 disabled={isLoading}
                 variant="default"
-                className="bg-indigo-600 hover:bg-indigo-700 shadow-sm"
+                className="bg-indigo-600 hover:bg-indigo-700 shadow-sm w-full sm:w-auto"
               >
-                {isLoading ? 'Changing Password...' : 'Change Password'}
+                {isLoading ? 'Changing...' : 'Change Password'}
               </Button>
             </div>
           </form>

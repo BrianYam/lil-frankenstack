@@ -38,12 +38,12 @@ export default function ProfilePage() {
           <UserIcon size={40} strokeWidth={1.5} />
         </div>
         <div className="space-y-1 flex-1">
-          <h3 className="text-2xl font-semibold text-gray-800">{user?.email}</h3>
+          <h3 className="text-xl font-semibold text-gray-800">{user?.email}</h3>
           <div className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
             <Shield size={14} className="mr-1" />
             <span className="capitalize">{user?.role} Account</span>
           </div>
-          <p className="text-gray-500 mt-1">Account created: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
+          <p className="text-sm text-gray-500 mt-1">Account created: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
         </div>
       </div>
       

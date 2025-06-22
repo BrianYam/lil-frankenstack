@@ -8,18 +8,6 @@ import { EmailService } from '@/message/email/email.service';
 import { User, DeleteUserResponse, UserRole, ENV } from '@/types';
 import { UserRepository } from '@/users/user.repository';
 
-export type Userx = {
-  userId: number;
-  username: string;
-  password: string;
-};
-
-//TODO: This is a mockup, replace with a actual database
-const users: Userx[] = [
-  { userId: 1, username: 'admin', password: 'admin' },
-  { userId: 2, username: 'user', password: 'user' },
-];
-
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -37,10 +25,6 @@ export class UsersService {
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
   ) {}
-
-  async getUserByName(username: string): Promise<Userx | undefined> {
-    return users.find((user) => user.username === username);
-  }
 
   async createUser(createUserRequest: CreateUserRequestDto) {
     const user = await this.userRepository.getOrCreateUser(createUserRequest);
