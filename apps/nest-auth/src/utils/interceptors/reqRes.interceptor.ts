@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { TraceService } from '@/trace/trace.service';
 
 @Injectable()
 export class ReqResInterceptor implements NestInterceptor {
@@ -18,10 +19,16 @@ export class ReqResInterceptor implements NestInterceptor {
     'newPassword',
   ];
 
+  constructor(private readonly traceService: TraceService) {}
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
     const { method, url, body, headers } = request;
     const start = Date.now();
+
+    // Generate trace ID for this request
+    const traceId = this.traceService.createTraceId();
+    request.traceId = traceId;
 
     // Function to mask password in the request body
     const maskSensitiveData = (data: any) => {
@@ -56,6 +63,7 @@ export class ReqResInterceptor implements NestInterceptor {
         body: maskedBody,
         headers,
       },
+      traceId,
     };
 
     // Log before processing the request
@@ -73,6 +81,7 @@ export class ReqResInterceptor implements NestInterceptor {
             `[${method}] ${url} - Request completed: ${JSON.stringify({
               response,
               duration: `${delay}ms`,
+              traceId,
             })}`,
           );
         },
@@ -85,6 +94,7 @@ export class ReqResInterceptor implements NestInterceptor {
                 code: error.status,
               },
               duration: `${delay}ms`,
+              traceId,
             })}`,
           );
         },

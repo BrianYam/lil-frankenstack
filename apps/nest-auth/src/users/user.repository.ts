@@ -1,19 +1,26 @@
 /**
  * User repository implementation using Drizzle ORM for PostgreSQL
  */
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { hash, compare } from 'bcryptjs';
 import { desc, eq, and } from 'drizzle-orm';
 import { DB_PROVIDER } from '@/database/database.module';
 import { usersTable } from '@/database/schema';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { User, NewUser, DrizzleDB } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto';
 
 @Injectable()
 export class UserRepository {
-  private readonly logger = new Logger(UserRepository.name);
+  private readonly logger: CustomLoggerService;
 
-  constructor(@Inject(DB_PROVIDER) private readonly db: DrizzleDB) {}
+  constructor(
+    @Inject(DB_PROVIDER) private readonly db: DrizzleDB,
+    private readonly loggerFactory: LoggerFactory,
+  ) {
+    this.logger = this.loggerFactory.getLogger(UserRepository.name);
+  }
 
   /**
    * Creates a new user with hashed password

@@ -1,16 +1,18 @@
 import { randomBytes } from 'crypto';
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { hash } from 'bcryptjs';
 import { CreateUserRequestDto } from './dto/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { EmailService } from '@/message/email/email.service';
 import { User, DeleteUserResponse, UserRole, ENV } from '@/types';
 import { UserRepository } from '@/users/user.repository';
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
+  private readonly logger: CustomLoggerService;
 
   // Store email verification tokens in memory (similar to password reset tokens)
   // In production, consider using Redis or database storage
@@ -24,7 +26,10 @@ export class UsersService {
     public readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
-  ) {}
+    private readonly loggerFactory: LoggerFactory,
+  ) {
+    this.logger = this.loggerFactory.getLogger(UsersService.name);
+  }
 
   async createUser(createUserRequest: CreateUserRequestDto) {
     const user = await this.userRepository.getOrCreateUser(createUserRequest);

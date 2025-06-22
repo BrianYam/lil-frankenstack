@@ -20,6 +20,8 @@ import {
 import { CreateUserRequestDto } from './dto/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { UsersService } from './users.service';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { User, UserRole } from '@/types';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
 import { Roles } from '@/utils/decorators/roles.decorator';
@@ -31,8 +33,13 @@ import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-e
 @Controller('users')
 @SimpleApiKeyProtected()
 export class UsersController {
-  private readonly logger = new Logger(UsersController.name);
-  constructor(private readonly usersService: UsersService) {}
+  private readonly logger: CustomLoggerService;
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly loggerFactory: LoggerFactory,
+  ) {
+    this.logger = this.loggerFactory.getLogger(UsersController.name);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new user' })

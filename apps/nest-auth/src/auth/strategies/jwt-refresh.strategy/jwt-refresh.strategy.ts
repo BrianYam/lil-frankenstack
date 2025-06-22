@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy, ExtractJwt } from 'passport-jwt';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { AUTH_STRATEGY, ENV, TokenPayload } from '@/types';
 import { AuthService } from 'src/auth/auth.service';
 
@@ -11,11 +13,12 @@ export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
   AUTH_STRATEGY.JWT_REFRESH,
 ) {
-  private readonly logger = new Logger(JwtRefreshStrategy.name);
+  private readonly logger: CustomLoggerService;
 
   constructor(
     configService: ConfigService,
     private readonly authService: AuthService,
+    private readonly loggerFactory: LoggerFactory,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -26,6 +29,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
       ),
       passReqToCallback: true, //tell the jwt strategy to pass the request object to the callback function, in this case the validate function
     });
+    this.logger = this.loggerFactory.getLogger(JwtRefreshStrategy.name);
   }
 
   async validate(request: Request, payload: TokenPayload) {

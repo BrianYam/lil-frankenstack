@@ -4,19 +4,32 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-  Logger,
+  Injectable,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
+import { TraceService } from '@/trace/trace.service';
 
+@Injectable()
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private readonly logger = new Logger(AllExceptionsFilter.name);
+  private readonly logger: CustomLoggerService;
+
+  constructor(
+    private readonly traceService: TraceService,
+    private readonly loggerFactory: LoggerFactory,
+  ) {
+    // Get a dedicated logger instance with this class's context
+    this.logger = this.loggerFactory.getLogger(AllExceptionsFilter.name);
+  }
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const { method, url, body } = request;
+    const traceId = this.traceService.getTraceId();
 
     // Get status code and message
     const status =
@@ -37,6 +50,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         statusCode: status,
         error: errorMessage,
         requestBody: this.maskSensitiveData(body),
+        traceId,
       })}`,
     );
 
@@ -46,6 +60,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message: errorMessage,
       timestamp: new Date().toISOString(),
       path: request.url,
+      traceId, // Include traceId in response for easier debugging
     });
   }
 

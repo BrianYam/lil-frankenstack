@@ -16,6 +16,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { User } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
@@ -30,8 +31,13 @@ import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-e
 @SimpleApiKeyProtected()
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
-  constructor(private readonly authService: AuthService) {}
-
+  constructor(
+    private readonly authService: AuthService,
+    private readonly loggerFactory: LoggerFactory,
+  ) {
+    // Get a dedicated logger instance with this class's context
+    this.logger = this.loggerFactory.getLogger(AuthController.name);
+  }
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login with email' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Login with email' })

@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy, ExtractJwt } from 'passport-jwt';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { AUTH_STRATEGY, ENV, TokenPayload } from '@/types';
 import { UsersService } from 'src/users/users.service';
 
@@ -18,10 +20,11 @@ export class UserEmailJwtStrategy extends PassportStrategy(
   Strategy,
   AUTH_STRATEGY.USER_EMAIL_JWT,
 ) {
-  private readonly logger = new Logger(PassportStrategy.name);
+  private readonly logger: CustomLoggerService;
   constructor(
     configService: ConfigService,
     private readonly userService: UsersService,
+    private readonly loggerFactory: LoggerFactory,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -32,6 +35,7 @@ export class UserEmailJwtStrategy extends PassportStrategy(
         ENV.JWT_ACCESS_TOKEN_SECRET,
       ),
     });
+    this.logger = this.loggerFactory.getLogger(UserEmailJwtStrategy.name);
   }
 
   async validate(payload: TokenPayload) {

@@ -8,6 +8,7 @@ import { ApiKeysModule } from '@/api-keys/api-keys.module';
 import { AppController } from '@/app.controller';
 import { DatabaseModule } from '@/database/database.module';
 import { LoggerModule } from '@/logger/logger.module';
+import { TraceModule } from '@/trace/trace.module';
 import { UsersModule } from '@/users/users.module';
 import { AllExceptionsFilter } from '@/utils/filters/all-exceptions.filter';
 import { ReqResInterceptor } from '@/utils/interceptors/reqRes.interceptor';
@@ -22,6 +23,7 @@ import { ReqResInterceptor } from '@/utils/interceptors/reqRes.interceptor';
     RepositoriesModule,
     DatabaseModule,
     ApiKeysModule,
+    TraceModule,
   ],
   controllers: [AppController],
   providers: [
