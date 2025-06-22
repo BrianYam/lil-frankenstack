@@ -25,6 +25,8 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
+  // Apply the global exception filter to catch all exceptions including guard failures
+  // app.useGlobalFilters(new AllExceptionsFilter()); // Moved to AppModule
 
   const config = new DocumentBuilder()
     .setTitle('API')

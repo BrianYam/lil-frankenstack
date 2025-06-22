@@ -2,19 +2,18 @@ import { Injectable, Logger, LoggerService } from '@nestjs/common';
 
 @Injectable()
 export class CustomLoggerService extends Logger implements LoggerService {
-  error(message: any, trace?: string, context?: string): void {
+  error(message: any): void {
     // Call the original error method
-    super.error(message, trace, context);
+    super.error(message);
 
     // Add your custom logic here
-    this.notifyTelegram(message, trace, context);
+    this.notifyTelegram(message);
   }
 
-  private notifyTelegram(message: any, trace?: string, context?: string): void {
+  private notifyTelegram(message: any, trace?: string): void {
     //log both context
-    console.log(`context: ${context}, this.context: ${this.context}`);
     // Get context from this.context if not provided (handles class instantiation context)
-    const logContext = context || this.context;
+    const logContext = this.context;
 
     // Implement your Telegram notification logic here
     //TODO need time

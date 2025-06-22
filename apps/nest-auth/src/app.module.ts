@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { RepositoriesModule } from './repositories/repositories.module';
@@ -9,7 +9,8 @@ import { AppController } from '@/app.controller';
 import { DatabaseModule } from '@/database/database.module';
 import { LoggerModule } from '@/logger/logger.module';
 import { UsersModule } from '@/users/users.module';
-import { LoggingInterceptor } from '@/utils/interceptors/logging.interceptor';
+import { AllExceptionsFilter } from '@/utils/filters/all-exceptions.filter';
+import { ReqResInterceptor } from '@/utils/interceptors/reqRes.interceptor';
 
 @Module({
   imports: [
@@ -27,7 +28,11 @@ import { LoggingInterceptor } from '@/utils/interceptors/logging.interceptor';
     AppService,
     {
       provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
+      useClass: ReqResInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
     },
   ],
 })
