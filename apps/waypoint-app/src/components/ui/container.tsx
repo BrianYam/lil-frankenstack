@@ -23,7 +23,7 @@ export function Container({
 
   return (
     <div className={cn(
-      'mx-auto px-4 w-full',
+      'mx-auto px-3 sm:px-4 w-full',
       maxWidthClass[maxWidth],
       className
     )}>

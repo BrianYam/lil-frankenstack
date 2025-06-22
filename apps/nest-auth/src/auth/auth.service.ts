@@ -16,7 +16,6 @@ const REFRESH = 'Refresh';
 const PRODUCTION = 'production';
 const STAGING = 'staging';
 const AUTHENTICATION_FE_COOKIE = 'Authentication-fe';
-const AUTHENTICATED = 'authenticated';
 const AUTH_REDIRECT = 'auth-redirect';
 
 @Injectable()
@@ -144,15 +143,6 @@ export class AuthService {
         secure: this.isSecureEnvironment(), //only send cookie over HTTPS in production or staging. Required for cross-origin cookies with SameSite=None
         sameSite: this.isSecureEnvironment() ? 'none' : 'lax', // Add sameSite='none' for cross-origin requests in secure environments
       });
-
-      //TODO i dont think we need this anymore
-      // Set a non-HTTP-only cookie that the frontend can read to detect auth state
-      // response.cookie(AUTHENTICATION_FE_COOKIE, AUTHENTICATED, {
-      //   httpOnly: false, // Allow JavaScript access
-      //   secure: this.isSecureEnvironment(),
-      //   path: '/',
-      //   sameSite: this.isSecureEnvironment() ? 'none' : 'lax',
-      // });
     } else {
       // This is a redirect from OAuth - we need to use the token approach
       // Create a special auth token for cross-domain auth that will be valid for a brief period
@@ -407,55 +397,6 @@ export class AuthService {
   }
 
   /**
-   * DEPRECATES GOES HERE !
-   */
-
-  /**
-   * Request a password reset for a user
-   * @deprecated Use the forgotPassword() method instead as it provides a more secure flow
-   * @param user The user requesting password reset
-   * @returns An object containing a message about the operation
-   */
-  async requestPasswordReset(user: User): Promise<{ message: string }> {
-    try {
-      // Generate a secure random token
-      const resetToken = randomBytes(32).toString('hex');
-
-      // Store the token with expiration (1 hour from now)
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 1);
-
-      this.passwordResetTokens.set(resetToken, {
-        userId: user.id,
-        expiresAt,
-      });
-
-      this.logger.debug(
-        `Password reset requested for user: ${user.id}, token: ${resetToken}`,
-      );
-
-      //TODO
-      // In a production environment, you would send an email with the reset link
-      // Example: await this.emailService.sendPasswordResetEmail(user.email, resetToken);
-
-      // For development purposes, we'll just log the token
-      this.logger.debug(
-        `[DEV ONLY] Reset token for ${user.email}: ${resetToken}`,
-      );
-
-      return {
-        message: 'If the email exists, a password reset link has been sent.',
-      };
-    } catch (error) {
-      // Don't reveal whether the email exists or not for security reasons
-      this.logger.error(`Error in password reset request: ${error.message}`);
-      return {
-        message: 'If the email exists, a password reset link has been sent.',
-      };
-    }
-  }
-
-  /**
    * Complete OAuth authentication process
    * This method is called by the frontend after being redirected from an OAuth provider
    * with a temporary authentication token
@@ -500,6 +441,47 @@ export class AuthService {
       throw new UnauthorizedException(
         'Invalid or expired authentication token',
       );
+    }
+  }
+
+  /**
+   * Request a password reset for a user
+   * @deprecated Use the forgotPassword() method instead as it provides a more secure flow
+   * @param user The user requesting password reset
+   * @returns An object containing a message about the operation
+   */
+  async requestPasswordReset(user: User): Promise<{ message: string }> {
+    try {
+      // Generate a secure random token
+      const resetToken = randomBytes(32).toString('hex');
+
+      // Store the token with expiration (1 hour from now)
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1);
+
+      this.passwordResetTokens.set(resetToken, {
+        userId: user.id,
+        expiresAt,
+      });
+
+      this.logger.debug(
+        `Password reset requested for user: ${user.id}, token: ${resetToken}`,
+      );
+
+      // For development purposes, we'll just log the token
+      this.logger.debug(
+        `[DEV ONLY] Reset token for ${user.email}: ${resetToken}`,
+      );
+
+      return {
+        message: 'If the email exists, a password reset link has been sent.',
+      };
+    } catch (error) {
+      // Don't reveal whether the email exists or not for security reasons
+      this.logger.error(`Error in password reset request: ${error.message}`);
+      return {
+        message: 'If the email exists, a password reset link has been sent.',
+      };
     }
   }
 }
