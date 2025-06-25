@@ -7,10 +7,11 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { TraceService } from '@/trace/trace.service';
 
 @Injectable()
-export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(LoggingInterceptor.name);
+export class ReqResInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(ReqResInterceptor.name);
   // Define sensitive fields to be masked
   private readonly sensitiveFields = [
     'password',
@@ -18,10 +19,16 @@ export class LoggingInterceptor implements NestInterceptor {
     'newPassword',
   ];
 
+  constructor(private readonly traceService: TraceService) {}
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
     const { method, url, body, headers } = request;
-    const now = Date.now();
+    const start = Date.now();
+
+    // Generate trace ID for this request
+    const traceId = this.traceService.createTraceId();
+    request.traceId = traceId;
 
     // Function to mask password in the request body
     const maskSensitiveData = (data: any) => {
@@ -56,30 +63,38 @@ export class LoggingInterceptor implements NestInterceptor {
         body: maskedBody,
         headers,
       },
+      traceId,
     };
+
+    // Log before processing the request
+    this.logger.log(
+      `[${method}] Request started: ${url} ${JSON.stringify({
+        ...serializedRequest,
+      })}`,
+    );
 
     return next.handle().pipe(
       tap({
         next: (response) => {
-          const delay = Date.now() - now;
+          const delay = Date.now() - start;
           this.logger.log(
-            `[${method}] ${url} ${JSON.stringify({
-              ...serializedRequest,
+            `[${method}] ${url} - Request completed: ${JSON.stringify({
               response,
               duration: `${delay}ms`,
+              traceId,
             })}`,
           );
         },
         error: (error) => {
-          const delay = Date.now() - now;
+          const delay = Date.now() - start;
           this.logger.error(
-            `[${method}] ${url} ${JSON.stringify({
-              ...serializedRequest,
+            `[${method}] ${url} - Error occurred: ${JSON.stringify({
               error: {
                 message: error.message,
                 code: error.status,
               },
               duration: `${delay}ms`,
+              traceId,
             })}`,
           );
         },
