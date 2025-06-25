@@ -65,8 +65,11 @@ export class AuthService {
       }
       return user;
     } catch (error) {
-      this.logger.error(
+      // Using the new errorAlert method for cleaner code
+      this.logger.errorAlert(
         `Authentication failed for email: ${email}, error: ${error.message}`,
+        true,
+        error.stack,
       );
       throw new UnauthorizedException('Invalid credentials');
     }

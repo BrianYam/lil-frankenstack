@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import { EventEmitterService } from '../../event/event.emitter.service';
 import { CustomLoggerService } from './custom-logger.service';
 import { LoggerFactory } from './logger-factory.service';
 
@@ -14,6 +15,7 @@ import { LoggerFactory } from './logger-factory.service';
       inject: [ModuleRef],
     },
     LoggerFactory,
+    EventEmitterService,
   ],
   exports: [CustomLoggerService, LoggerFactory],
 })

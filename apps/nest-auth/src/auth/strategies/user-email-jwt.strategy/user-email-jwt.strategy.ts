@@ -28,7 +28,10 @@ export class UserEmailJwtStrategy extends PassportStrategy(
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
+        // First try to extract from cookies (web clients)
         (request: Request) => request?.cookies?.Authentication,
+        // Then try to extract from Authorization header (mobile clients)
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]), //tell passport to extract the jwt token from the cookie
       ignoreExpiration: false, //if the jwt token is expired, it will not allow the request to proceed
       secretOrKey: configService.getOrThrow<string>(
