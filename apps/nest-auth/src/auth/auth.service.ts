@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcryptjs';
@@ -7,6 +7,8 @@ import { Response } from 'express';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { EmailService } from '@/message/email/email.service';
 import { ENV, TokenPayload, User } from '@/types';
 import { UsersService } from '@/users/users.service';
@@ -20,7 +22,7 @@ const AUTH_REDIRECT = 'auth-redirect';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
+  private readonly logger: CustomLoggerService;
 
   //TODO can even consider to move this to a cache service like Redis or NodeCache
   // or use a database to store the password reset tokens
@@ -35,7 +37,11 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
-  ) {}
+    private readonly loggerFactory: LoggerFactory,
+  ) {
+    // Get a dedicated logger instance with this class's context
+    this.logger = this.loggerFactory.getLogger(AuthService.name);
+  }
 
   // Helper method to check if environment requires HTTPS
   private isSecureEnvironment(): boolean {
@@ -59,8 +65,11 @@ export class AuthService {
       }
       return user;
     } catch (error) {
-      this.logger.error(
+      // Using the new errorAlert method for cleaner code
+      this.logger.errorAlert(
         `Authentication failed for email: ${email}, error: ${error.message}`,
+        true,
+        error.stack,
       );
       throw new UnauthorizedException('Invalid credentials');
     }

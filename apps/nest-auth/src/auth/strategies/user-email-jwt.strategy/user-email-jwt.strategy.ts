@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy, ExtractJwt } from 'passport-jwt';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { AUTH_STRATEGY, ENV, TokenPayload } from '@/types';
 import { UsersService } from 'src/users/users.service';
 
@@ -18,20 +20,25 @@ export class UserEmailJwtStrategy extends PassportStrategy(
   Strategy,
   AUTH_STRATEGY.USER_EMAIL_JWT,
 ) {
-  private readonly logger = new Logger(PassportStrategy.name);
+  private readonly logger: CustomLoggerService;
   constructor(
     configService: ConfigService,
     private readonly userService: UsersService,
+    private readonly loggerFactory: LoggerFactory,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
+        // First try to extract from cookies (web clients)
         (request: Request) => request?.cookies?.Authentication,
+        // Then try to extract from Authorization header (mobile clients)
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]), //tell passport to extract the jwt token from the cookie
       ignoreExpiration: false, //if the jwt token is expired, it will not allow the request to proceed
       secretOrKey: configService.getOrThrow<string>(
         ENV.JWT_ACCESS_TOKEN_SECRET,
       ),
     });
+    this.logger = this.loggerFactory.getLogger(UserEmailJwtStrategy.name);
   }
 
   async validate(payload: TokenPayload) {

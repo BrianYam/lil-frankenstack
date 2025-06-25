@@ -1,9 +1,11 @@
 import * as crypto from 'crypto';
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcryptjs';
 import { ApiKeyRepository } from '@/api-keys/api-key.repository';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { ApiKey, ENV } from '@/types';
 import {
   CreateApiKeyDto,
@@ -13,13 +15,16 @@ import {
 
 @Injectable()
 export class ApiKeyService {
-  private readonly logger = new Logger(ApiKeyService.name);
+  private readonly logger: CustomLoggerService;
 
   constructor(
     private readonly apiKeyRepository: ApiKeyRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+    private readonly loggerFactory: LoggerFactory,
+  ) {
+    this.logger = this.loggerFactory.getLogger(ApiKeyService.name);
+  }
 
   /**
    * Generate a secure random token for the API key

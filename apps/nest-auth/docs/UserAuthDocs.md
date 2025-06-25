@@ -91,82 +91,61 @@ Allows users to authenticate using their Google account.
    - Requests profile and email scopes
    - On successful authentication, creates or retrieves the corresponding user
 
-2. Updated OAuth Flow:
-   - Frontend calls `/auth/google/login` to initiate authentication
-   - User is redirected to Google's consent page
-   - After granting permission, Google redirects back to backend's `/auth/google/callback` endpoint
-   - Backend generates a JWT token and redirects to frontend with the token
-   - Frontend uses the token to authenticate with backend by calling `/auth/complete-oauth`
-   - Backend validates the token and sets cookies for authenticated session
+2. Detailed OAuth Flow:
+   - Step 1: Frontend initiates authentication by calling backend's `/auth/google/login` endpoint
+   - Step 2: Backend redirects the user to Google's authentication page
+   - Step 3: User completes Google login and grants necessary permissions
+   - Step 4: Google validates the authentication and redirects back to backend's configured callback URL (`/auth/google/callback`)
+   - Step 5: Backend processes the callback, generates a JWT token, and redirects to frontend with the token (typically as a URL parameter)
+   - Step 6: Frontend extracts the JWT token and uses it to call backend's `/auth/complete-oauth` endpoint to establish the authenticated session
+   - Step 7: Backend validates the JWT token and sets the appropriate authentication cookies
 
-3. Visual Representation of the OAuth Flow:
+3. Implementation Notes:
+   - The frontend must handle the redirect from Google with the token parameter
+   - The backend's `/auth/complete-oauth` endpoint should verify the OAuth JWT and establish standard session cookies
+   - This flow enables seamless authentication while maintaining separation between frontend and backend
 
-```ascii
-┌──────────┐          ┌───────────┐          ┌──────────┐          ┌───────────────┐
-│ Frontend │          │  Backend  │          │  Google  │          │ User's Browser │
-└────┬─────┘          └─────┬─────┘          └────┬─────┘          └───────┬───────┘
-     │                      │                     │                        │
-     │                      │                     │                        │
-     │   1. User clicks     │                     │                        │
-     │   "Login with        │                     │                        │
-     │    Google" button    │                     │                        │
-     │                      │                     │                        │
-     │  2. Request          │                     │                        │
-     │  /auth/google/login  │                     │                        │
-     │ ─────────────────────>                     │                        │
-     │                      │                     │                        │
-     │                      │  3. Redirect to     │                        │
-     │                      │  Google OAuth URL   │                        │
-     │                      │ ────────────────────────────────────────────>│
-     │                      │                     │                        │
-     │                      │                     │  4. User logs in       │
-     │                      │                     │  and authorizes app    │
-     │                      │                     │ <────────────────────────
-     │                      │                     │                        │
-     │                      │  5. Callback with   │                        │
-     │                      │  authorization code │                        │
-     │                      │ <─────────────────────────────────────────────
-     │                      │                     │                        │
-     │                      │  6. Exchange code   │                        │
-     │                      │  for user profile   │                        │
-     │                      │ ────────────────────>                        │
-     │                      │                     │                        │
-     │                      │  7. Return user     │                        │
-     │                      │  profile data       │                        │
-     │                      │ <────────────────────                        │
-     │                      │                     │                        │
-     │                      │  8. Generate JWT    │                        │
-     │                      │  token & redirect   │                        │
-     │                      │  to frontend with   │                        │
-     │                      │  token              │                        │
-     │                      │ ─────────────────────────────────────────────>
-     │                      │                     │                        │
-     │  9. Frontend         │                     │                        │
-     │  receives token      │                     │                        │
-     │ <─────────────────────────────────────────────────────────────────────
-     │                      │                     │                        │
-     │  10. Call            │                     │                        │
-     │  /auth/complete-oauth │                     │                        │
-     │  with token          │                     │                        │
-     │ ─────────────────────>                     │                        │
-     │                      │                     │                        │
-     │  11. Return cookies  │                     │                        │
-     │  & session info      │                     │                        │
-     │ <─────────────────────                     │                        │
-     │                      │                     │                        │
-     │  12. User is now     │                     │                        │
-     │  authenticated       │                     │                        │
-     │                      │                     │                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-Implementation Details:
-
-- The `GoogleStrategy` in `google.strategy.ts` handles the OAuth flow with Passport.js
-- The `google/callback` endpoint generates a temporary token and redirects to frontend
-- The `complete-oauth` endpoint validates the temporary token and establishes a session
-- Users created through OAuth are automatically activated (`isActive: true`)
-- The frontend must securely handle the temporary token and complete the authentication
+     4. Visual Flow Representation:
+        ```
+        Frontend                 Backend                  Google
+           │                        │                        │
+           │                        │                        │
+           │     1. Call /auth      │                        │
+           │     /google/login      │                        │
+           │────────────────────────►                        │
+           │                        │                        │
+           │                        │     2. Redirect to     │
+           │                        │     Google Auth        │
+           │                        │────────────────────────►
+           │                        │                        │
+           │                        │                        │     
+           │                        │                        │────┐ 
+           │                        │                        │    │ 3. User logs
+           │                        │                        │    │    in with
+           │                        │                        │◄───┘    Google 
+           │                        │                        │     
+           │                        │◄────────────────────────
+           │                        │   4. Google confirms   │
+           │                        │   auth & callback      │
+           │                        │                        │
+           │                        │                        │
+           │   5. Redirect with     │                        │
+           │       JWT token        │                        │
+           │◄────────────────────────                        │
+           │                        │                        │
+           │                        │                        │
+           │  6. Call /auth/        │                        │
+           │  complete-oauth        │                        │
+           │  with JWT              │                        │
+           │────────────────────────►                        │
+           │                        │                        │
+           │                        │                        │
+           │   7. Authenticated     │                        │
+           │   session established  │                        │
+           │◄────────────────────────                        │
+           │                        │                        │
+           ▼                        ▼                        ▼
+        ```
 
 ## Token Management
 

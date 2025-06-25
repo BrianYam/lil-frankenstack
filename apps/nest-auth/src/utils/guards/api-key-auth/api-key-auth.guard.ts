@@ -3,10 +3,11 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-  Logger,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ApiKeyService } from '@/api-keys/api-key.service';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { FRANKENSTACK_API_KEY_HEADER } from '@/types';
 
 /*
@@ -15,9 +16,14 @@ import { FRANKENSTACK_API_KEY_HEADER } from '@/types';
 
 @Injectable()
 export class ApiKeyAuthGuard implements CanActivate {
-  private readonly logger = new Logger(ApiKeyAuthGuard.name);
+  private readonly logger: CustomLoggerService;
 
-  constructor(private readonly apiKeyService: ApiKeyService) {}
+  constructor(
+    private readonly apiKeyService: ApiKeyService,
+    private readonly loggerFactory: LoggerFactory,
+  ) {
+    this.logger = this.loggerFactory.getLogger(ApiKeyAuthGuard.name);
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();

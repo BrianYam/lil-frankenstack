@@ -7,7 +7,6 @@ import {
   Post,
   Put,
   UseGuards,
-  Logger,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -17,6 +16,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiKeyService } from './api-key.service';
+import { CustomLoggerService } from '@/logger/custom-logger.service';
+import { LoggerFactory } from '@/logger/logger-factory.service';
 import { User } from '@/types';
 import { CreateApiKeyDto } from '@/types/api-keys.types';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
@@ -25,9 +26,14 @@ import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-e
 @ApiTags('api-keys')
 @Controller('api-keys')
 export class ApiKeyController {
-  private readonly logger = new Logger(ApiKeyController.name);
+  private readonly logger: CustomLoggerService;
 
-  constructor(private readonly apiKeyService: ApiKeyService) {}
+  constructor(
+    private readonly apiKeyService: ApiKeyService,
+    private readonly loggerFactory: LoggerFactory,
+  ) {
+    this.logger = this.loggerFactory.getLogger(ApiKeyController.name);
+  }
 
   @Post()
   @UseGuards(UserEmailJwtAuthGuard)

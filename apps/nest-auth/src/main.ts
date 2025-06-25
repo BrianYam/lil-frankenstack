@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  //TODO to move to config module ?
   // Define log levels based on environment variable
   const logLevels: LogLevel[] = ['error', 'warn', 'log']; // Default to 'info' level (NestJS uses 'log' for info)
 
@@ -25,6 +26,8 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
+  // Apply the global exception filter to catch all exceptions including guard failures
+  // app.useGlobalFilters(new AllExceptionsFilter()); // Moved to AppModule
 
   const config = new DocumentBuilder()
     .setTitle('API')
