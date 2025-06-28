@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Param } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, Delete } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -86,5 +86,20 @@ export class TelegramController {
         `4. Or use the Telegram API: curl https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getUpdates`,
       ],
     };
+  }
+
+  @Get('webhook/info')
+  @ApiOperation({ summary: 'Get current webhook information' })
+  @ApiResponse({ status: 200, description: 'Webhook information retrieved' })
+  async getWebhookInfo() {
+    return this.telegramService.getWebhookInfo();
+  }
+
+  @Delete('webhook')
+  @ApiOperation({ summary: 'Remove webhook (switch to polling)' })
+  @ApiResponse({ status: 200, description: 'Webhook removed successfully' })
+  async removeWebhook() {
+    await this.telegramService.removeWebhook();
+    return { message: 'Webhook removed successfully' };
   }
 }

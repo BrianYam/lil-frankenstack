@@ -6,13 +6,8 @@ import * as schema from '@/database/schema';
  * Using constants/enums instead of string literals improves maintainability and type safety
  */
 
-//TODO dont need this, do the one below
-/*
-  export default registerAs('googleOAuth', () => ({
-  clientId: process.env.GOOGLE_OAUTH_CLIENT_ID || 'default-client-id',
-  clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET
-}
-*/
+export const PRODUCTION = 'production';
+export const STAGING = 'staging';
 export enum ENV {
   NODE_ENV = 'NODE_ENV',
 

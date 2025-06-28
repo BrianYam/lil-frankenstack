@@ -104,3 +104,31 @@ You can use the provided test script to log all incoming updates:
 
 - Use [Telegram Bot API documentation](https://core.telegram.org/bots/api) for advanced features.
 - Consider implementing [webhooks](https://core.telegram.org/bots/api#setwebhook) instead of long polling for production.
+
+---
+
+## Alert System Integration
+
+The system integrates seamlessly with your logging infrastructure:
+- `TelegramListener` handles `SENTINEL_ALERT` events
+- Automatically formats and sends error messages to configured chat
+- Uses clean configuration injection for chat ID management
+- Graceful error handling prevents alert delivery failures
+
+**Alert Message Features:**
+- 🚨 Formatted with Markdown V2 for better readability
+- Includes trace ID, timestamp, and context information
+- Automatically truncates long stack traces for Telegram limits
+- Proper character escaping for special Markdown characters
+
+---
+
+## Management Endpoints
+
+The system provides REST endpoints for webhook management:
+- `GET /telegram/webhook/info` - Check current webhook status
+- `DELETE /telegram/webhook` - Remove webhook (switch to polling)
+- `POST /telegram/send` - Send messages programmatically
+- `POST /telegram/dummy-error` - Test alert system
+
+This solution provides a robust, production-ready webhook implementation that eliminates 409 Conflict errors while maintaining clean, type-safe configuration management across your entire application.

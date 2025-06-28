@@ -1,7 +1,10 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 import type { Message } from 'telegraf/types';
+import generalConfig from '@/configs/general.config';
+import telegramConfig from '@/configs/telegram.config';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
 
@@ -15,6 +18,10 @@ export class TelegramService implements OnModuleInit {
   constructor(
     @InjectBot() private readonly bot: Telegraf,
     private readonly loggerFactory: LoggerFactory,
+    @Inject(generalConfig.KEY)
+    private readonly generalConfiguration: ConfigType<typeof generalConfig>,
+    @Inject(telegramConfig.KEY)
+    private readonly telegramConfiguration: ConfigType<typeof telegramConfig>,
   ) {
     this.logger = this.loggerFactory.getLogger(TelegramService.name);
   }
@@ -36,6 +43,76 @@ export class TelegramService implements OnModuleInit {
     this.bot.command('chatid', (ctx) => {
       ctx.reply(`Chat ID: ${ctx.chat.id}\nChat Type: ${ctx.chat.type}`);
     });
+
+    // Log the current mode for debugging
+    this.logCurrentMode();
+  }
+
+  /**
+   * Log the current bot mode (webhook vs polling) for debugging
+   */
+  private logCurrentMode(): void {
+    const { nodeEnv } = this.generalConfiguration;
+    const { webhookUrl, webhookPath, forcePolling } =
+      this.telegramConfiguration;
+    const isProductionLike = nodeEnv === 'production' || nodeEnv === 'staging';
+
+    this.logger.log(
+      `Current environment: ${nodeEnv} (${isProductionLike ? 'Production-like' : 'Development'})`,
+    );
+    this.logger.log(
+      `Webhook URL: ${webhookUrl || 'Not configured (using polling)'}`,
+    );
+    this.logger.log(
+      `Force development mode: ${forcePolling ? 'Enabled' : 'Disabled'}`,
+    );
+
+    if (forcePolling) {
+      this.logger.log('Bot initialized in FORCED POLLING mode');
+      return;
+    }
+
+    if (isProductionLike && webhookUrl) {
+      this.logger.log(
+        `Bot initialized in WEBHOOK mode (${nodeEnv}): ${webhookUrl}${webhookPath}`,
+      );
+      return;
+    }
+
+    this.logger.log('Bot initialized in POLLING mode (development)');
+  }
+
+  /**
+   * Remove webhook and switch back to polling (useful for development)
+   */
+  async removeWebhook(): Promise<void> {
+    try {
+      await this.bot.telegram.deleteWebhook();
+      this.logger.log('Webhook removed successfully');
+    } catch (error) {
+      this.logger.error(
+        `Failed to remove webhook: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get current webhook information
+   */
+  async getWebhookInfo(): Promise<any> {
+    try {
+      const webhookInfo = await this.bot.telegram.getWebhookInfo();
+      this.logger.log(`Current webhook info: ${JSON.stringify(webhookInfo)}`);
+      return webhookInfo;
+    } catch (error) {
+      this.logger.error(
+        `Failed to get webhook info: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   /**
