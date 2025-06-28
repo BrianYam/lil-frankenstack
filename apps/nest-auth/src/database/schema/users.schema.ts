@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   pgTable,
   text,
@@ -8,6 +8,7 @@ import {
   boolean,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
+import { userDetailsTable } from './user-details.schema';
 import { UserRole } from '@/types';
 
 export const userRoleEnum = pgEnum(
@@ -44,3 +45,7 @@ export const usersTable = pgTable(
       .where(sql`${table.isDeleted} = false`),
   ],
 );
+
+export const usersRelations = relations(usersTable, ({ many }) => ({
+  details: many(userDetailsTable),
+}));
