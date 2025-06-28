@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { SentinelAlertPayload, LogEvents } from '../../../event/logs.events';
+import telegramConfig from '@/configs/telegram.config';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
 import { TelegramService } from '@/message/telegram/telegram.service';
@@ -13,6 +15,8 @@ export class TelegramListener {
   constructor(
     private readonly telegramService: TelegramService,
     private readonly loggerFactory: LoggerFactory,
+    @Inject(telegramConfig.KEY)
+    private readonly telegramConfiguration: ConfigType<typeof telegramConfig>,
   ) {
     this.logger = this.loggerFactory.getLogger(TelegramListener.name);
   }
@@ -27,10 +31,10 @@ export class TelegramListener {
 
     // Send the error message to the Telegram group
     try {
-      const chatId = process.env.TELEGRAM_GROUP_CHAT_ID; // Ensure this is set in your environment variables
+      const chatId = this.telegramConfiguration.groupChatId;
       if (!chatId) {
         this.logger.warn(
-          'TELEGRAM_GROUP_CHAT_ID is not set. Skipping message send.',
+          'telegram.groupChatId is not set in configuration. Skipping message send.',
         );
         return;
       }
