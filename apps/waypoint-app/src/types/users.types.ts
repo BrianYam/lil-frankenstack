@@ -14,42 +14,70 @@ export enum UserRole {
 }
 
 /**
- * User interface representing a user in the system
+ * User type representing a user in the system
  * Contains all user related data returned from the API
  */
-export interface User {
+export type User = {
   id: string;
   email: string;
   role: UserRole;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 /**
- * Interface representing the input data for creating a new user
+ * Type representing the input data for creating a new user
  */
-export interface CreateUserRequest {
+export type CreateUserRequest = {
   email: string;
   password: string;
   role?: UserRole;
-}
+};
 
 /**
- * Interface representing the input data for updating a user
+ * Type representing the input data for updating a user
  */
-export interface UpdateUserRequest {
+export type UpdateUserRequest = {
   email?: string;
   role?: UserRole;
   isActive?: boolean;
   password?: string; //TODO to remove
-}
+};
 
 /**
- * Interface representing the response when deleting a user
+ * Type representing the response when deleting a user
  */
-export interface DeleteUserResponse {
+export type DeleteUserResponse = {
   success: boolean;
   message: string;
   deletedUsers?: User[];
-}
+};
+
+/**
+ * User details type matching the nest-auth schema
+ */
+export type UserDetails = {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  mobileNumber: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/**
+ * User with details type
+ */
+export type UserWithDetails = User & {
+  details?: UserDetails[];
+  defaultDetails?: UserDetails;
+};
