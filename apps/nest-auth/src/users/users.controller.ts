@@ -4,7 +4,6 @@ import {
   Body,
   Get,
   UseGuards,
-  Logger,
   Delete,
   Param,
   HttpCode,

@@ -23,12 +23,12 @@ export class UserDetailsService {
    * @returns Newly created user details
    */
   async create(
+    userId: string,
     createUserDetailsRequest: CreateUserDetailsRequestDto,
   ): Promise<UserDetails> {
-    this.logger.debug(
-      `Creating user details for user ID: ${createUserDetailsRequest.userId}`,
-    );
+    this.logger.debug(`Creating user details for user ID: ${userId}`);
     const newDetails: NewUserDetails = {
+      userId,
       ...createUserDetailsRequest,
       isDefault: createUserDetailsRequest.isDefault || false,
     };
@@ -66,6 +66,7 @@ export class UserDetailsService {
       this.logger.warn(`No user details found for user ID: ${userId}`);
       return [];
     }
+    return userDetails;
   }
 
   /**
@@ -79,10 +80,12 @@ export class UserDetailsService {
     const userDefaultDetail = await this.userDetailsRepository.findUserDetails({
       userId,
       isDefault: true,
-    }); //TODO to combine this
+    });
     if (!userDefaultDetail) {
-      this.logger.error(`No default user details found for user ID: ${userId}`);
-      throw new Error(`Default user details not found for user ID: ${userId}`);
+      this.logger.warn(`No default user details found for user ID: ${userId}`);
+      throw new NotFoundException(
+        `Default user details not found for user ID: ${userId}`,
+      );
     }
     return userDefaultDetail;
   }

@@ -14,7 +14,7 @@ import { DB_PROVIDER } from '@/database/database.module';
 import { usersTable } from '@/database/schema';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
-import { User, NewUser, DrizzleDB } from '@/types';
+import { User, NewUser, DrizzleDB, UserWithDetails } from '@/types';
 import { CreateUserRequestDto } from '@/users/dto/create-user.request.dto';
 
 @Injectable()
@@ -76,12 +76,21 @@ export class UserRepository {
    * @returns User if found
    * @throws NotFoundException if user not found
    */
-  async findUserByEmail(email: string): Promise<User> {
+  async findUserByEmail(email: string): Promise<UserWithDetails> {
     this.logger.debug(`Finding user by email: ${email}`);
 
-    return this.db.query.usersTable.findFirst({
+    const user = await this.db.query.usersTable.findFirst({
       where: and(eq(usersTable.email, email), eq(usersTable.isDeleted, false)),
+      with: {
+        details: true,
+      },
     });
+
+    if (!user) return user;
+    return {
+      ...user,
+      defaultDetails: user.details?.find((d) => d.isDefault),
+    };
   }
 
   /**
@@ -90,12 +99,21 @@ export class UserRepository {
    * @returns User if found
    * @throws NotFoundException if user not found
    */
-  async findUserById(id: string): Promise<User> {
+  async findUserById(id: string): Promise<UserWithDetails> {
     this.logger.debug(`Finding user by ID: ${id}`);
 
-    return this.db.query.usersTable.findFirst({
+    const user = await this.db.query.usersTable.findFirst({
       where: and(eq(usersTable.id, id), eq(usersTable.isDeleted, false)),
+      with: {
+        details: true,
+      },
     });
+
+    if (!user) return user;
+    return {
+      ...user,
+      defaultDetails: user.details?.find((d) => d.isDefault),
+    };
   }
 
   /**

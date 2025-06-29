@@ -11,6 +11,11 @@ export type NewUser = typeof usersTable.$inferInsert; // Input type when inserti
 export type UserDetails = typeof userDetailsTable.$inferSelect; // Return type when querying the table
 export type NewUserDetails = typeof userDetailsTable.$inferInsert; // Input type when inserting into the table
 
+export type UserWithDetails = User & {
+  details?: UserDetails[];
+  defaultDetails?: UserDetails;
+};
+
 export type DeleteUserResponse = {
   success: boolean;
   message: string;

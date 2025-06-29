@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import { NodePgTransaction } from 'drizzle-orm/node-postgres';
 import { DB_PROVIDER } from '@/database/database.module';
 import { userDetailsTable } from '@/database/schema';
@@ -150,7 +150,7 @@ export class UserDetailsRepository {
           .where(
             and(
               eq(userDetailsTable.userId, userId),
-              eq(userDetailsTable.id, sql`NOT ${id}`), // Exclude the current detail
+              ne(userDetailsTable.id, id),
             ),
           );
       }

@@ -29,7 +29,7 @@ export const userDetailsTable = pgTable(
     postalCode: text('postal_code').notNull(),
     country: text('country').notNull(), //TODO make this a enum
     // TODO country iso
-    mobileNumber: text('mobile_number').notNull(),
+    mobileNumber: text('mobile_number').notNull(), //TODO this is the best approach to store phone numbers ?
     isDefault: boolean('is_default').default(false).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),

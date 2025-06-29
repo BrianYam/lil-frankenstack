@@ -10,7 +10,14 @@ import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
 import { EmailService } from '@/message/email/email.service';
-import { User, DeleteUserResponse, UserRole, ENV, GetUserQuery } from '@/types';
+import {
+  User,
+  DeleteUserResponse,
+  UserRole,
+  ENV,
+  GetUserQuery,
+  UserWithDetails,
+} from '@/types';
 import { UserRepository } from '@/users/user.repository';
 
 @Injectable()
@@ -136,7 +143,7 @@ export class UsersService {
    * @throws {NotFoundException} If the user is not found.
    * @throws {UnauthorizedException} If the user is inactive and not an admin.
    */
-  async getUser(query: GetUserQuery) {
+  async getUser(query: GetUserQuery): Promise<UserWithDetails> {
     let user: User;
     if (query.email) {
       user = await this.userRepository.findUserByEmail(query.email);

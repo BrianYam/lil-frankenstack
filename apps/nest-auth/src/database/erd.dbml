@@ -1,0 +1,58 @@
+Enum user_role {
+  ADMIN
+  EDITOR
+  USER
+}
+
+Table users {
+  id uuid [pk, not null, default: `gen_random_uuid()`] // Primary key, UUID
+  email text [not null] // Unique email address
+  password text [not null] // Hashed password
+  refresh_token text // Refresh token
+  role user_role [not null, default: 'USER'] // User role (enum)
+  is_active boolean [not null, default: false] // User status
+  is_deleted boolean [not null, default: false] // Soft delete flag
+  deleted_at timestamp // Soft delete timestamp
+  created_at timestamp [not null, default: `now()`] // Timestamp of creation
+  updated_at timestamp [not null, default: `now()`] // Timestamp of last update
+  // Unique index: email should be unique only among non-deleted users (partial unique index not supported in DBML, document in comment)
+  // UNIQUE(email) WHERE is_deleted = false
+}
+
+Table user_details {
+  id uuid [pk, not null, default: `gen_random_uuid()`] // Primary key, UUID
+  user_id uuid [not null, ref: > users.id, unique] // Foreign key to users
+  first_name text [not null]
+  last_name text [not null]
+  address_line_1 text [not null]
+  address_line_2 text
+  city text [not null]
+  state text [not null]
+  postal_code text [not null]
+  country text [not null] // Consider enum for country
+  mobile_number text [not null]
+  is_default boolean [not null, default: false]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+  // Unique index: (user_id, is_default) where is_default = true (partial unique index not supported in DBML, document in comment)
+  // UNIQUE(user_id, is_default) WHERE is_default = true
+}
+
+Table api_keys {
+  id uuid [pk, not null, default: `gen_random_uuid()`] // Primary key, UUID
+  name text [not null] // Name of the API key
+  description text // Description of what this key is used for
+  key text [not null] // Hashed API key
+  client_name text [not null] // Which client/service this key belongs to
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+  expires_at timestamp // Optional expiration date
+  is_active boolean [not null, default: true]
+  last_used_at timestamp // Track when the key was last used
+  permissions json // Specific permissions this key grants
+  user_id uuid [not null] // User who created the key
+}
+
+// Relationships
+Ref: user_details.user_id > users.id
+// Ref: api_keys.user_id > users.id
