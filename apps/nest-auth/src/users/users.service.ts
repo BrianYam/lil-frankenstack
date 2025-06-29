@@ -183,7 +183,10 @@ export class UsersService {
    * @param isOAuth - When true, automatically activates the user (for OAuth flows)
    * @returns The existing or newly created user
    */
-  async getOrCreateUser(data: CreateUserRequestDto, isOAuth: boolean = false) {
+  async getOrCreateUser(
+    data: CreateUserRequestDto,
+    isOAuth: boolean = false,
+  ): Promise<User> {
     const user = await this.userRepository.getOrCreateUser(data, isOAuth);
     if (!user) {
       this.logger.error(
@@ -193,6 +196,7 @@ export class UsersService {
         `User with email ${data.email} not found and could not be created.`,
       );
     }
+    return user;
   }
 
   async deleteUserWithResponse(id: string): Promise<DeleteUserResponse> {
