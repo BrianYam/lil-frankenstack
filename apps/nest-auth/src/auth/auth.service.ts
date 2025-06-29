@@ -180,10 +180,12 @@ export class AuthService {
   //async verify user refresh token
   async verifyRefreshToken(refreshToken: string, userId: string) {
     try {
+      const user = await this.usersService.getUser({ id: userId });
+
       //call the repository to validate the token
       const isValid =
         await this.usersService.userRepository.validateRefreshToken(
-          userId,
+          user,
           refreshToken,
         );
 

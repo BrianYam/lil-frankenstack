@@ -24,7 +24,12 @@ async function bootstrap() {
     logger: logLevels,
   });
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
   app.use(cookieParser());
   // Apply the global exception filter to catch all exceptions including guard failures
   // app.useGlobalFilters(new AllExceptionsFilter()); // Moved to AppModule

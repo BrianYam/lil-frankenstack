@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -11,7 +11,6 @@ import { DatabaseModule } from '@/database/database.module';
 import { LoggerModule } from '@/logger/logger.module';
 import { TraceModule } from '@/trace/trace.module';
 import { UsersModule } from '@/users/users.module';
-import { AllExceptionsFilter } from '@/utils/filters/all-exceptions.filter';
 import { ReqResInterceptor } from '@/utils/interceptors/reqRes.interceptor';
 
 @Module({
@@ -38,10 +37,6 @@ import { ReqResInterceptor } from '@/utils/interceptors/reqRes.interceptor';
     {
       provide: APP_INTERCEPTOR,
       useClass: ReqResInterceptor,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
     },
   ],
 })
