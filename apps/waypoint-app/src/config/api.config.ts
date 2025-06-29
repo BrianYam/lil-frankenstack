@@ -62,5 +62,11 @@ export const API_CONFIG = {
     BASE: '/users',
     ME: '/users/me',
     BY_ID: (id: string) => `/users/${id}`
+  },
+  USER_DETAILS: {
+    BASE: '/users/details',
+    BY_ID: (id: string) => `/users/details/${id}`,
+    DEFAULT: '/users/details/default',
+    SET_DEFAULT: (id: string) => `/users/details/${id}/set-default`,
   }
 };

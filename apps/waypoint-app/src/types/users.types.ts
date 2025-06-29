@@ -81,3 +81,24 @@ export type UserWithDetails = User & {
   details?: UserDetails[];
   defaultDetails?: UserDetails;
 };
+
+/**
+ * Type representing the input data for creating new user details
+ */
+export type CreateUserDetailsRequest = {
+  firstName: string;
+  lastName: string;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  mobileNumber: string;
+  isDefault?: boolean;
+};
+
+/**
+ * Type representing the input data for updating user details
+ */
+export type UpdateUserDetailsRequest = Partial<CreateUserDetailsRequest>;
