@@ -26,7 +26,7 @@ import { CurrentUser } from '@/utils/decorators/current-user.decorator';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protector.decorator';
 import { RolesGuard } from '@/utils/guards/roles/roles.guard';
-import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-email-jwt-auth.guard';
+import { UserJwtAuthGuard } from '@/utils/guards/user-jwt-auth/user-jwt-auth.guard';
 
 @ApiTags('users')
 @Controller('users')
@@ -56,7 +56,7 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return all users.' })
@@ -67,7 +67,7 @@ export class UsersController {
   }
 
   @Get('me')
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserJwtAuthGuard)
   @ApiOperation({ summary: 'Get signed in user profile' })
   @ApiResponse({ status: 200, description: 'Return the current user profile.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
@@ -77,7 +77,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Update a user by ID' })
   @ApiParam({ name: 'id', description: 'User ID to update' })
@@ -102,7 +102,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete a user by ID' })
   @ApiParam({ name: 'id', description: 'User ID to delete' })

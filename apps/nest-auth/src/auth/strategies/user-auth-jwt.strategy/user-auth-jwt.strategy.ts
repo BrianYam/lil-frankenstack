@@ -16,9 +16,9 @@ import { UsersService } from 'src/users/users.service';
  * Note: This strategy is used to validate the jwt token that is in the cookie, a guard will this strategy and will be used to protect the routes
  */
 @Injectable()
-export class UserEmailJwtStrategy extends PassportStrategy(
+export class UserAuthJwtStrategy extends PassportStrategy(
   Strategy,
-  AUTH_STRATEGY.USER_EMAIL_JWT,
+  AUTH_STRATEGY.USER_AUTH_JWT,
 ) {
   private readonly logger: CustomLoggerService;
   constructor(
@@ -38,7 +38,7 @@ export class UserEmailJwtStrategy extends PassportStrategy(
         ENV.JWT_ACCESS_TOKEN_SECRET,
       ),
     });
-    this.logger = this.loggerFactory.getLogger(UserEmailJwtStrategy.name);
+    this.logger = this.loggerFactory.getLogger(UserAuthJwtStrategy.name);
   }
 
   async validate(payload: TokenPayload) {

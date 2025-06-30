@@ -6,8 +6,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy/jwt-refresh.strategy';
 import { LocalEmailStrategy } from './strategies/local.strategy/local.strategy';
-import { UserEmailJwtStrategy } from './strategies/user-email-jwt.strategy/user-email-jwt.strategy';
 import { GoogleStrategy } from '@/auth/strategies/google.strategy/google.strategy';
+import { UserAuthJwtStrategy } from '@/auth/strategies/user-auth-jwt.strategy/user-auth-jwt.strategy';
 import googleOauthConfig from '@/configs/google-oauth.config';
 import { MessageModule } from '@/message/message.module';
 import { UsersModule } from 'src/users/users.module';
@@ -17,7 +17,7 @@ import { UsersModule } from 'src/users/users.module';
   providers: [
     AuthService,
     LocalEmailStrategy,
-    UserEmailJwtStrategy,
+    UserAuthJwtStrategy,
     JwtRefreshStrategy,
     GoogleStrategy,
   ],
