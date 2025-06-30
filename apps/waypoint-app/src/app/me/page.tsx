@@ -8,11 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Container } from '@/components/ui/container';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { UserRole } from '@/types/users.types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserRole, UserWithDetails } from '@/types/users.types';
 import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm';
+import { UserDetailsList } from '@/components/users/UserDetailsList';
 
 export default function ProfilePage() {
   const { user, isLoading, isAuthenticated } = useUserContext();
+  const typedUser = user as UserWithDetails; // Cast user to UserWithDetails
   const router = useRouter();
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [activeTab, setActiveTab] = useState('account');
@@ -193,6 +196,22 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+
+  const renderUserDetails = () => (
+    <div className="space-y-6">
+      {typedUser?.details && typedUser.defaultDetails && (
+        <UserDetailsList details={typedUser.details} defaultDetails={typedUser.defaultDetails} />
+      )}
+      {typedUser?.details && !typedUser.defaultDetails && (
+        <UserDetailsList details={typedUser.details} />
+      )}
+      {!typedUser?.details && (
+        <div className="text-center p-8 bg-blue-50 rounded-lg text-gray-600">
+          No user details available.
+        </div>
+      )}
+    </div>
+  );
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50 py-12">
@@ -208,59 +227,59 @@ export default function ProfilePage() {
             <p className="text-indigo-100 mt-1">Manage your account settings and preferences</p>
           </CardHeader>
           
-          <div className="bg-white border-b border-blue-100">
-            <div className="flex overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('account')}
-                className={`px-6 py-4 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
-                  activeTab === 'account' 
-                    ? 'border-indigo-600 text-indigo-600' 
-                    : 'border-transparent text-gray-600 hover:text-indigo-600 hover:border-indigo-300'
-                }`}
-              >
-                <UserIcon size={16} />
-                Account Information
-              </button>
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`px-6 py-4 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
-                  activeTab === 'settings' 
-                    ? 'border-indigo-600 text-indigo-600' 
-                    : 'border-transparent text-gray-600 hover:text-indigo-600 hover:border-indigo-300'
-                }`}
-              >
-                <Settings size={16} />
-                Settings
-              </button>
-              {user?.role === UserRole.ADMIN && (
-                <button
-                  onClick={() => setActiveTab('admin')}
-                  className={`px-6 py-4 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
-                    activeTab === 'admin' 
-                      ? 'border-indigo-600 text-indigo-600' 
-                      : 'border-transparent text-gray-600 hover:text-indigo-600 hover:border-indigo-300'
-                  }`}
+          <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+            <div className="bg-white border-b border-blue-100">
+              <TabsList className="flex overflow-x-auto h-auto rounded-none bg-transparent p-0">
+                <TabsTrigger
+                  value="account"
+                  className="px-6 py-4 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 border-transparent text-gray-600 hover:text-indigo-600 hover:border-indigo-300"
                 >
-                  <Shield size={16} />
-                  Administration
-                </button>
-              )}
+                  <UserIcon size={16} />
+                  Account Information
+                </TabsTrigger>
+                <TabsTrigger
+                  value="settings"
+                  className="px-6 py-4 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 border-transparent text-gray-600 hover:text-indigo-600 hover:border-indigo-300"
+                >
+                  <Settings size={16} />
+                  Settings
+                </TabsTrigger>
+                {user?.role === UserRole.ADMIN && (
+                  <TabsTrigger
+                    value="admin"
+                    className="px-6 py-4 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 border-transparent text-gray-600 hover:text-indigo-600 hover:border-indigo-300"
+                  >
+                    <Shield size={16} />
+                    Administration
+                  </TabsTrigger>
+                )}
+                <TabsTrigger
+                  value="details"
+                  className="px-6 py-4 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 border-transparent text-gray-600 hover:text-indigo-600 hover:border-indigo-300"
+                >
+                  <UserIcon size={16} />
+                  User Details
+                </TabsTrigger>
+              </TabsList>
             </div>
-          </div>
-          
-          <CardContent className="bg-white p-6">
-            {user ? (
-              <div className="py-2">
-                {activeTab === 'account' && renderAccountInfo()}
-                {activeTab === 'settings' && renderSettings()}
-                {activeTab === 'admin' && user.role === UserRole.ADMIN && renderAdmin()}
-              </div>
-            ) : (
-              <div className="text-center p-8 bg-blue-50 rounded-lg">
-                <p className="text-indigo-600">User information not available</p>
-              </div>
-            )}
-          </CardContent>
+            
+            <CardContent className="bg-white p-6">
+              {user ? (
+                <div className="py-2">
+                  <TabsContent value="account">{renderAccountInfo()}</TabsContent>
+                  <TabsContent value="settings">{renderSettings()}</TabsContent>
+                  {user.role === UserRole.ADMIN && (
+                    <TabsContent value="admin">{renderAdmin()}</TabsContent>
+                  )}
+                  <TabsContent value="details">{renderUserDetails()}</TabsContent>
+                </div>
+              ) : (
+                <div className="text-center p-8 bg-blue-50 rounded-lg">
+                  <p className="text-indigo-600">User information not available</p>
+                </div>
+              )}
+            </CardContent>
+          </Tabs>
         </Card>
       </Container>
     </div>
