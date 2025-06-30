@@ -94,7 +94,9 @@ export class UsersController {
   ) {
     this.logger.debug(`Updating user with ID: ${id}`);
     this.logger.debug(`Update data: ${JSON.stringify(updateUserDto)}`);
-    this.logger.debug(`Request made by admin: ${currentUser.id}`);
+    this.logger.debug(
+      `Request made by admin: ${currentUser.id} : ${currentUser.email}`,
+    );
 
     return this.usersService.updateUser(id, updateUserDto);
   }

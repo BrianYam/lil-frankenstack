@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { UserDetails } from '@/types/users.types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, MapPin, Phone, Star } from 'lucide-react';
+import { useUserDetails } from '@/hooks/use-user-details';
+import { useToast } from '../ui/use-toast';
+import { UserDetailsCard } from './UserDetailsCard';
+import { CreateUserDetailsDialog } from './CreateUserDetailsDialog';
 
 interface UserDetailsListProps {
   details?: UserDetails[];
@@ -9,79 +11,49 @@ interface UserDetailsListProps {
 }
 
 export const UserDetailsList: React.FC<UserDetailsListProps> = ({ details, defaultDetails }) => {
+  const { setDefaultUserDetails } = useUserDetails();
+  const { toast } = useToast();
+
+  const handleSetDefault = useCallback(
+    (id: string) => {
+      setDefaultUserDetails(id, {
+        onSuccess: () => {
+          toast({ title: 'Success', description: 'Default user details updated.' });
+        },
+        onError: (error) => {
+          toast({ title: 'Error', description: `Failed to set default user details: ${error.message}` });
+          console.error('Failed to set default user details:', error);
+        },
+      });
+    },
+    [setDefaultUserDetails, toast]
+  );
+
   const otherDetails = details?.filter(
     (detail) => !defaultDetails || detail.id !== defaultDetails.id
   );
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end mb-4">
+        <CreateUserDetailsDialog />
+      </div>
       {defaultDetails && (
-        <Card className="border border-indigo-200 shadow-md bg-indigo-50">
-          <CardHeader className="bg-indigo-100 py-4 px-5 border-b border-indigo-200 flex flex-row items-center justify-between">
-            <CardTitle className="text-lg text-indigo-800 flex items-center gap-2">
-              <Star size={20} className="text-indigo-600 fill-indigo-600" />
-              Default Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-5 space-y-3">
-            <div className="flex items-center gap-2 text-gray-700">
-              <MapPin size={16} className="text-indigo-500" />
-              <span>
-                {defaultDetails.addressLine1}, {defaultDetails.city}, {defaultDetails.state}{' '}
-                {defaultDetails.postalCode}, {defaultDetails.country}
-              </span>
-            </div>
-            {defaultDetails.addressLine2 && (
-              <div className="flex items-center gap-2 text-gray-700">
-                <MapPin size={16} className="text-indigo-500" />
-                <span>{defaultDetails.addressLine2}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-2 text-gray-700">
-              <Phone size={16} className="text-indigo-500" />
-              <span>{defaultDetails.mobileNumber}</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-700">
-              <Mail size={16} className="text-indigo-500" />
-              <span>
-                {defaultDetails.firstName} {defaultDetails.lastName}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <UserDetailsCard
+          detail={defaultDetails}
+          isDefault={true}
+        />
       )}
 
       {otherDetails && otherDetails.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-xl font-semibold text-gray-800">Other Details</h3>
           {otherDetails.map((detail) => (
-            <Card key={detail.id} className="border border-blue-100 shadow-sm">
-              <CardHeader className="bg-blue-50 py-3 px-4 border-b border-blue-100">
-                <CardTitle className="text-md text-gray-700 flex items-center gap-2">
-                  <MapPin size={16} className="text-blue-600" />
-                  {detail.firstName} {detail.lastName}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin size={14} className="text-blue-500" />
-                  <span>
-                    {detail.addressLine1}, {detail.city}, {detail.state} {detail.postalCode},{' '}
-                    {detail.country}
-                  </span>
-                </div>
-                {detail.addressLine2 && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin size={14} className="text-blue-500" />
-                    <span>{detail.addressLine2}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Phone size={14} className="text-blue-500" />
-                  <span>{detail.mobileNumber}</span>
-                </div>
-              </CardContent>
-            </Card>
+            <UserDetailsCard
+              key={detail.id}
+              detail={detail}
+              onSetDefault={handleSetDefault}
+            />
           ))}
         </div>
       )}
