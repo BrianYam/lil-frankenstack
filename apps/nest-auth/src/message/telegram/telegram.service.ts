@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  Inject,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
@@ -190,7 +195,9 @@ export class TelegramService implements OnModuleInit {
 
   sendDummyError() {
     try {
-      throw new Error('This is a dummy error for testing purposes');
+      throw new InternalServerErrorException(
+        'This is a dummy error for testing purposes',
+      );
     } catch (error) {
       this.logger.errorAlert(
         `Dummy error occurred: ${error.message}`,

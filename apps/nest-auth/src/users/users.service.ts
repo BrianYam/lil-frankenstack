@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -152,7 +153,7 @@ export class UsersService {
     } else if (query.id) {
       user = await this.userRepository.findUserById(query.id);
     } else {
-      throw new Error('Invalid query - must provide email or id');
+      throw new BadRequestException('Invalid query - must provide email or id');
     }
 
     if (!user) {

@@ -1,6 +1,6 @@
 # TODOs
 
-- [ ] Refactor all instances of `throw new ERROR` to use appropriate NestJS exception classes (e.g., `BadRequestException`, `UnauthorizedException`, etc.). Do not use the generic `ERROR` class. [ ]
+- [x] Refactor all instances of `throw new ERROR` to use appropriate NestJS exception classes (e.g., `BadRequestException`, `UnauthorizedException`, etc.). Do not use the generic `ERROR` class. [2025-06-29]
 - [ ] Build an OCR (Optical Character Recognition) module: [ ]
   - [ ] Design and implement a new module for OCR functionality. [ ]
   - [ ] Integrate OCR service and controller. [ ]

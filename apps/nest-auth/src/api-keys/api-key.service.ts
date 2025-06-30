@@ -1,5 +1,9 @@
 import * as crypto from 'crypto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcryptjs';
@@ -195,7 +199,7 @@ export class ApiKeyService {
     });
 
     if (!updatedApiKey) {
-      throw new Error('Failed to update API key');
+      throw new InternalServerErrorException('Failed to update API key');
     }
 
     const jwtToken = this.createJwtFromApiKey(updatedApiKey);
@@ -224,7 +228,7 @@ export class ApiKeyService {
 
     const deactivatedKey = await this.apiKeyRepository.deactivate(id);
     if (!deactivatedKey) {
-      throw new Error('Failed to deactivate API key');
+      throw new InternalServerErrorException('Failed to deactivate API key');
     }
 
     return deactivatedKey;
@@ -246,7 +250,7 @@ export class ApiKeyService {
 
     const deletedKey = await this.apiKeyRepository.delete(id);
     if (!deletedKey) {
-      throw new Error('Failed to delete API key');
+      throw new InternalServerErrorException('Failed to delete API key');
     }
 
     return deletedKey;
