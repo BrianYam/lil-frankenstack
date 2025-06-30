@@ -1,6 +1,7 @@
 
 import { AuthService } from './auth.service';
 import { UsersService } from './users.service';
+import { UserDetailsService } from './user-details.service';
 
 /**
  * API Services Factory
@@ -9,6 +10,7 @@ import { UsersService } from './users.service';
 export class ApiServices {
   private static _authService: AuthService;
   private static _usersService: UsersService;
+  private static _userDetailsService: UserDetailsService;
   
   /**
    * Gets the singleton AuthService instance
@@ -36,15 +38,30 @@ export class ApiServices {
   }
 
   /**
+   * Gets the singleton UserDetailsService instance
+   * @param apiUrl - Optional API URL override
+   * @returns UserDetailsService instance
+   */
+  static getUserDetailsService(apiUrl?: string): UserDetailsService {
+    if (!this._userDetailsService) {
+      const authService = this.getAuthService(apiUrl);
+      this._userDetailsService = new UserDetailsService(authService, apiUrl);
+    }
+    return this._userDetailsService;
+  }
+
+  /**
    * Reset all service instances
    * Useful for testing or when configuration changes
    */
   static resetServices(): void {
     this._authService = undefined as unknown as AuthService;
     this._usersService = undefined as unknown as UsersService;
+    this._userDetailsService = undefined as unknown as UserDetailsService;
   }
 }
 
 // Export service classes for direct import if needed
 export { AuthService } from './auth.service';
 export { UsersService } from './users.service';
+export { UserDetailsService } from './user-details.service';

@@ -134,16 +134,18 @@ export class UsersService {
 
   /**
    * Retrieves a user by email or ID.
-   * Throws an error if neither is provided, nor if the user is not found.
-   * Only returns active users unless the user is an admin.
    *
    * @param query - The query object containing either `email` or `id`.
-   * @returns The found user.
+   * @param getActiveUser - If true (default), only returns active users (unless the user is an admin). Set to false to ignore the user's active status.
+   * @returns The found user with details.
    * @throws {Error} If neither email nor id is provided in the query.
    * @throws {NotFoundException} If the user is not found.
-   * @throws {UnauthorizedException} If the user is inactive and not an admin.
+   * @throws {UnauthorizedException} If the user is inactive and not an admin, and getActiveUser is true.
    */
-  async getUser(query: GetUserQuery): Promise<UserWithDetails> {
+  async getUser(
+    query: GetUserQuery,
+    getActiveUser: boolean = true,
+  ): Promise<UserWithDetails> {
     let user: User;
     if (query.email) {
       user = await this.userRepository.findUserByEmail(query.email);
@@ -159,7 +161,7 @@ export class UsersService {
     }
 
     // Check if user is active unless they're an admin
-    if (!user.isActive && user.role !== UserRole.ADMIN) {
+    if (getActiveUser && !user.isActive && user.role !== UserRole.ADMIN) {
       this.logger.warn(`Attempted to access inactive user account: ${user.id}`);
       throw new UnauthorizedException('User account is inactive');
     }
@@ -172,7 +174,7 @@ export class UsersService {
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserRequestDto) {
-    const user = await this.getUser({ id });
+    const user = await this.getUser({ id }, false);
     return this.userRepository.updateUser(user.id, updateUserDto);
   }
 
@@ -183,7 +185,10 @@ export class UsersService {
    * @param isOAuth - When true, automatically activates the user (for OAuth flows)
    * @returns The existing or newly created user
    */
-  async getOrCreateUser(data: CreateUserRequestDto, isOAuth: boolean = false) {
+  async getOrCreateUser(
+    data: CreateUserRequestDto,
+    isOAuth: boolean = false,
+  ): Promise<User> {
     const user = await this.userRepository.getOrCreateUser(data, isOAuth);
     if (!user) {
       this.logger.error(
@@ -193,6 +198,7 @@ export class UsersService {
         `User with email ${data.email} not found and could not be created.`,
       );
     }
+    return user;
   }
 
   async deleteUserWithResponse(id: string): Promise<DeleteUserResponse> {

@@ -3,51 +3,51 @@
  */
 
 /**
- * Login request interface for email/password authentication
+ * Login request type for email/password authentication
  */
-export interface LoginRequest {
+export type LoginRequest = {
   email: string;
   password: string;
-}
+};
 
 /**
  * Request for password reset
  */
-export interface ForgotPasswordRequest {
+export type ForgotPasswordRequest = {
   email: string;
-}
+};
 
 /**
  * Request to reset password with token
  */
-export interface ResetPasswordRequest {
+export type ResetPasswordRequest = {
   token: string;
   password: string;
-}
+};
 
 /**
  * Request to change password
  */
-export interface ChangePasswordRequest {
+export type ChangePasswordRequest = {
   currentPassword: string;
   newPassword: string;
-}
+};
 
 /**
  * Request to verify email address
  */
-export interface VerifyEmailRequest {
+export type VerifyEmailRequest = {
   token: string;
-}
+};
 
 /**
  * Generic API response
  */
-export interface ApiResponse<T = unknown> {
+export type ApiResponse<T = unknown> = {
   success: boolean;
   message: string;
   data?: T;
-}
+};
 
 export enum AuthFormType {
   LOGIN = 'login',

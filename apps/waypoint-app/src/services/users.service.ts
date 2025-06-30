@@ -7,7 +7,8 @@ import {
   User, 
   CreateUserRequest, 
   DeleteUserResponse,
-  UpdateUserRequest
+  UpdateUserRequest,
+  UserWithDetails
 } from '@/types/users.types';
 
 /**
@@ -62,9 +63,9 @@ export class UsersService {
    * Gets the current user profile
    * @returns Promise with the current user data
    */
-  async getCurrentUser(): Promise<User> {
+  async getCurrentUser(): Promise<UserWithDetails> {
     try {
-      return await this.apiClient.get<User>(API_ENDPOINTS.USERS.ME);
+      return await this.apiClient.get<UserWithDetails>(API_ENDPOINTS.USERS.ME);
     } catch (error) {
       this.handleError('Failed to fetch current user', error);
       throw error;
