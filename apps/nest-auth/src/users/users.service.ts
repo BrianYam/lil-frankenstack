@@ -1,13 +1,15 @@
 import { randomBytes } from 'crypto';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import { CreateUserRequestDto } from './dto/create-user.request.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
+import authConfig from '@/configs/auth.config';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
 import { EmailService } from '@/message/email/email.service';
@@ -15,7 +17,6 @@ import {
   User,
   DeleteUserResponse,
   UserRole,
-  ENV,
   GetUserQuery,
   UserWithDetails,
 } from '@/types';
@@ -34,9 +35,10 @@ export class UsersService {
   > = new Map();
 
   constructor(
-    public readonly userRepository: UserRepository,
-    private readonly configService: ConfigService,
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration: ConfigType<typeof authConfig>,
     private readonly emailService: EmailService,
+    public readonly userRepository: UserRepository,
     private readonly loggerFactory: LoggerFactory,
   ) {
     this.logger = this.loggerFactory.getLogger(UsersService.name);
@@ -79,7 +81,7 @@ export class UsersService {
       });
 
       // Build verification link
-      const verificationLink = `${this.configService.get<string>(ENV.AUTH_UI_REDIRECT_URL)}/verify-email#token=${verificationToken}`;
+      const verificationLink = `${this.authConfiguration.authUiRedirectUrl}/verify-email#token=${verificationToken}`;
 
       // Send verification email
       await this.emailService.sendVerificationEmail(

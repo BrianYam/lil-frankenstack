@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy, ExtractJwt } from 'passport-jwt';
+import authConfig from '@/configs/auth.config';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
-import { AUTH_STRATEGY, ENV, TokenPayload } from '@/types';
+import { AUTH_STRATEGY, TokenPayload } from '@/types';
 import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
@@ -16,7 +17,8 @@ export class JwtRefreshStrategy extends PassportStrategy(
   private readonly logger: CustomLoggerService;
 
   constructor(
-    configService: ConfigService,
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration: ConfigType<typeof authConfig>,
     private readonly authService: AuthService,
     private readonly loggerFactory: LoggerFactory,
   ) {
@@ -24,9 +26,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => request?.cookies?.Refresh,
       ]), //tell passport to extract the jwt token from the cookie
-      secretOrKey: configService.getOrThrow<string>(
-        ENV.JWT_REFRESH_TOKEN_SECRET,
-      ),
+      secretOrKey: authConfiguration.jwtRefreshTokenSecret,
       passReqToCallback: true, //tell the jwt strategy to pass the request object to the callback function, in this case the validate function
     });
     this.logger = this.loggerFactory.getLogger(JwtRefreshStrategy.name);
