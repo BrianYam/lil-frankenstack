@@ -1,11 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { NotFoundException } from '@nestjs/common';
 import { DatabaseConfig, DbEnvVars } from '@/types';
 
 const getEnvVariable = (key: keyof DbEnvVars): string => {
   const value = process.env[key];
   if (!value) {
-    throw new Error(`Missing required environment variable: ${key}`);
+    throw new NotFoundException(
+      `Missing required environment variable: ${key}`,
+    );
   }
   return value;
 };

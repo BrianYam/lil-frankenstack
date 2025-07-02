@@ -1,12 +1,14 @@
 import {
   CanActivate,
   ExecutionContext,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import { Request } from 'express';
-import { ENV, FRANKENSTACK_API_KEY_HEADER } from '@/types';
+import authConfig from '@/configs/auth.config';
+import { FRANKENSTACK_API_KEY_HEADER } from '@/types';
 
 // Define OAuth login routes as a constant array for easier maintenance
 const OAUTH_LOGIN_ROUTES = [
@@ -17,7 +19,10 @@ const OAUTH_LOGIN_ROUTES = [
 
 @Injectable()
 export class SimpleApiKeyAuthGuard implements CanActivate {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration: ConfigType<typeof authConfig>,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -37,7 +42,7 @@ export class SimpleApiKeyAuthGuard implements CanActivate {
     }
 
     // Simple approach: check against environment variable
-    const validApiKey = this.configService.get<string>(ENV.API_KEY);
+    const validApiKey = this.authConfiguration.apiKey;
 
     if (apiKey !== validApiKey) {
       throw new UnauthorizedException('Invalid API key');

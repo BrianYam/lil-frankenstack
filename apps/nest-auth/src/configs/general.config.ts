@@ -1,8 +1,9 @@
 import { registerAs } from '@nestjs/config';
+import { getEnvVar, getEnvVarAsNumber } from './config.utils';
 
 export default registerAs('general', () => ({
-  nodeEnv: process.env.NODE_ENV || 'development',
-  logLevel: process.env.LOG_LEVEL || 'info',
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  port: parseInt(process.env.PORT, 10) || 4000,
+  nodeEnv: getEnvVar('NODE_ENV', false, 'development'),
+  logLevel: getEnvVar('LOG_LEVEL', false, 'info'),
+  corsOrigin: getEnvVar('CORS_ORIGIN', true),
+  port: getEnvVarAsNumber('PORT', 4000),
 }));

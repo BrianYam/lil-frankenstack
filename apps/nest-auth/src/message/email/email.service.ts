@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import type { ReactElement } from 'react';
 import { Resend } from 'resend';
 import { ForgotPasswordEmail } from './templates/forgot-password-email';
 import { VerificationEmail } from './templates/verification-email';
+import emailConfig from '@/configs/email.config';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
-import { ENV } from '@/types';
 
 @Injectable()
 export class EmailService {
@@ -15,14 +15,15 @@ export class EmailService {
   private readonly fromEmail: string;
 
   constructor(
-    private readonly configService: ConfigService,
+    @Inject(emailConfig.KEY)
+    private readonly emailConfiguration: ConfigType<typeof emailConfig>,
     private readonly loggerFactory: LoggerFactory,
   ) {
     this.logger = this.loggerFactory.getLogger(EmailService.name);
     // Initialize Resend client with API key
-    const resendApiKey = this.configService.get<string>(ENV.RESEND_API_KEY);
+    const resendApiKey = this.emailConfiguration.resendApiKey;
     this.resend = new Resend(resendApiKey);
-    this.fromEmail = this.configService.get<string>(ENV.NO_REPLY_EMAIL_DOMAIN);
+    this.fromEmail = this.emailConfiguration.noReplyEmailDomain;
   }
 
   /**
