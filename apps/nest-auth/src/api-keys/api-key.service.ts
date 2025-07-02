@@ -1,12 +1,18 @@
 import * as crypto from 'crypto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcryptjs';
 import { ApiKeyRepository } from '@/api-keys/api-key.repository';
+import authConfig from '@/configs/auth.config';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
-import { ApiKey, ENV } from '@/types';
+import { ApiKey } from '@/types';
 import {
   CreateApiKeyDto,
   ApiKeyPayload,
@@ -18,9 +24,10 @@ export class ApiKeyService {
   private readonly logger: CustomLoggerService;
 
   constructor(
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration: ConfigType<typeof authConfig>,
     private readonly apiKeyRepository: ApiKeyRepository,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
     private readonly loggerFactory: LoggerFactory,
   ) {
     this.logger = this.loggerFactory.getLogger(ApiKeyService.name);
@@ -62,7 +69,7 @@ export class ApiKeyService {
     };
 
     return this.jwtService.sign(payload, {
-      secret: this.configService.get<string>(ENV.JWT_ACCESS_TOKEN_SECRET),
+      secret: this.authConfiguration.jwtAccessTokenSecret,
       expiresIn: apiKey.expiresAt
         ? Math.floor((new Date(apiKey.expiresAt).getTime() - Date.now()) / 1000)
         : '30d', // Default expiry of 30 days if no expiration is set
@@ -122,7 +129,7 @@ export class ApiKeyService {
     try {
       // First try to validate as JWT
       const decoded = this.jwtService.verify<ApiKeyPayload>(token, {
-        secret: this.configService.get<string>('JWT_SECRET'),
+        secret: this.authConfiguration.jwtAccessTokenSecret, //TODO maybe this should be a generic token and not access token create a  new jwt token ? or call it apiKeyJwtToken
       });
 
       // If verification passes, get the API key details
@@ -195,7 +202,7 @@ export class ApiKeyService {
     });
 
     if (!updatedApiKey) {
-      throw new Error('Failed to update API key');
+      throw new InternalServerErrorException('Failed to update API key');
     }
 
     const jwtToken = this.createJwtFromApiKey(updatedApiKey);
@@ -224,7 +231,7 @@ export class ApiKeyService {
 
     const deactivatedKey = await this.apiKeyRepository.deactivate(id);
     if (!deactivatedKey) {
-      throw new Error('Failed to deactivate API key');
+      throw new InternalServerErrorException('Failed to deactivate API key');
     }
 
     return deactivatedKey;
@@ -246,7 +253,7 @@ export class ApiKeyService {
 
     const deletedKey = await this.apiKeyRepository.delete(id);
     if (!deletedKey) {
-      throw new Error('Failed to delete API key');
+      throw new InternalServerErrorException('Failed to delete API key');
     }
 
     return deletedKey;

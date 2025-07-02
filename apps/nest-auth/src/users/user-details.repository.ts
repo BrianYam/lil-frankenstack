@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { and, eq, ne } from 'drizzle-orm';
@@ -65,7 +66,9 @@ export class UserDetailsRepository {
         true,
         error.stack,
       );
-      throw new Error(`Failed to create user details: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create user details: ${error.message}`,
+      );
     }
   }
 
@@ -171,7 +174,9 @@ export class UserDetailsRepository {
         true,
         error.stack,
       );
-      throw new Error(`Failed to update user details: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to update user details: ${error.message}`,
+      );
     }
   }
 
@@ -242,7 +247,9 @@ export class UserDetailsRepository {
         true,
         error.stack,
       );
-      throw new Error(`Failed to delete user details: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to delete user details: ${error.message}`,
+      );
     }
   }
 }

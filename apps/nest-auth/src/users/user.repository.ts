@@ -66,7 +66,9 @@ export class UserRepository {
         true,
         error.stack,
       );
-      throw new Error(`Failed to create user: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create user: ${error.message}`,
+      );
     }
   }
 
@@ -200,7 +202,9 @@ export class UserRepository {
         true,
         error.stack,
       );
-      throw new Error(`Failed to get or create user: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to get or create user: ${error.message}`,
+      );
     }
   }
 

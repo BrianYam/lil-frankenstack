@@ -24,7 +24,7 @@ import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protect
 import { GoogleAuthGuard } from '@/utils/guards/google-auth/google-auth.guard';
 import { JwtRefreshAuthGuard } from '@/utils/guards/jwt-refresh-auth/jwt-refresh-auth.guard';
 import { PassportLocalEmailGuard } from '@/utils/guards/passport-local/passport-local-email.guard';
-import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-email-jwt-auth.guard';
+import { UserJwtAuthGuard } from '@/utils/guards/user-jwt-auth/user-jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -124,7 +124,7 @@ export class AuthController {
     description: 'Password reset email sent if email exists',
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad request' })
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserJwtAuthGuard)
   @Post('password/request-reset')
   async requestPasswordReset(@CurrentUser() user: User) {
     this.logger.debug(`Password reset requested for: ${user.email}`);
@@ -177,7 +177,7 @@ export class AuthController {
     description: 'Unauthorized or incorrect current password',
   })
   @ApiBody({ type: ChangePasswordDto })
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserJwtAuthGuard)
   @Post('password/change')
   async changePassword(
     @CurrentUser() user: User,

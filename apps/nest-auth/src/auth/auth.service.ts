@@ -1,16 +1,18 @@
 import { randomBytes } from 'crypto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService, ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcryptjs';
 import { Response } from 'express';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import authConfig from '@/configs/auth.config';
+import generalConfig from '@/configs/general.config';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
 import { EmailService } from '@/message/email/email.service';
-import { ENV, TokenPayload, User } from '@/types';
+import { TokenPayload, User } from '@/types';
 import { UsersService } from '@/users/users.service';
 
 const AUTHENTICATION = 'Authentication';
@@ -33,6 +35,10 @@ export class AuthService {
   > = new Map();
 
   constructor(
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration: ConfigType<typeof authConfig>,
+    @Inject(generalConfig.KEY)
+    private readonly generalConfiguration: ConfigType<typeof generalConfig>,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -45,7 +51,7 @@ export class AuthService {
 
   // Helper method to check if environment requires HTTPS
   private isSecureEnvironment(): boolean {
-    const env = this.configService.get(ENV.NODE_ENV);
+    const env = this.generalConfiguration.nodeEnv;
     return env === PRODUCTION || env === STAGING;
   }
 
@@ -79,17 +85,13 @@ export class AuthService {
     tokenPayload: TokenPayload,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const accessToken = this.jwtService.sign(tokenPayload, {
-      secret: this.configService.getOrThrow<string>(
-        ENV.JWT_ACCESS_TOKEN_SECRET,
-      ),
-      expiresIn: `${this.configService.getOrThrow<string>(ENV.JWT_ACCESS_TOKEN_EXPIRATION_TIME_MS)}ms`,
+      secret: this.authConfiguration.jwtAccessTokenSecret,
+      expiresIn: `${this.authConfiguration.jwtAccessTokenExpirationTimeMs}ms`,
     });
 
     const refreshToken = this.jwtService.sign(tokenPayload, {
-      secret: this.configService.getOrThrow<string>(
-        ENV.JWT_REFRESH_TOKEN_SECRET,
-      ),
-      expiresIn: `${this.configService.getOrThrow<string>(ENV.JWT_REFRESH_TOKEN_EXPIRATION_TIME_MS)}ms`,
+      secret: this.authConfiguration.jwtRefreshTokenSecret,
+      expiresIn: `${this.authConfiguration.jwtRefreshTokenExpirationTimeMs}ms`,
     });
 
     return { accessToken, refreshToken };
@@ -100,22 +102,14 @@ export class AuthService {
     const expiresAccessToken = new Date();
     expiresAccessToken.setMilliseconds(
       expiresAccessToken.getMilliseconds() +
-        parseInt(
-          this.configService.getOrThrow<string>(
-            ENV.JWT_ACCESS_TOKEN_EXPIRATION_TIME_MS,
-          ),
-        ),
+        this.authConfiguration.jwtAccessTokenExpirationTimeMs,
     );
 
     //set expire time for refresh token
     const expiresRefreshToken = new Date();
     expiresRefreshToken.setMilliseconds(
       expiresRefreshToken.getMilliseconds() +
-        parseInt(
-          this.configService.getOrThrow<string>(
-            ENV.JWT_REFRESH_TOKEN_EXPIRATION_TIME_MS,
-          ),
-        ),
+        this.authConfiguration.jwtRefreshTokenExpirationTimeMs,
     );
 
     //create token payload
@@ -159,9 +153,7 @@ export class AuthService {
       const tempAuthToken = this.jwtService.sign(
         { userId: user.id, purpose: AUTH_REDIRECT },
         {
-          secret: this.configService.getOrThrow<string>(
-            ENV.JWT_ACCESS_TOKEN_SECRET,
-          ),
+          secret: this.authConfiguration.jwtAccessTokenSecret,
           expiresIn: '2m', // Short expiration, just enough for the redirect flow
         },
       );
@@ -171,7 +163,7 @@ export class AuthService {
       );
       // Redirect to frontend with the token as a hash fragment
       // The frontend can then use this token to make an API call to complete authentication
-      const redirectUrl = `${this.configService.getOrThrow(ENV.AUTH_UI_REDIRECT_URL)}/auth-callback#token=${tempAuthToken}`;
+      const redirectUrl = `${this.authConfiguration.authUiRedirectUrl}/auth-callback#token=${tempAuthToken}`;
       this.logger.debug(`Redirecting to: ${redirectUrl}`);
       response.redirect(redirectUrl);
     }
@@ -291,9 +283,7 @@ export class AuthService {
        *
        * @param {string} resetToken - The generated password reset token
        * @returns {string} The complete reset password URL
-       */ const resetLink = `${this.configService.getOrThrow(
-        ENV.AUTH_UI_REDIRECT_URL,
-      )}/reset-password#token=${resetToken}`; //TODO handle path this in a constant or config ?
+       */ const resetLink = `${this.authConfiguration.authUiRedirectUrl}/reset-password#token=${resetToken}`; //TODO handle path this in a constant or config ?
 
       // Send email with reset link
       await this.emailService.sendForgotPasswordEmail(
@@ -423,9 +413,7 @@ export class AuthService {
     try {
       // Verify the temporary token
       const decoded = this.jwtService.verify(token, {
-        secret: this.configService.getOrThrow<string>(
-          ENV.JWT_ACCESS_TOKEN_SECRET,
-        ),
+        secret: this.authConfiguration.jwtAccessTokenSecret,
       });
 
       // Check if this is indeed an auth-redirect token

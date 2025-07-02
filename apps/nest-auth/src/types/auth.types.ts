@@ -5,7 +5,7 @@
 export enum AUTH_STRATEGY {
   JWT_REFRESH = 'jwt-refresh',
   PASSPORT_LOCAL_EMAIL = 'passport-local-email',
-  USER_EMAIL_JWT = 'user-email-jwt',
+  USER_AUTH_JWT = 'user-auth-jwt',
   GOOGLE_OAUTH = 'google-oauth',
 }
 

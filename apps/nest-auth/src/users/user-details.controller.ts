@@ -27,7 +27,7 @@ import { CurrentUser } from '@/utils/decorators/current-user.decorator';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protector.decorator';
 import { RolesGuard } from '@/utils/guards/roles/roles.guard';
-import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-email-jwt-auth.guard';
+import { UserJwtAuthGuard } from '@/utils/guards/user-jwt-auth/user-jwt-auth.guard';
 
 @ApiTags('users')
 @Controller('users/details') // Removed :userId from the base path
@@ -43,7 +43,7 @@ export class UserDetailsController {
   }
 
   @Post()
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @ApiOperation({ summary: 'Create new user details for the current user' })
   @ApiBody({ type: CreateUserDetailsRequestDto })
@@ -66,7 +66,7 @@ export class UserDetailsController {
   }
 
   @Get()
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @ApiOperation({ summary: 'Get all user details for the current user' })
   @ApiResponse({
@@ -84,7 +84,7 @@ export class UserDetailsController {
   }
 
   @Get('default')
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @ApiOperation({ summary: 'Get default user details for the current user' })
   @ApiResponse({
@@ -103,7 +103,7 @@ export class UserDetailsController {
   }
 
   @Get(':id')
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @ApiOperation({ summary: 'Get user details by ID for the current user' })
   @ApiParam({ name: 'id', description: 'ID of the user details' })
@@ -134,7 +134,7 @@ export class UserDetailsController {
   }
 
   @Patch(':id')
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @ApiOperation({ summary: 'Update user details by ID for the current user' })
   @ApiParam({ name: 'id', description: 'ID of the user details to update' })
@@ -168,7 +168,7 @@ export class UserDetailsController {
   }
 
   @Patch(':id/set-default')
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @ApiOperation({
     summary: 'Set a specific user detail as default for the current user',
@@ -204,7 +204,7 @@ export class UserDetailsController {
   }
 
   @Delete(':id')
-  @UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+  @UseGuards(UserJwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   @ApiOperation({ summary: 'Delete user details by ID for the current user' })
   @ApiParam({ name: 'id', description: 'ID of the user details to delete' })

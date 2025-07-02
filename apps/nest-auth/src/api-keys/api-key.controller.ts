@@ -21,7 +21,7 @@ import { LoggerFactory } from '@/logger/logger-factory.service';
 import { User } from '@/types';
 import { CreateApiKeyDto } from '@/types/api-keys.types';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
-import { UserEmailJwtAuthGuard } from '@/utils/guards/user-email-jwt-auth/user-email-jwt-auth.guard';
+import { UserJwtAuthGuard } from '@/utils/guards/user-jwt-auth/user-jwt-auth.guard';
 
 @ApiTags('api-keys')
 @Controller('api-keys')
@@ -36,7 +36,7 @@ export class ApiKeyController {
   }
 
   @Post()
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserJwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new API key' })
   @ApiResponse({
@@ -58,7 +58,7 @@ export class ApiKeyController {
   }
 
   @Get()
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserJwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all API keys' })
   @ApiResponse({ status: 200, description: 'Return all API keys.' })
@@ -68,7 +68,7 @@ export class ApiKeyController {
   }
 
   @Get(':id')
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserJwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get an API key by ID' })
   @ApiResponse({ status: 200, description: 'Return the API key.' })
@@ -78,7 +78,7 @@ export class ApiKeyController {
   }
 
   @Put(':id/regenerate')
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserJwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Regenerate an API key' })
   @ApiResponse({
@@ -91,7 +91,7 @@ export class ApiKeyController {
   }
 
   @Put(':id/deactivate')
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserJwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Deactivate an API key' })
   @ApiResponse({
@@ -104,7 +104,7 @@ export class ApiKeyController {
   }
 
   @Delete(':id')
-  @UseGuards(UserEmailJwtAuthGuard)
+  @UseGuards(UserJwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete an API key' })
   @ApiResponse({ status: 200, description: 'The API key has been deleted.' })

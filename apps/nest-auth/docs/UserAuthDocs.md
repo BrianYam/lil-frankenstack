@@ -54,18 +54,18 @@ Allows users to authenticate using their email address and password.
    - LocalEmailStrategy validates credentials
    - If valid, JWT tokens are generated and set as cookies
 
-### JWT Authentication (UserEmailJwtStrategy)
+### JWT Authentication (UserAuthJwtStrategy)
 
 Protects routes by validating JWT access tokens provided in cookies.
 
-1. Strategy setup in `user-email-jwt.strategy.ts`:
+1. Strategy setup in `user-auth-jwt.strategy.ts`:
    - Extracts JWT from 'Authentication' cookie
    - Validates the token using the JWT secret
    - Retrieves the full user profile based on the user ID in the token payload
 
 2. Flow:
-   - Protected routes are guarded by UserEmailJwtAuthGuard
-   - Guard uses UserEmailJwtStrategy to validate the token
+   - Protected routes are guarded by UserJwtAuthGuard
+   - Guard uses UserAuthJwtStrategy to validate the token
    - If valid, request proceeds with the user object attached
 
 ### JWT Refresh Token (JwtRefreshStrategy)
@@ -213,7 +213,7 @@ The system implements role-based access control with three predefined roles:
 Implemented using a RolesGuard that can be applied to routes requiring specific roles:
 
 ```typescript
-@UseGuards(UserEmailJwtAuthGuard, RolesGuard)
+@UseGuards(UserJwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @Get()
 getAllUsers() {

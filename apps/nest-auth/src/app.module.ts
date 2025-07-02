@@ -7,6 +7,11 @@ import { AuthModule } from './auth/auth.module';
 import { RepositoriesModule } from './repositories/repositories.module';
 import { ApiKeysModule } from '@/api-keys/api-keys.module';
 import { AppController } from '@/app.controller';
+import authConfig from '@/configs/auth.config';
+import emailConfig from '@/configs/email.config';
+import generalConfig from '@/configs/general.config';
+import googleOauthConfig from '@/configs/google-oauth.config';
+import telegramConfig from '@/configs/telegram.config';
 import { DatabaseModule } from '@/database/database.module';
 import { LoggerModule } from '@/logger/logger.module';
 import { TraceModule } from '@/trace/trace.module';
@@ -15,8 +20,17 @@ import { ReqResInterceptor } from '@/utils/interceptors/reqRes.interceptor';
 
 @Module({
   imports: [
-    // Import configs module globally
-    ConfigModule.forRoot({ isGlobal: true }),
+    // Import configs module globally with all configurations
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [
+        authConfig,
+        generalConfig,
+        googleOauthConfig,
+        emailConfig,
+        telegramConfig,
+      ],
+    }),
     LoggerModule,
     UsersModule,
     AuthModule,

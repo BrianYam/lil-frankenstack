@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy, ExtractJwt } from 'passport-jwt';
+import authConfig from '@/configs/auth.config';
 import { CustomLoggerService } from '@/logger/custom-logger.service';
 import { LoggerFactory } from '@/logger/logger-factory.service';
-import { AUTH_STRATEGY, ENV, TokenPayload } from '@/types';
+import { AUTH_STRATEGY, TokenPayload } from '@/types';
 import { UsersService } from 'src/users/users.service';
 
 /*
@@ -16,13 +17,14 @@ import { UsersService } from 'src/users/users.service';
  * Note: This strategy is used to validate the jwt token that is in the cookie, a guard will this strategy and will be used to protect the routes
  */
 @Injectable()
-export class UserEmailJwtStrategy extends PassportStrategy(
+export class UserAuthJwtStrategy extends PassportStrategy(
   Strategy,
-  AUTH_STRATEGY.USER_EMAIL_JWT,
+  AUTH_STRATEGY.USER_AUTH_JWT,
 ) {
   private readonly logger: CustomLoggerService;
   constructor(
-    configService: ConfigService,
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration: ConfigType<typeof authConfig>,
     private readonly userService: UsersService,
     private readonly loggerFactory: LoggerFactory,
   ) {
@@ -34,11 +36,9 @@ export class UserEmailJwtStrategy extends PassportStrategy(
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]), //tell passport to extract the jwt token from the cookie
       ignoreExpiration: false, //if the jwt token is expired, it will not allow the request to proceed
-      secretOrKey: configService.getOrThrow<string>(
-        ENV.JWT_ACCESS_TOKEN_SECRET,
-      ),
+      secretOrKey: authConfiguration.jwtAccessTokenSecret,
     });
-    this.logger = this.loggerFactory.getLogger(UserEmailJwtStrategy.name);
+    this.logger = this.loggerFactory.getLogger(UserAuthJwtStrategy.name);
   }
 
   async validate(payload: TokenPayload) {

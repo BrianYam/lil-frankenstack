@@ -1,9 +1,10 @@
 import { registerAs } from '@nestjs/config';
+import { getEnvVar, getEnvVarAsBoolean } from './config.utils';
 
 export default registerAs('telegram', () => ({
-  botToken: process.env.TELEGRAM_BOT_TOKEN,
-  groupChatId: process.env.TELEGRAM_GROUP_CHAT_ID,
-  webhookUrl: process.env.TELEGRAM_WEBHOOK_URL,
-  forcePolling: process.env.TELEGRAM_FORCE_POLLING === 'true',
-  webhookPath: process.env.TELEGRAM_WEBHOOK_PATH || '/telegram/webhook',
+  botToken: getEnvVar('TELEGRAM_BOT_TOKEN'),
+  groupChatId: getEnvVar('TELEGRAM_GROUP_CHAT_ID'),
+  webhookUrl: getEnvVar('TELEGRAM_WEBHOOK_URL'),
+  forcePolling: getEnvVarAsBoolean('TELEGRAM_FORCE_POLLING', false),
+  webhookPath: getEnvVar('TELEGRAM_WEBHOOK_PATH', false, '/telegram/webhook'),
 }));
