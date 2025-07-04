@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useUserDetails } from '@/hooks/use-user-details';
+import { useUserDetails } from '@/hooks';
 import { useToast } from '../ui/use-toast';
 import { EditUserDetailsDialog } from './EditUserDetailsDialog'; // Import from its new location
 

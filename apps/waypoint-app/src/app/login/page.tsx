@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthFormType } from "@/types";
-import { useAuth } from '@/hooks/use-auth'; // Use useAuth for all login-related functionality
+import { useAuth } from '@/hooks'; // Use useAuth for all login-related functionality
 
 export default function LoginPage() {
   const [formError, setFormError] = useState('');

@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useUserDetails } from '@/hooks/use-user-details';
+import { useUserDetails } from '@/hooks';
 import { useToast } from '../ui/use-toast';
 import { userDetailsFormSchema, UserDetailsFormRequest } from '@/lib/schemas';
 import { Pencil } from 'lucide-react';

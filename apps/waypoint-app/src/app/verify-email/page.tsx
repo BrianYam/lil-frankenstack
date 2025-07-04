@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 
 // Wrapped component that uses useSearchParams
