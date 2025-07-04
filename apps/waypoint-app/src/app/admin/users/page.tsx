@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/user-context';
-import { useUsers } from '@/hooks/use-users';
+import { useUsers } from '@/hooks';
 import { User, UserRole, UpdateUserRequest } from '@/types/users.types';
 import { Container } from '@/components/ui/container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
