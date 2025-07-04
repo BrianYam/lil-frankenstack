@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/hooks/use-auth';  // Changed from useUser to useAuth
+import { useAuth } from '@/hooks';  // Changed from useUser to useAuth
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

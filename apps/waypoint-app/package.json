@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
+    "@lil-frankenstack/api-services": "workspace:*",
+    "@lil-frankenstack/react-hooks": "workspace:*",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",

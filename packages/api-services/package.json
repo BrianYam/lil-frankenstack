@@ -1,0 +1,38 @@
+{
+  "name": "@lil-frankenstack/api-services",
+  "version": "1.0.0",
+  "description": "Shared API services for authentication and user management",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["api", "services", "authentication", "typescript"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "js-cookie": "^3.0.5"
+  },
+  "peerDependencies": {
+    "axios": "^1.6.0",
+    "js-cookie": "^3.0.5"
+  }
+}
+

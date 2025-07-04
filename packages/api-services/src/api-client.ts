@@ -1,7 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { AuthService } from './auth.service';
-import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
-import { AUTH_CONFIG } from '@/config/auth.config';
+import { ApiConfig, ApiEndpoints, AuthConfig } from './types';
 
 /**
  * ApiClient class for making HTTP requests
@@ -9,18 +7,34 @@ import { AUTH_CONFIG } from '@/config/auth.config';
  */
 export class ApiClient {
   private readonly axiosInstance: AxiosInstance;
-  private readonly authService: AuthService;
+  private readonly authService: any; // Will be injected
+  private readonly apiConfig: ApiConfig;
+  private readonly apiEndpoints: ApiEndpoints;
+  private readonly authConfig: AuthConfig;
   private refreshingPromise: Promise<void> | null = null;
 
   /**
    * Creates a new ApiClient instance
    * @param authService - The auth service instance for token management
+   * @param apiConfig - API configuration
+   * @param apiEndpoints - API endpoints configuration
+   * @param authConfig - Auth configuration
    * @param baseURL - Base URL for API requests
    */
-  constructor(authService: AuthService, baseURL?: string) {
+  constructor(
+    authService: any,
+    apiConfig: ApiConfig,
+    apiEndpoints: ApiEndpoints,
+    authConfig: AuthConfig,
+    baseURL?: string
+  ) {
     this.authService = authService;
+    this.apiConfig = apiConfig;
+    this.apiEndpoints = apiEndpoints;
+    this.authConfig = authConfig;
+
     this.axiosInstance = axios.create({
-      baseURL: baseURL ?? authService.getApiUrl(),
+      baseURL: baseURL ?? apiConfig.BASE_URL,
       withCredentials: true, // This ensures cookies are sent with every request
       headers: {
         'Content-Type': 'application/json',
@@ -48,7 +62,11 @@ export class ApiClient {
    * @param config - Optional Axios config
    * @returns Promise with the response data
    */
-  async post<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
+  async post<T, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response = await this.axiosInstance.post<T>(url, data, config);
     return response.data;
   }
@@ -60,7 +78,11 @@ export class ApiClient {
    * @param config - Optional Axios config
    * @returns Promise with the response data
    */
-  async put<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
+  async put<T, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response = await this.axiosInstance.put<T>(url, data, config);
     return response.data;
   }
@@ -72,7 +94,11 @@ export class ApiClient {
    * @param config - Optional Axios config
    * @returns Promise with the response data
    */
-  async patch<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
+  async patch<T, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response = await this.axiosInstance.patch<T>(url, data, config);
     return response.data;
   }
@@ -98,11 +124,14 @@ export class ApiClient {
       (config) => {
         // Add the API key header to all requests
         config.headers = config.headers || {};
-        config.headers[API_CONFIG.HEADERS.API_KEY_HEADER] = API_CONFIG.API_KEY;
+        config.headers[this.apiConfig.HEADERS.API_KEY_HEADER] =
+          this.apiConfig.API_KEY;
         return config;
       },
       (error) => {
-        return Promise.reject(error instanceof Error ? error : new Error(JSON.stringify(error)));
+        return Promise.reject(
+          error instanceof Error ? error : new Error(JSON.stringify(error))
+        );
       }
     );
 
@@ -113,48 +142,65 @@ export class ApiClient {
         const originalRequest = error.config;
 
         // Check if this is the refresh token endpoint - if so, don't try to refresh again
-        const isRefreshEndpoint = originalRequest?.url === API_ENDPOINTS.AUTH.REFRESH;
+        const isRefreshEndpoint =
+          originalRequest?.url === this.apiEndpoints.AUTH.REFRESH;
         // If error is 401 Unauthorized, not from the refresh endpoint, and we haven't tried to refresh yet
-        if (error.response?.status === 401 && !originalRequest._retry && !isRefreshEndpoint) {
+        if (
+          error.response?.status === 401 &&
+          !originalRequest._retry &&
+          !isRefreshEndpoint
+        ) {
           originalRequest._retry = true;
 
           // Prevent multiple refresh attempts
-          this.refreshingPromise ??= new Promise<void>(async (resolve, reject) => {
-            try {
-              // Make sure to await the token refresh
-              console.log('Refreshing tokens due to 401 Unauthorized error');
-              await this.authService.refreshTokens();
-              resolve();
-            } catch (refreshError) {
-              console.log('Token refresh failed, logging out user');
-              // If refresh fails, logout
-              await this.authService.logout();
+          this.refreshingPromise ??= new Promise<void>(
+            async (resolve, reject) => {
+              try {
+                // Make sure to await the token refresh
+                console.log('Refreshing tokens due to 401 Unauthorized error');
+                await this.authService.refreshTokens();
+                resolve();
+              } catch (refreshError) {
+                console.log('Token refresh failed, logging out user');
+                // If refresh fails, logout
+                await this.authService.logout();
 
-              // Only redirect if we're in the browser and the current URL is not whitelisted
-              if (typeof window !== 'undefined') {
-                const shouldRedirectToLogin = this.shouldRedirectToLogin();
+                // Only redirect if we're in the browser and the current URL is not whitelisted
+                if (typeof window !== 'undefined') {
+                  const shouldRedirectToLogin = this.shouldRedirectToLogin();
 
-                if (shouldRedirectToLogin) {
-                  window.location.href = '/login';
+                  if (shouldRedirectToLogin) {
+                    window.location.href = '/login';
+                  }
                 }
+                reject(
+                  refreshError instanceof Error
+                    ? refreshError
+                    : new Error(JSON.stringify(refreshError))
+                );
+              } finally {
+                this.refreshingPromise = null;
               }
-              reject(refreshError instanceof Error ? refreshError : new Error(JSON.stringify(refreshError)));
-            } finally {
-              this.refreshingPromise = null;
             }
-          });
+          );
 
           try {
             await this.refreshingPromise;
-            
+
             // Use the axiosInstance to make the request to ensure all interceptors are applied
             return this.axiosInstance(originalRequest);
           } catch (refreshError) {
-            return Promise.reject(refreshError instanceof Error ? refreshError : new Error(JSON.stringify(refreshError)));
+            return Promise.reject(
+              refreshError instanceof Error
+                ? refreshError
+                : new Error(JSON.stringify(refreshError))
+            );
           }
         }
 
-        return Promise.reject(error instanceof Error ? error : new Error(JSON.stringify(error)));
+        return Promise.reject(
+          error instanceof Error ? error : new Error(JSON.stringify(error))
+        );
       }
     );
   }
@@ -167,8 +213,9 @@ export class ApiClient {
     const currentPath = window.location.pathname;
 
     // Don't redirect if the current path is in the whitelist
-    return !AUTH_CONFIG.NON_AUTH_REDIRECT_URLS.some(path =>
-      path === currentPath || currentPath.startsWith(`${path}/`)
+    return !this.authConfig.NON_AUTH_REDIRECT_URLS.some(
+      (path: string) =>
+        path === currentPath || currentPath.startsWith(`${path}/`)
     );
   }
 }

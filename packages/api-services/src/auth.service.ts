@@ -1,33 +1,50 @@
-// filepath: /Users/brianyam/Documents/BrianLabProject/lil-frankenstack/waypoint-app/src/services/auth.service.ts
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { 
+import { ApiClient } from './api-client';
+import {
   LoginRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
   VerifyEmailRequest,
-  ApiResponse
-} from '@/types/auth.types';
-import { ApiClient } from './api-client';
-import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
+  ApiResponse,
+  ApiConfig,
+  ApiEndpoints,
+  AuthConfig,
+} from './types';
 
 const AUTHENTICATED = 'authenticated';
+
 /**
  * Auth Service
  * Handles authentication-related API requests and token management
  */
 export class AuthService {
   private readonly baseUrl: string;
-  private readonly accessTokenKey = API_CONFIG.COOKIES.ACCESS_TOKEN;
+  private readonly accessTokenKey: string;
+  private readonly apiConfig: ApiConfig;
+  private readonly apiEndpoints: ApiEndpoints;
+  private readonly authConfig: AuthConfig;
   private apiClient?: ApiClient;
 
   /**
    * Creates a new instance of AuthService
+   * @param apiConfig - API configuration
+   * @param apiEndpoints - API endpoints configuration
+   * @param authConfig - Auth configuration
    * @param apiUrl - Base URL for API requests
    */
-  constructor(apiUrl?: string) {
-    this.baseUrl = apiUrl ?? API_CONFIG.BASE_URL;
+  constructor(
+    apiConfig: ApiConfig,
+    apiEndpoints: ApiEndpoints,
+    authConfig: AuthConfig,
+    apiUrl?: string
+  ) {
+    this.apiConfig = apiConfig;
+    this.apiEndpoints = apiEndpoints;
+    this.authConfig = authConfig;
+    this.baseUrl = apiUrl ?? apiConfig.BASE_URL;
+    this.accessTokenKey = apiConfig.COOKIES.ACCESS_TOKEN;
   }
 
   /**
@@ -35,7 +52,13 @@ export class AuthService {
    * @returns ApiClient instance
    */
   getApiClient(): ApiClient {
-    this.apiClient ??= new ApiClient(this, this.baseUrl);
+    this.apiClient ??= new ApiClient(
+      this,
+      this.apiConfig,
+      this.apiEndpoints,
+      this.authConfig,
+      this.baseUrl
+    );
     return this.apiClient;
   }
 
@@ -55,10 +78,16 @@ export class AuthService {
     console.log(`Logging in with credentials: ${JSON.stringify(credentials)}`);
     try {
       // Use a temporary API client that has the API key interceptor
-      const tempClient = new ApiClient(this, this.baseUrl);
+      const tempClient = new ApiClient(
+        this,
+        this.apiConfig,
+        this.apiEndpoints,
+        this.authConfig,
+        this.baseUrl
+      );
 
       // Backend doesn't return any body, just sets HTTP-only cookies
-      await tempClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
+      await tempClient.post(this.apiEndpoints.AUTH.LOGIN, credentials);
 
       // Set a client-side marker for auth state tracking
       this.setAccessToken(AUTHENTICATED);
@@ -74,10 +103,16 @@ export class AuthService {
   async refreshTokens(): Promise<void> {
     try {
       // Use a temporary API client that has the API key interceptor
-      const tempClient = new ApiClient(this, this.baseUrl);
+      const tempClient = new ApiClient(
+        this,
+        this.apiConfig,
+        this.apiEndpoints,
+        this.authConfig,
+        this.baseUrl
+      );
 
       // Backend doesn't return any body, just refreshes HTTP-only cookies
-      await tempClient.post(API_ENDPOINTS.AUTH.REFRESH, {});
+      await tempClient.post(this.apiEndpoints.AUTH.REFRESH, {});
 
       // Reset client-side marker for auth state tracking
       this.setAccessToken(AUTHENTICATED);
@@ -94,7 +129,7 @@ export class AuthService {
    */
   async logout(): Promise<void> {
     try {
-      await this.getApiClient().post(API_ENDPOINTS.AUTH.LOGOUT, {});
+      await this.getApiClient().post(this.apiEndpoints.AUTH.LOGOUT, {});
       this.clearTokens();
     } catch (error) {
       // Still clear tokens locally even if API call fails
@@ -108,9 +143,14 @@ export class AuthService {
    * @param data - Contains the email address
    * @returns Promise with the API response
    */
-  async requestPasswordReset(data: ForgotPasswordRequest): Promise<ApiResponse> {
+  async requestPasswordReset(
+    data: ForgotPasswordRequest
+  ): Promise<ApiResponse> {
     try {
-      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.FORGOT, data);
+      return await this.getApiClient().post<ApiResponse>(
+        this.apiEndpoints.AUTH.PASSWORD.FORGOT,
+        data
+      );
     } catch (error) {
       this.handleError('Password reset request failed', error);
       throw error;
@@ -124,7 +164,10 @@ export class AuthService {
    */
   async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse> {
     try {
-      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.RESET, data);
+      return await this.getApiClient().post<ApiResponse>(
+        this.apiEndpoints.AUTH.PASSWORD.RESET,
+        data
+      );
     } catch (error) {
       this.handleError('Password reset failed', error);
       throw error;
@@ -138,7 +181,10 @@ export class AuthService {
    */
   async changePassword(data: ChangePasswordRequest): Promise<ApiResponse> {
     try {
-      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.CHANGE, data);
+      return await this.getApiClient().post<ApiResponse>(
+        this.apiEndpoints.AUTH.PASSWORD.CHANGE,
+        data
+      );
     } catch (error) {
       this.handleError('Password change failed', error);
       throw error;
@@ -152,7 +198,10 @@ export class AuthService {
    */
   async verifyEmail(data: VerifyEmailRequest): Promise<ApiResponse> {
     try {
-      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.EMAIL.VERIFY, data);
+      return await this.getApiClient().post<ApiResponse>(
+        this.apiEndpoints.AUTH.EMAIL.VERIFY,
+        data
+      );
     } catch (error) {
       this.handleError('Email verification failed', error);
       throw error;
@@ -164,16 +213,12 @@ export class AuthService {
    * Uses the Next.js API as a proxy to securely add the API key to the request
    */
   googleLogin(): void {
-    window.location.href = `${this.baseUrl}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`;
+    window.location.href = `${this.baseUrl}${this.apiEndpoints.AUTH.GOOGLE_LOGIN}`;
   }
 
   /**
    * Checks if the user is authenticated
    * @returns Boolean indicating if user is authenticated
-   *
-   * Note: This doesn't check the actual token as we're using cookie-based auth.
-   * Instead, it relies on the presence of the cookie which the browser will
-   * automatically send with requests when withCredentials is true.
    */
   isAuthenticated(): boolean {
     return !!Cookies.get(this.accessTokenKey);
@@ -187,7 +232,7 @@ export class AuthService {
   async completeOAuthAuthentication(token: string): Promise<ApiResponse> {
     try {
       const response = await this.getApiClient().post<ApiResponse>(
-        API_ENDPOINTS.AUTH.COMPLETE_OAUTH,
+        this.apiEndpoints.AUTH.COMPLETE_OAUTH,
         { token }
       );
 
@@ -204,20 +249,12 @@ export class AuthService {
   // Private methods
 
   /**
-   * Note on token storage:
-   * Our backend uses HTTP-only cookies for authentication tokens.
-   * These methods are now primarily for client-side detection of authentication state.
-   * The actual secure tokens are managed by the server via HTTP-only cookies.
-   */
-
-  /**
    * Sets a marker cookie to track authentication state client-side
    * @param token - The token value
    */
   private setAccessToken(token: string): void {
     Cookies.set(this.accessTokenKey, token, { path: '/', sameSite: 'strict' });
   }
-
 
   /**
    * Clears authentication token markers
@@ -237,9 +274,10 @@ export class AuthService {
     let errorMessage = message;
     if (axios.isAxiosError(error) && error.response) {
       const serverError = error.response.data;
-      errorMessage = serverError?.message ?? `${message} (${error.response.status})`;
+      errorMessage =
+        serverError?.message ?? `${message} (${error.response.status})`;
     }
-    
+
     console.error(`${errorMessage}:`, error);
   }
 }

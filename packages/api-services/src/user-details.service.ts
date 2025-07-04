@@ -1,11 +1,11 @@
 import { AuthService } from './auth.service';
 import { ApiClient } from './api-client';
-import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
-import { 
+import {
   UserDetails,
   CreateUserDetailsRequest,
-  UpdateUserDetailsRequest
-} from '@/types/users.types';
+  UpdateUserDetailsRequest,
+  ApiEndpoints,
+} from './types';
 
 /**
  * User Details Service
@@ -15,15 +15,22 @@ export class UserDetailsService {
   private readonly baseUrl: string;
   private readonly authService: AuthService;
   private readonly apiClient: ApiClient;
+  private readonly apiEndpoints: ApiEndpoints;
 
   /**
    * Creates a new instance of UserDetailsService
    * @param authService - Auth service instance for token management
+   * @param apiEndpoints - API endpoints configuration
    * @param apiUrl - Base URL for API requests
    */
-  constructor(authService: AuthService, apiUrl?: string) {
+  constructor(
+    authService: AuthService,
+    apiEndpoints: ApiEndpoints,
+    apiUrl?: string
+  ) {
     this.authService = authService;
-    this.baseUrl = apiUrl ?? API_CONFIG.BASE_URL;
+    this.apiEndpoints = apiEndpoints;
+    this.baseUrl = apiUrl ?? authService.getApiUrl();
     this.apiClient = this.authService.getApiClient();
   }
 
@@ -32,9 +39,14 @@ export class UserDetailsService {
    * @param userDetailsData - The user details data to create
    * @returns Promise with the created user details
    */
-  async create(userDetailsData: CreateUserDetailsRequest): Promise<UserDetails> {
+  async create(
+    userDetailsData: CreateUserDetailsRequest
+  ): Promise<UserDetails> {
     try {
-      return await this.apiClient.post<UserDetails>(API_ENDPOINTS.USER_DETAILS.BASE, userDetailsData);
+      return await this.apiClient.post<UserDetails>(
+        this.apiEndpoints.USER_DETAILS.BASE,
+        userDetailsData
+      );
     } catch (error) {
       this.handleError('Failed to create user details', error);
       throw error;
@@ -47,7 +59,9 @@ export class UserDetailsService {
    */
   async getAllUserDetails(): Promise<UserDetails[]> {
     try {
-      return await this.apiClient.get<UserDetails[]>(API_ENDPOINTS.USER_DETAILS.BASE);
+      return await this.apiClient.get<UserDetails[]>(
+        this.apiEndpoints.USER_DETAILS.BASE
+      );
     } catch (error) {
       this.handleError('Failed to fetch all user details', error);
       throw error;
@@ -60,7 +74,9 @@ export class UserDetailsService {
    */
   async getDefaultUserDetails(): Promise<UserDetails> {
     try {
-      return await this.apiClient.get<UserDetails>(API_ENDPOINTS.USER_DETAILS.DEFAULT);
+      return await this.apiClient.get<UserDetails>(
+        this.apiEndpoints.USER_DETAILS.DEFAULT
+      );
     } catch (error) {
       this.handleError('Failed to fetch default user details', error);
       throw error;
@@ -74,7 +90,9 @@ export class UserDetailsService {
    */
   async getUserDetailsById(id: string): Promise<UserDetails> {
     try {
-      return await this.apiClient.get<UserDetails>(API_ENDPOINTS.USER_DETAILS.BY_ID(id));
+      return await this.apiClient.get<UserDetails>(
+        this.apiEndpoints.USER_DETAILS.BY_ID(id)
+      );
     } catch (error) {
       this.handleError(`Failed to fetch user details with ID ${id}`, error);
       throw error;
@@ -87,9 +105,15 @@ export class UserDetailsService {
    * @param userDetailsData - The user details data to update
    * @returns Promise with the updated user details
    */
-  async updateUserDetails(id: string, userDetailsData: UpdateUserDetailsRequest): Promise<UserDetails> {
+  async updateUserDetails(
+    id: string,
+    userDetailsData: UpdateUserDetailsRequest
+  ): Promise<UserDetails> {
     try {
-      return await this.apiClient.patch<UserDetails>(API_ENDPOINTS.USER_DETAILS.BY_ID(id), userDetailsData);
+      return await this.apiClient.patch<UserDetails>(
+        this.apiEndpoints.USER_DETAILS.BY_ID(id),
+        userDetailsData
+      );
     } catch (error) {
       this.handleError(`Failed to update user details with ID ${id}`, error);
       throw error;
@@ -103,9 +127,15 @@ export class UserDetailsService {
    */
   async setDefaultUserDetails(id: string): Promise<UserDetails> {
     try {
-      return await this.apiClient.patch<UserDetails>(API_ENDPOINTS.USER_DETAILS.SET_DEFAULT(id), {});
+      return await this.apiClient.patch<UserDetails>(
+        this.apiEndpoints.USER_DETAILS.SET_DEFAULT(id),
+        {}
+      );
     } catch (error) {
-      this.handleError(`Failed to set default user details with ID ${id}`, error);
+      this.handleError(
+        `Failed to set default user details with ID ${id}`,
+        error
+      );
       throw error;
     }
   }
@@ -117,7 +147,9 @@ export class UserDetailsService {
    */
   async deleteUserDetails(id: string): Promise<UserDetails> {
     try {
-      return await this.apiClient.delete<UserDetails>(API_ENDPOINTS.USER_DETAILS.BY_ID(id));
+      return await this.apiClient.delete<UserDetails>(
+        this.apiEndpoints.USER_DETAILS.BY_ID(id)
+      );
     } catch (error) {
       this.handleError(`Failed to delete user details with ID ${id}`, error);
       throw error;

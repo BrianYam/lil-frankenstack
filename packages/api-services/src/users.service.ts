@@ -1,15 +1,13 @@
-// filepath: /Users/brianyam/Documents/BrianLabProject/lil-frankenstack/waypoint-app/src/services/users.service.ts
-
 import { AuthService } from './auth.service';
 import { ApiClient } from './api-client';
-import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
-import { 
-  User, 
-  CreateUserRequest, 
+import {
+  User,
+  CreateUserRequest,
   DeleteUserResponse,
   UpdateUserRequest,
-  UserWithDetails
-} from '@/types/users.types';
+  UserWithDetails,
+  ApiEndpoints,
+} from './types';
 
 /**
  * Users Service
@@ -19,15 +17,22 @@ export class UsersService {
   private readonly baseUrl: string;
   private readonly authService: AuthService;
   private readonly apiClient: ApiClient;
+  private readonly apiEndpoints: ApiEndpoints;
 
   /**
    * Creates a new instance of UsersService
    * @param authService - Auth service instance for token management
+   * @param apiEndpoints - API endpoints configuration
    * @param apiUrl - Base URL for API requests
    */
-  constructor(authService: AuthService, apiUrl?: string) {
+  constructor(
+    authService: AuthService,
+    apiEndpoints: ApiEndpoints,
+    apiUrl?: string
+  ) {
     this.authService = authService;
-    this.baseUrl = apiUrl ?? API_CONFIG.BASE_URL;
+    this.apiEndpoints = apiEndpoints;
+    this.baseUrl = apiUrl ?? authService.getApiUrl();
     this.apiClient = this.authService.getApiClient();
   }
 
@@ -38,7 +43,10 @@ export class UsersService {
    */
   async createUser(userData: CreateUserRequest): Promise<User> {
     try {
-      return await this.apiClient.post<User>(API_ENDPOINTS.USERS.BASE, userData);
+      return await this.apiClient.post<User>(
+        this.apiEndpoints.USERS.BASE,
+        userData
+      );
     } catch (error) {
       this.handleError('Failed to create user', error);
       throw error;
@@ -51,8 +59,8 @@ export class UsersService {
    */
   async getAllUsers(): Promise<User[]> {
     try {
-      console.log('Fetching all users from:', API_ENDPOINTS.USERS.BASE);
-      return await this.apiClient.get<User[]>(API_ENDPOINTS.USERS.BASE);
+      console.log('Fetching all users from:', this.apiEndpoints.USERS.BASE);
+      return await this.apiClient.get<User[]>(this.apiEndpoints.USERS.BASE);
     } catch (error) {
       this.handleError('Failed to fetch users', error);
       throw error;
@@ -65,7 +73,9 @@ export class UsersService {
    */
   async getCurrentUser(): Promise<UserWithDetails> {
     try {
-      return await this.apiClient.get<UserWithDetails>(API_ENDPOINTS.USERS.ME);
+      return await this.apiClient.get<UserWithDetails>(
+        this.apiEndpoints.USERS.ME
+      );
     } catch (error) {
       this.handleError('Failed to fetch current user', error);
       throw error;
@@ -80,7 +90,10 @@ export class UsersService {
    */
   async updateUser(userId: string, userData: UpdateUserRequest): Promise<User> {
     try {
-      return await this.apiClient.patch<User>(API_ENDPOINTS.USERS.BY_ID(userId), userData);
+      return await this.apiClient.patch<User>(
+        this.apiEndpoints.USERS.BY_ID(userId),
+        userData
+      );
     } catch (error) {
       this.handleError(`Failed to update user ${userId}`, error);
       throw error;
@@ -94,7 +107,9 @@ export class UsersService {
    */
   async deleteUser(userId: string): Promise<DeleteUserResponse> {
     try {
-      return await this.apiClient.delete<DeleteUserResponse>(API_ENDPOINTS.USERS.BY_ID(userId));
+      return await this.apiClient.delete<DeleteUserResponse>(
+        this.apiEndpoints.USERS.BY_ID(userId)
+      );
     } catch (error) {
       this.handleError(`Failed to delete user ${userId}`, error);
       throw error;

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { UserDetails } from '@/types/users.types';
-import { useUserDetails } from '@/hooks/use-user-details';
+import { useUserDetails } from '@/hooks';
 import { useToast } from '../ui/use-toast';
 import { UserDetailsCard } from './UserDetailsCard';
 import { CreateUserDetailsDialog } from './CreateUserDetailsDialog';

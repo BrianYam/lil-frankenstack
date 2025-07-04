@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
-import { CreateUserRequest, UpdateUserRequest } from '@/types/users.types';
-
-const usersService = ApiServices.getUsersService();
+import { ApiServices } from '@lil-frankenstack/api-services';
+import type {
+  CreateUserRequest,
+  UpdateUserRequest,
+} from '@lil-frankenstack/api-services';
 
 /**
  * Custom hook for user operations
@@ -15,6 +16,7 @@ const usersService = ApiServices.getUsersService();
  */
 export function useUsers() {
   const queryClient = useQueryClient();
+  const usersService = ApiServices.getUsersService();
 
   /**
    * Get all users query
@@ -28,7 +30,7 @@ export function useUsers() {
       return result;
     },
     // Disable automatic query execution - will only fetch users when manually triggered
-    enabled: false
+    enabled: false,
   });
 
   /**
@@ -63,8 +65,9 @@ export function useUsers() {
     },
     onSuccess: () => {
       // Invalidate users query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['users'] }) //TODO dont do this since we need them to confirm the user creation
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['users'] }) //TODO dont do this since we need them to confirm the user creation
+        .catch((error) => {
           console.error('Error invalidating users queries:', error);
         });
     },
@@ -74,15 +77,25 @@ export function useUsers() {
    * Update user mutation
    */
   const updateUserMutation = useMutation({
-    mutationFn: ({ userId, userData }: { userId: string; userData: UpdateUserRequest }) => {
+    mutationFn: ({
+      userId,
+      userData,
+    }: {
+      userId: string;
+      userData: UpdateUserRequest;
+    }) => {
       return usersService.updateUser(userId, userData);
     },
     onSuccess: () => {
       // Invalidate users query and manually trigger refetch since enabled: false
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient
+        .invalidateQueries({ queryKey: ['users'] })
         .then(() => usersQuery.refetch())
-        .catch(error => {
-          console.error('Error invalidating and refetching users queries:', error);
+        .catch((error) => {
+          console.error(
+            'Error invalidating and refetching users queries:',
+            error
+          );
         });
     },
   });
@@ -96,10 +109,14 @@ export function useUsers() {
     },
     onSuccess: () => {
       // Invalidate users query and manually trigger refetch since enabled: false
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient
+        .invalidateQueries({ queryKey: ['users'] })
         .then(() => usersQuery.refetch())
-        .catch(error => {
-          console.error('Error invalidating and refetching users queries:', error);
+        .catch((error) => {
+          console.error(
+            'Error invalidating and refetching users queries:',
+            error
+          );
         });
     },
   });
@@ -131,5 +148,3 @@ export function useUsers() {
     refetchCurrentUser: currentUserQuery.refetch,
   };
 }
-
-

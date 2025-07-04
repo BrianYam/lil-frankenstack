@@ -1,4 +1,3 @@
+'use client';
+export * from '@lil-frankenstack/react-hooks';
 
-export * from './use-auth';
-export * from './use-users';
-export * from './use-user-details';

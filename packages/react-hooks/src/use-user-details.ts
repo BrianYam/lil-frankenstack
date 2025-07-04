@@ -1,12 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
-import { 
+import { ApiServices } from '@lil-frankenstack/api-services';
+import type {
   UserDetails,
   CreateUserDetailsRequest,
-  UpdateUserDetailsRequest
-} from '@/types/users.types';
-
-const userDetailsService = ApiServices.getUserDetailsService();
+  UpdateUserDetailsRequest,
+} from '@lil-frankenstack/api-services';
 
 /**
  * Custom hook for user details operations
@@ -21,6 +19,7 @@ const userDetailsService = ApiServices.getUserDetailsService();
  */
 export function useUserDetails() {
   const queryClient = useQueryClient();
+  const userDetailsService = ApiServices.getUserDetailsService();
 
   /**
    * Get all user details query
@@ -51,16 +50,17 @@ export function useUserDetails() {
   /**
    * Get user details by ID query
    */
-  const useUserDetailsById = (id: string) => useQuery({
-    queryKey: ['userDetails', id],
-    queryFn: async () => {
-      console.log(`Fetching user details with ID: ${id}...`);
-      const result = await userDetailsService.getUserDetailsById(id);
-      console.log(`User details with ID ${id} fetched:`, result);
-      return result;
-    },
-    enabled: !!id, // Only run if id is provided
-  });
+  const useUserDetailsById = (id: string) =>
+    useQuery({
+      queryKey: ['userDetails', id],
+      queryFn: async () => {
+        console.log(`Fetching user details with ID: ${id}...`);
+        const result = await userDetailsService.getUserDetailsById(id);
+        console.log(`User details with ID ${id} fetched:`, result);
+        return result;
+      },
+      enabled: !!id, // Only run if id is provided
+    });
 
   /**
    * Create user details mutation
@@ -70,16 +70,22 @@ export function useUserDetails() {
       return userDetailsService.create(userDetailsData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allUserDetails'] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['allUserDetails'] })
+        .catch((error) => {
           console.error('Error invalidating allUserDetails queries:', error);
         });
-      queryClient.invalidateQueries({ queryKey: ['defaultUserDetails'] })
-        .catch(error => {
-          console.error('Error invalidating defaultUserDetails queries:', error);
+      queryClient
+        .invalidateQueries({ queryKey: ['defaultUserDetails'] })
+        .catch((error) => {
+          console.error(
+            'Error invalidating defaultUserDetails queries:',
+            error
+          );
         });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['currentUser'] })
+        .catch((error) => {
           console.error('Error invalidating currentUser queries:', error);
         });
     },
@@ -89,24 +95,37 @@ export function useUserDetails() {
    * Update user details mutation
    */
   const updateUserDetailsMutation = useMutation({
-    mutationFn: ({ id, userDetailsData }: { id: string; userDetailsData: UpdateUserDetailsRequest }) => {
+    mutationFn: ({
+      id,
+      userDetailsData,
+    }: {
+      id: string;
+      userDetailsData: UpdateUserDetailsRequest;
+    }) => {
       return userDetailsService.updateUserDetails(id, userDetailsData);
     },
     onSuccess: (data: UserDetails) => {
-      queryClient.invalidateQueries({ queryKey: ['allUserDetails'] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['allUserDetails'] })
+        .catch((error) => {
           console.error('Error invalidating allUserDetails queries:', error);
         });
-      queryClient.invalidateQueries({ queryKey: ['defaultUserDetails'] })
-        .catch(error => {
-          console.error('Error invalidating defaultUserDetails queries:', error);
+      queryClient
+        .invalidateQueries({ queryKey: ['defaultUserDetails'] })
+        .catch((error) => {
+          console.error(
+            'Error invalidating defaultUserDetails queries:',
+            error
+          );
         });
-      queryClient.invalidateQueries({ queryKey: ['userDetails', data.id] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['userDetails', data.id] })
+        .catch((error) => {
           console.error('Error invalidating userDetails by ID queries:', error);
         });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['currentUser'] })
+        .catch((error) => {
           console.error('Error invalidating currentUser queries:', error);
         });
     },
@@ -120,20 +139,27 @@ export function useUserDetails() {
       return userDetailsService.setDefaultUserDetails(id);
     },
     onSuccess: (data: UserDetails) => {
-      queryClient.invalidateQueries({ queryKey: ['allUserDetails'] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['allUserDetails'] })
+        .catch((error) => {
           console.error('Error invalidating allUserDetails queries:', error);
         });
-      queryClient.invalidateQueries({ queryKey: ['defaultUserDetails'] })
-        .catch(error => {
-          console.error('Error invalidating defaultUserDetails queries:', error);
+      queryClient
+        .invalidateQueries({ queryKey: ['defaultUserDetails'] })
+        .catch((error) => {
+          console.error(
+            'Error invalidating defaultUserDetails queries:',
+            error
+          );
         });
-      queryClient.invalidateQueries({ queryKey: ['userDetails', data.id] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['userDetails', data.id] })
+        .catch((error) => {
           console.error('Error invalidating userDetails by ID queries:', error);
         });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['currentUser'] })
+        .catch((error) => {
           console.error('Error invalidating currentUser queries:', error);
         });
     },
@@ -147,16 +173,22 @@ export function useUserDetails() {
       return userDetailsService.deleteUserDetails(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allUserDetails'] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['allUserDetails'] })
+        .catch((error) => {
           console.error('Error invalidating allUserDetails queries:', error);
         });
-      queryClient.invalidateQueries({ queryKey: ['defaultUserDetails'] })
-        .catch(error => {
-          console.error('Error invalidating defaultUserDetails queries:', error);
+      queryClient
+        .invalidateQueries({ queryKey: ['defaultUserDetails'] })
+        .catch((error) => {
+          console.error(
+            'Error invalidating defaultUserDetails queries:',
+            error
+          );
         });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['currentUser'] })
+        .catch((error) => {
           console.error('Error invalidating currentUser queries:', error);
         });
     },

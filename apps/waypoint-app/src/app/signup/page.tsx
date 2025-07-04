@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { useUsers } from '@/hooks/use-users';
+import { useAuth , useUsers } from '@/hooks';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { ProcessingModal } from '@/components/ui/processing-modal';

@@ -1,6 +1,7 @@
 # TODOs
 
 - [x] Refactor all instances of `throw new ERROR` to use appropriate NestJS exception classes (e.g., `BadRequestException`, `UnauthorizedException`, etc.). Do not use the generic `ERROR` class. [2025-06-30]
+- [ ] Move all admin endpoints to a path that starts with `/admin` for better route organization. [ ]
 - [ ] Build an OCR (Optical Character Recognition) module: [ ]
   - [ ] Design and implement a new module for OCR functionality. [ ]
   - [ ] Integrate OCR service and controller. [ ]
