@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { getLogLevels } from '@/configs/config.utils';
+import { getLogLevels } from '@/configs/utils/config.utils';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
