@@ -1,5 +1,5 @@
-import { apiKeysTable } from '@/database/schema';
-export const FRANKENSTACK_API_KEY_HEADER = 'frankenstack-api-key';
+import { apiKeysTable } from '@/modules/database/schema';
+export const FRANKENSTACK_API_KEY_HEADER = 'Frankenstack-Api-Key';
 export type ApiKey = typeof apiKeysTable.$inferSelect;
 export type NewApiKey = typeof apiKeysTable.$inferInsert;
 

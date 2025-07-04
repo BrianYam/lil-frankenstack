@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import { getEnvVar, getEnvVarAsBoolean } from './config.utils';
+import { getEnvVar, getEnvVarAsBoolean } from './utils/config.utils';
 
 export default registerAs('telegram', () => ({
   botToken: getEnvVar('TELEGRAM_BOT_TOKEN'),

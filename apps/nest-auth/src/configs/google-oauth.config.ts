@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import { getEnvVar } from './config.utils';
+import { getEnvVar } from './utils/config.utils';
 
 export default registerAs('googleOAuth', () => ({
   clientId: getEnvVar('GOOGLE_AUTH_CLIENT_ID'),

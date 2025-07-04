@@ -19,11 +19,11 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/database/migrate.ts",
+    "db:migrate": "tsx src/modules/database/migrate.ts",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
     "db:drop": "drizzle-kit drop",
-    "email": "email dev --dir src/message/email/templates --port 3001"
+    "email": "email dev --dir src/modules/message/email/templates --port 3001"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",

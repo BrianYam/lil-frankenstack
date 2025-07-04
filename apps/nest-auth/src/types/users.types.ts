@@ -1,5 +1,5 @@
 // Type inference helpers for TypeScript
-import { usersTable, userDetailsTable } from '@/database/schema';
+import { usersTable, userDetailsTable } from '@/modules/database/schema';
 export enum UserRole {
   ADMIN = 'ADMIN',
   EDITOR = 'EDITOR',

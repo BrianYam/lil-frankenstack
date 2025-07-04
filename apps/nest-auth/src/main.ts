@@ -1,27 +1,13 @@
-import { ValidationPipe, LogLevel } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { getLogLevels } from '@/configs/utils/config.utils';
 
 async function bootstrap() {
-  //TODO to move to config module ?
-  // Define log levels based on environment variable
-  const logLevels: LogLevel[] = ['error', 'warn', 'log']; // Default to 'info' level (NestJS uses 'log' for info)
-
-  // Only add debug and verbose if LOG_LEVEL allows it
-  if (
-    process.env.LOG_LEVEL === 'debug' ||
-    process.env.LOG_LEVEL === 'verbose'
-  ) {
-    logLevels.push('debug');
-    if (process.env.LOG_LEVEL === 'verbose') {
-      logLevels.push('verbose');
-    }
-  }
-
   const app = await NestFactory.create(AppModule, {
-    logger: logLevels,
+    logger: getLogLevels(),
   });
 
   app.useGlobalPipes(

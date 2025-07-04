@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { SimpleApiKeyProtected } from '@/utils/decorators/simple-api-key-protector.decorator';
+import { SimpleApiKeyProtected } from '@/decorators/simple-api-key-protector.decorator';
 
 @Controller()
 // @ApiKeyProtected() // Apply to all routes in this controller

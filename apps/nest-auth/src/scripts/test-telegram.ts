@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
-import { TelegramService } from '../message/telegram/telegram.service';
+import { TelegramService } from '@/modules/message/telegram/telegram.service';
 
 /**
  * This script can be run to test Telegram message functionality.
