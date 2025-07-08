@@ -1,0 +1,23 @@
+default:
+  image: node:22.14.0
+
+stages:
+  - build
+  - deploy
+
+.setup_pnpm: &setup_pnpm
+  - npm install --global corepack@latest
+  - corepack enable
+  - corepack prepare pnpm@latest-10 --activate
+  - pnpm config set store-dir .pnpm-store
+
+valid_build:
+  stage: build
+  only:
+    - merge_requests
+  before_script:
+    - *setup_pnpm
+  script:
+    - pnpm i
+    - pnpm build:web
+    - pnpm build:backend
