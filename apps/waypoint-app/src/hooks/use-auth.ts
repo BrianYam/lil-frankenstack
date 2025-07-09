@@ -1,6 +1,16 @@
-import { useMutation, QueryClient, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  QueryClient,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { ApiServices } from '@/services';
-import { LoginRequest, ForgotPasswordRequest, ResetPasswordRequest, ChangePasswordRequest, VerifyEmailRequest } from '@/types/auth.types';
+import {
+  LoginRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  ChangePasswordRequest,
+  VerifyEmailRequest,
+} from '@/types';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -16,7 +26,7 @@ export function useAuth() {
   const queryClient = useQueryClient();
 
   /**
-   * Login mutation 
+   * Login mutation
    */
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginRequest) => {
@@ -144,12 +154,12 @@ export function useAuth() {
   const googleLogin = () => {
     authService.googleLogin();
   };
-  
+
   /**
    * Login with email and password
    */
   const login = (email: string, password: string) => {
-    console.log("useAuth login called with:", email, password);
+    console.log('useAuth login called with:', email, password);
     loginMutation.mutate({ email, password });
   };
 
@@ -183,7 +193,10 @@ export function useAuth() {
    * Change password
    * Returns a promise for better handling in components
    */
-  const changePassword = (data: { currentPassword: string; newPassword: string }) => {
+  const changePassword = (data: {
+    currentPassword: string;
+    newPassword: string;
+  }) => {
     return new Promise<void>((resolve, reject) => {
       changePasswordMutation.mutate(data, {
         onSuccess: () => resolve(),
@@ -198,10 +211,13 @@ export function useAuth() {
    */
   const verifyEmail = (token: string) => {
     return new Promise<void>((resolve, reject) => {
-      verifyEmailMutation.mutate({ token }, {
-        onSuccess: () => resolve(),
-        onError: (error) => reject(error),
-      });
+      verifyEmailMutation.mutate(
+        { token },
+        {
+          onSuccess: () => resolve(),
+          onError: (error) => reject(error),
+        },
+      );
     });
   };
 
@@ -235,7 +251,7 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     error,
-    
+
     // Auth actions
     login,
     logout: logoutMutation.mutate,
@@ -258,18 +274,19 @@ export function setupAuthInvalidations(queryClient: QueryClient) {
     // Check if the mutation is related to authentication
     const mutation = event.mutation;
     if (!mutation) return;
-    
+
     // Check if it's a login or logout mutation
-    const isAuthMutation = 
+    const isAuthMutation =
       mutation.options.mutationFn?.toString().includes('authService.login') ||
       mutation.options.mutationFn?.toString().includes('authService.logout');
-    
+
     if (isAuthMutation && mutation.state.status === 'success') {
       console.log('Auth invalidation - Auth change detected in mutation cache');
-      
+
       // Force an immediate refresh of the currentUser data
-      queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' })
-        .catch(error => {
+      queryClient
+        .invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' })
+        .catch((error) => {
           console.error('Error invalidating currentUser queries:', error);
         });
     }

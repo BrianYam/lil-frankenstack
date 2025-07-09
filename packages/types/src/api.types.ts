@@ -1,7 +1,3 @@
-export * from './users.types';
-export * from './auth.types';
-
-
 export type ApiError = {
   response?: {
     data?: {
@@ -9,3 +5,4 @@ export type ApiError = {
     };
   };
 };
+

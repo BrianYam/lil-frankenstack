@@ -243,6 +243,9 @@ importers:
       '@lil-frankenstack/shared-services':
         specifier: workspace:*
         version: link:../../packages/shared-services
+      '@lil-frankenstack/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.14
         version: 1.1.14(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -364,6 +367,9 @@ importers:
 
   packages/shared-services:
     dependencies:
+      '@lil-frankenstack/types':
+        specifier: workspace:*
+        version: link:../types
       axios:
         specifier: ^1.9.0
         version: 1.10.0
@@ -377,6 +383,12 @@ importers:
       '@types/node':
         specifier: ^20
         version: 20.19.1
+      typescript:
+        specifier: ^5.0.0
+        version: 5.8.3
+
+  packages/types:
+    devDependencies:
       typescript:
         specifier: ^5.0.0
         version: 5.8.3

@@ -1,7 +1,10 @@
 import { AuthService } from './auth.service';
 import { UsersService } from './users.service';
 import { UserDetailsService } from './user-details.service';
-import { TokenRefreshCallback, TokenRefreshFailureCallback } from './api-client';
+import {
+  TokenRefreshCallback,
+  TokenRefreshFailureCallback,
+} from './api-client';
 import { ApiConfigOptions } from './config';
 
 /**
@@ -30,10 +33,19 @@ export class ApiServices {
     if (!this.instances.has(key)) {
       // Get or create the AuthService to use for token refresh
       const authService = this.getAuthService(configOptions);
-      const tokenRefreshCallback: TokenRefreshCallback = () => authService.refreshTokens();
-      const tokenRefreshFailureCallback: TokenRefreshFailureCallback = () => authService.handleTokenRefreshFailure();
+      const tokenRefreshCallback: TokenRefreshCallback = () =>
+        authService.refreshTokens();
+      const tokenRefreshFailureCallback: TokenRefreshFailureCallback = () =>
+        authService.handleTokenRefreshFailure();
 
-      this.instances.set(key, new UsersService(configOptions, tokenRefreshCallback, tokenRefreshFailureCallback));
+      this.instances.set(
+        key,
+        new UsersService(
+          configOptions,
+          tokenRefreshCallback,
+          tokenRefreshFailureCallback,
+        ),
+      );
     }
     return this.instances.get(key);
   }
@@ -41,15 +53,26 @@ export class ApiServices {
   /**
    * Gets the singleton UserDetailsService instance with token refresh capability
    */
-  static getUserDetailsService(configOptions: ApiConfigOptions = {}): UserDetailsService {
+  static getUserDetailsService(
+    configOptions: ApiConfigOptions = {},
+  ): UserDetailsService {
     const key = 'userDetails';
     if (!this.instances.has(key)) {
       // Get or create the AuthService to use for token refresh
       const authService = this.getAuthService(configOptions);
-      const tokenRefreshCallback: TokenRefreshCallback = () => authService.refreshTokens();
-      const tokenRefreshFailureCallback: TokenRefreshFailureCallback = () => authService.handleTokenRefreshFailure();
+      const tokenRefreshCallback: TokenRefreshCallback = () =>
+        authService.refreshTokens();
+      const tokenRefreshFailureCallback: TokenRefreshFailureCallback = () =>
+        authService.handleTokenRefreshFailure();
 
-      this.instances.set(key, new UserDetailsService(configOptions, tokenRefreshCallback, tokenRefreshFailureCallback));
+      this.instances.set(
+        key,
+        new UserDetailsService(
+          configOptions,
+          tokenRefreshCallback,
+          tokenRefreshFailureCallback,
+        ),
+      );
     }
     return this.instances.get(key);
   }
@@ -69,6 +92,5 @@ export { UsersService } from './users.service';
 export { UserDetailsService } from './user-details.service';
 export { ApiClient } from './api-client';
 
-// Export types and config
-export * from './types';
+// Export config
 export * from './config';

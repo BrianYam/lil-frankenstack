@@ -21,3 +21,5 @@ valid_build:
     - pnpm i
     - pnpm build:web
     - pnpm build:backend
+    - pnpm build:shared
+    - pnpm build:types

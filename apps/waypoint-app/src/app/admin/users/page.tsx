@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/user-context';
 import { useUsers } from '@/hooks';
-import { User, UserRole, UpdateUserRequest } from '@/types/users.types';
+import { User, UserRole, UpdateUserRequest } from '@/types';
 import { Container } from '@/components/ui/container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,10 +29,14 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Trash2, UserX, Check, AlertCircle, RefreshCw } from 'lucide-react';
-import { ApiError } from "@/types";
+import { ApiError } from '@/types';
 
 export default function UsersManagementPage() {
-  const { user: currentUser, isLoading: isLoadingCurrentUser, isAuthenticated } = useUserContext();
+  const {
+    user: currentUser,
+    isLoading: isLoadingCurrentUser,
+    isAuthenticated,
+  } = useUserContext();
   const router = useRouter();
 
   // Users data and mutations
@@ -46,17 +50,19 @@ export default function UsersManagementPage() {
     updateUserError,
     deleteUser,
     isDeletingUser,
-    deleteUserError
+    deleteUserError,
   } = useUsers();
 
   // State for notifications
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const [notifications, setNotifications] = useState<Array<{
-    id: string;
-    type: 'success' | 'error';
-    message: string;
-  }>>([]);
+  const [notifications, setNotifications] = useState<
+    Array<{
+      id: string;
+      type: 'success' | 'error';
+      message: string;
+    }>
+  >([]);
 
   // Fetch users when component mounts
   useEffect(() => {
@@ -67,20 +73,24 @@ export default function UsersManagementPage() {
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
-    if (!isLoadingCurrentUser &&
-        (!isAuthenticated || (currentUser && currentUser.role !== UserRole.ADMIN))) {
+    if (
+      !isLoadingCurrentUser &&
+      (!isAuthenticated || (currentUser && currentUser.role !== UserRole.ADMIN))
+    ) {
       router.push('/me');
     }
   }, [isLoadingCurrentUser, isAuthenticated, currentUser, router]);
-  
+
   // Handle notifications
   const addNotification = (type: 'success' | 'error', message: string) => {
     const id = Date.now().toString();
-    setNotifications(prev => [...prev, { id, type, message }]);
-    
+    setNotifications((prev) => [...prev, { id, type, message }]);
+
     // Auto-remove notification after 3 seconds
     setTimeout(() => {
-      setNotifications(prev => prev.filter(notification => notification.id !== id));
+      setNotifications((prev) =>
+        prev.filter((notification) => notification.id !== id),
+      );
     }, 3000);
   };
 
@@ -93,13 +103,19 @@ export default function UsersManagementPage() {
       { userId: user.id, userData: updateData },
       {
         onSuccess: () => {
-          addNotification('success', `User ${user.email} ${newStatus} successfully.`);
+          addNotification(
+            'success',
+            `User ${user.email} ${newStatus} successfully.`,
+          );
         },
         onError: (error: Error) => {
           const apiError = error as unknown as ApiError;
-          addNotification('error', `Error updating user: ${apiError?.response?.data?.message ?? 'Failed to update user'}`);
-        }
-      }
+          addNotification(
+            'error',
+            `Error updating user: ${apiError?.response?.data?.message ?? 'Failed to update user'}`,
+          );
+        },
+      },
     );
   };
 
@@ -107,21 +123,24 @@ export default function UsersManagementPage() {
   const handleDeleteUser = () => {
     if (!userToDelete) return;
 
-    deleteUser(
-      userToDelete.id,
-      {
-        onSuccess: () => {
-          setIsDeleteDialogOpen(false);
-          setUserToDelete(null);
-          addNotification('success', `User ${userToDelete.email} deleted successfully.`);
-        },
-        onError: (error: Error) => {
-          const apiError = error as unknown as ApiError;
-          setIsDeleteDialogOpen(false);
-          addNotification('error', `Error deleting user: ${apiError?.response?.data?.message ?? 'Unknown error'}`);
-        }
-      }
-    );
+    deleteUser(userToDelete.id, {
+      onSuccess: () => {
+        setIsDeleteDialogOpen(false);
+        setUserToDelete(null);
+        addNotification(
+          'success',
+          `User ${userToDelete.email} deleted successfully.`,
+        );
+      },
+      onError: (error: Error) => {
+        const apiError = error as unknown as ApiError;
+        setIsDeleteDialogOpen(false);
+        addNotification(
+          'error',
+          `Error deleting user: ${apiError?.response?.data?.message ?? 'Unknown error'}`,
+        );
+      },
+    });
   };
 
   // Show loading spinner while loading current user
@@ -151,10 +170,10 @@ export default function UsersManagementPage() {
       return (
         <div className="text-center py-12 bg-blue-50 rounded-lg">
           <AlertCircle className="mx-auto h-12 w-12 text-blue-500 mb-3" />
-          <h3 className="text-lg font-medium text-blue-900 mb-2">No Users Found</h3>
-          <p className="text-blue-700">
-            There are no users in the system yet.
-          </p>
+          <h3 className="text-lg font-medium text-blue-900 mb-2">
+            No Users Found
+          </h3>
+          <p className="text-blue-700">There are no users in the system yet.</p>
         </div>
       );
     }
@@ -174,18 +193,30 @@ export default function UsersManagementPage() {
             Refresh
           </Button>
         </div>
-        
+
         {/* Desktop Table (hidden on mobile) */}
         <div className="hidden md:block overflow-x-auto">
           <Table>
-            <TableCaption className='text-indigo-800'>Showing all {users.length} users in the system</TableCaption>
+            <TableCaption className="text-indigo-800">
+              Showing all {users.length} users in the system
+            </TableCaption>
             <TableHeader>
               <TableRow className="bg-indigo-50">
-                <TableHead className="font-bold text-indigo-900">Email</TableHead>
-                <TableHead className="font-bold text-indigo-900">Role</TableHead>
-                <TableHead className="font-bold text-indigo-900">Status</TableHead>
-                <TableHead className="font-bold text-indigo-900">Created At</TableHead>
-                <TableHead className="font-bold text-indigo-900">Actions</TableHead>
+                <TableHead className="font-bold text-indigo-900">
+                  Email
+                </TableHead>
+                <TableHead className="font-bold text-indigo-900">
+                  Role
+                </TableHead>
+                <TableHead className="font-bold text-indigo-900">
+                  Status
+                </TableHead>
+                <TableHead className="font-bold text-indigo-900">
+                  Created At
+                </TableHead>
+                <TableHead className="font-bold text-indigo-900">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -195,11 +226,13 @@ export default function UsersManagementPage() {
                     {user.email}
                   </TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      user.role === UserRole.ADMIN 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        user.role === UserRole.ADMIN
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}
+                    >
                       {user.role}
                     </span>
                   </TableCell>
@@ -209,13 +242,15 @@ export default function UsersManagementPage() {
                         checked={user.isActive}
                         onCheckedChange={() => handleToggleActive(user)}
                         disabled={isUpdatingUser}
-                        className={user.isActive ? "bg-green-600" : "bg-gray-400"}
+                        className={
+                          user.isActive ? 'bg-green-600' : 'bg-gray-400'
+                        }
                       />
-                      <span className={`ml-2 text-sm font-medium ${
-                        user.isActive 
-                          ? 'text-green-700' 
-                          : 'text-gray-600'
-                      }`}>
+                      <span
+                        className={`ml-2 text-sm font-medium ${
+                          user.isActive ? 'text-green-700' : 'text-gray-600'
+                        }`}
+                      >
                         {user.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
@@ -224,7 +259,7 @@ export default function UsersManagementPage() {
                     {new Date(user.createdAt).toLocaleDateString(undefined, {
                       year: 'numeric',
                       month: 'short',
-                      day: 'numeric'
+                      day: 'numeric',
                     })}
                   </TableCell>
                   <TableCell>
@@ -247,53 +282,58 @@ export default function UsersManagementPage() {
             </TableBody>
           </Table>
         </div>
-        
+
         {/* Mobile Card View (shown only on mobile) */}
         <div className="grid grid-cols-1 gap-4 md:hidden">
           {users.map((user) => (
-            <div 
-              key={user.id} 
+            <div
+              key={user.id}
               className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex flex-col space-y-3">
                 <div className="flex justify-between items-start">
-                  <span className="font-medium text-blue-900 break-all">{user.email}</span>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.role === UserRole.ADMIN 
-                      ? 'bg-purple-100 text-purple-800' 
-                      : 'bg-blue-100 text-blue-800'
-                  }`}>
+                  <span className="font-medium text-blue-900 break-all">
+                    {user.email}
+                  </span>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      user.role === UserRole.ADMIN
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
                     {user.role}
                   </span>
                 </div>
-                
+
                 <div className="flex justify-between items-center pt-1">
                   <div className="text-sm text-gray-700">
-                    Created: {new Date(user.createdAt).toLocaleDateString(undefined, {
+                    Created:{' '}
+                    {new Date(user.createdAt).toLocaleDateString(undefined, {
                       year: 'numeric',
                       month: 'short',
-                      day: 'numeric'
+                      day: 'numeric',
                     })}
                   </div>
                 </div>
-                
+
                 <div className="flex justify-between items-center border-t border-gray-100 pt-3 mt-1">
                   <div className="flex items-center">
                     <Switch
                       checked={user.isActive}
                       onCheckedChange={() => handleToggleActive(user)}
                       disabled={isUpdatingUser}
-                      className={user.isActive ? "bg-green-600" : "bg-gray-400"}
+                      className={user.isActive ? 'bg-green-600' : 'bg-gray-400'}
                     />
-                    <span className={`ml-2 text-sm font-medium ${
-                      user.isActive 
-                        ? 'text-green-700' 
-                        : 'text-gray-600'
-                    }`}>
+                    <span
+                      className={`ml-2 text-sm font-medium ${
+                        user.isActive ? 'text-green-700' : 'text-gray-600'
+                      }`}
+                    >
                       {user.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                  
+
                   <Button
                     variant="destructive"
                     size="sm"
@@ -322,14 +362,18 @@ export default function UsersManagementPage() {
         {/* Floating notifications - responsive positioning */}
         <div className="fixed bottom-4 sm:top-4 right-4 z-50 flex flex-col gap-2 w-[calc(100%-2rem)] sm:w-72">
           {notifications.map((notification) => (
-            <Alert 
+            <Alert
               key={notification.id}
-              variant={notification.type === 'success' ? 'default' : 'destructive'}
+              variant={
+                notification.type === 'success' ? 'default' : 'destructive'
+              }
               className={`
                 shadow-lg border animate-in fade-in slide-in-from-right-5 sm:slide-in-from-top-5 
-                ${notification.type === 'success' 
-                  ? 'bg-green-50 border-green-200 text-green-800' 
-                  : 'bg-red-50 border-red-200 text-red-800'}
+                ${
+                  notification.type === 'success'
+                    ? 'bg-green-50 border-green-200 text-green-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
+                }
               `}
             >
               <div className="flex items-center">
@@ -348,13 +392,20 @@ export default function UsersManagementPage() {
 
         <Card className="w-full mx-auto shadow-lg sm:shadow-xl border border-indigo-100 overflow-hidden">
           <CardHeader className="bg-white border-b border-indigo-100 bg-gradient-to-r from-indigo-600 to-blue-600 p-4 sm:p-6">
-            <CardTitle className="text-xl sm:text-2xl font-bold text-white">Manage Users</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl font-bold text-white">
+              Manage Users
+            </CardTitle>
           </CardHeader>
           <CardContent className="bg-white p-3 sm:p-6">
             {(usersError || updateUserError || deleteUserError) && (
-              <Alert variant="destructive" className="mb-4 sm:mb-6 bg-red-50 border-red-300 text-red-900">
+              <Alert
+                variant="destructive"
+                className="mb-4 sm:mb-6 bg-red-50 border-red-300 text-red-900"
+              >
                 <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
-                <AlertTitle className="text-red-800 font-bold">Error</AlertTitle>
+                <AlertTitle className="text-red-800 font-bold">
+                  Error
+                </AlertTitle>
                 <AlertDescription className="text-red-800 text-sm">
                   An error occurred loading or updating users. Please try again.
                 </AlertDescription>
@@ -376,8 +427,14 @@ export default function UsersManagementPage() {
               Delete User
             </DialogTitle>
             <DialogDescription className="text-gray-600 pt-2">
-              Are you sure you want to delete the user <strong className="text-indigo-600 font-semibold break-all">{userToDelete?.email}</strong>?
-              <p className="mt-2 text-rose-500 font-medium">This action cannot be undone.</p>
+              Are you sure you want to delete the user{' '}
+              <strong className="text-indigo-600 font-semibold break-all">
+                {userToDelete?.email}
+              </strong>
+              ?
+              <p className="mt-2 text-rose-500 font-medium">
+                This action cannot be undone.
+              </p>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 mt-4">

@@ -36,7 +36,8 @@
     "tailwind-merge": "^3.3.1",
     "unsplash-js": "^7.0.19",
     "zod": "^3.25.64",
-    "@lil-frankenstack/shared-services": "workspace:*"
+    "@lil-frankenstack/shared-services": "workspace:*",
+    "@lil-frankenstack/types": "workspace:*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { UserDetails, UpdateUserDetailsRequest } from '@/types/users.types';
+import { UserDetails, UpdateUserDetailsRequest } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -68,19 +68,32 @@ export const EditUserDetailsDialog: React.FC<EditUserDetailsDialogProps> = ({
             setOpen(false); // Close the dialog
           },
           onError: (error) => {
-            toast({ title: 'Error', description: `Failed to update user details: ${error.message}` });
+            toast({
+              title: 'Error',
+              description: `Failed to update user details: ${error.message}`,
+            });
             console.error('Failed to update user details:', error);
           },
-        }
+        },
       );
     },
-    [updateUserDetails, userDetails.id, toast]
+    [updateUserDetails, userDetails.id, toast],
   );
 
   return (
-    <Dialog open={open} onOpenChange={(newOpen) => { setOpen(newOpen); onOpenChange(newOpen); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        setOpen(newOpen);
+        onOpenChange(newOpen);
+      }}
+    >
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-indigo-600 hover:text-indigo-700">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-indigo-600 hover:text-indigo-700"
+        >
           <Pencil size={16} />
         </Button>
       </DialogTrigger>
@@ -88,16 +101,25 @@ export const EditUserDetailsDialog: React.FC<EditUserDetailsDialogProps> = ({
         <DialogHeader className="text-black">
           <DialogTitle>Edit User Details</DialogTitle>
           <DialogDescription>
-            Make changes to your user details here. Click save when you&#39;re done.
+            Make changes to your user details here. Click save when you&#39;re
+            done.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4 text-gray-700">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="grid gap-4 py-4 text-gray-700"
+        >
           {Object.keys(userDetailsFormSchema.shape).map((key) => {
             const fieldName = key as keyof UserDetailsFormRequest;
             return (
-              <div key={fieldName} className="grid grid-cols-4 items-center gap-4">
+              <div
+                key={fieldName}
+                className="grid grid-cols-4 items-center gap-4"
+              >
                 <Label htmlFor={fieldName} className="text-right">
-                  {fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                  {fieldName
+                    .replace(/([A-Z])/g, ' $1')
+                    .replace(/^./, (str) => str.toUpperCase())}
                 </Label>
                 <Controller
                   name={fieldName}
@@ -119,7 +141,11 @@ export const EditUserDetailsDialog: React.FC<EditUserDetailsDialogProps> = ({
               </div>
             );
           })}
-          <Button type="submit" disabled={isUpdatingUserDetails} variant="indigo">
+          <Button
+            type="submit"
+            disabled={isUpdatingUserDetails}
+            variant="indigo"
+          >
             {isUpdatingUserDetails ? 'Saving...' : 'Save changes'}
           </Button>
         </form>

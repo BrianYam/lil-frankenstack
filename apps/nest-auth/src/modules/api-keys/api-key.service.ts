@@ -12,12 +12,12 @@ import authConfig from '@/configs/auth.config';
 import { ApiKeyRepository } from '@/modules/api-keys/api-key.repository';
 import { CustomLoggerService } from '@/modules/logger/custom-logger.service';
 import { LoggerFactory } from '@/modules/logger/logger-factory.service';
-import { ApiKey } from '@/types';
 import {
+  ApiKey,
   CreateApiKeyDto,
   ApiKeyPayload,
   ApiKeyWithToken,
-} from '@/types/api-keys.types';
+} from '@/types';
 
 @Injectable()
 export class ApiKeyService {

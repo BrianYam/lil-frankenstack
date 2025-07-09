@@ -1,11 +1,15 @@
-import { ApiClient, TokenRefreshCallback, TokenRefreshFailureCallback } from './api-client';
+import {
+  ApiClient,
+  TokenRefreshCallback,
+  TokenRefreshFailureCallback,
+} from './api-client';
 import {
   User,
   CreateUserRequest,
   DeleteUserResponse,
   UpdateUserRequest,
-  UserWithDetails
-} from './types';
+  UserWithDetails,
+} from '@lil-frankenstack/types';
 import { API_ENDPOINTS, ApiConfigOptions } from './config';
 
 /**
@@ -24,9 +28,13 @@ export class UsersService {
   constructor(
     configOptions: ApiConfigOptions = {},
     tokenRefreshCallback?: TokenRefreshCallback,
-    tokenRefreshFailureCallback?: TokenRefreshFailureCallback
+    tokenRefreshFailureCallback?: TokenRefreshFailureCallback,
   ) {
-    this.apiClient = new ApiClient(configOptions, tokenRefreshCallback, tokenRefreshFailureCallback);
+    this.apiClient = new ApiClient(
+      configOptions,
+      tokenRefreshCallback,
+      tokenRefreshFailureCallback,
+    );
   }
 
   /**
@@ -36,7 +44,10 @@ export class UsersService {
    */
   async createUser(userData: CreateUserRequest): Promise<User> {
     try {
-      return await this.apiClient.post<User>(API_ENDPOINTS.USERS.BASE, userData);
+      return await this.apiClient.post<User>(
+        API_ENDPOINTS.USERS.BASE,
+        userData,
+      );
     } catch (error) {
       this.handleError('Failed to create user', error);
       throw error;
@@ -78,7 +89,10 @@ export class UsersService {
    */
   async updateUser(userId: string, userData: UpdateUserRequest): Promise<User> {
     try {
-      return await this.apiClient.patch<User>(API_ENDPOINTS.USERS.BY_ID(userId), userData);
+      return await this.apiClient.patch<User>(
+        API_ENDPOINTS.USERS.BY_ID(userId),
+        userData,
+      );
     } catch (error) {
       this.handleError(`Failed to update user ${userId}`, error);
       throw error;
@@ -92,7 +106,9 @@ export class UsersService {
    */
   async deleteUser(userId: string): Promise<DeleteUserResponse> {
     try {
-      return await this.apiClient.delete<DeleteUserResponse>(API_ENDPOINTS.USERS.BY_ID(userId));
+      return await this.apiClient.delete<DeleteUserResponse>(
+        API_ENDPOINTS.USERS.BY_ID(userId),
+      );
     } catch (error) {
       this.handleError(`Failed to delete user ${userId}`, error);
       throw error;
