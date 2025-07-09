@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import { getEnvVar, getEnvVarAsNumber } from './config.utils';
+import { getEnvVar, getEnvVarAsNumber } from './utils/config.utils';
 
 export default registerAs('auth', () => {
   return {

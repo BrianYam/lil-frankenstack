@@ -1,0 +1,47 @@
+{
+  "name": "@lil-frankenstack/shared-services",
+  "version": "1.0.0",
+  "description": "Shared API services for lil-frankenstack applications",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./config": {
+      "import": "./src/config/index.ts",
+      "require": "./src/config/index.ts",
+      "types": "./src/config/index.ts"
+    }
+  },
+  "files": [
+    "src/**/*",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "js-cookie": "^3.0.5",
+    "@lil-frankenstack/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^20",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.5.0"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}

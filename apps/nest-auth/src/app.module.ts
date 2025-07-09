@@ -3,20 +3,20 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { RepositoriesModule } from './repositories/repositories.module';
-import { ApiKeysModule } from '@/api-keys/api-keys.module';
 import { AppController } from '@/app.controller';
 import authConfig from '@/configs/auth.config';
 import emailConfig from '@/configs/email.config';
 import generalConfig from '@/configs/general.config';
 import googleOauthConfig from '@/configs/google-oauth.config';
 import telegramConfig from '@/configs/telegram.config';
-import { DatabaseModule } from '@/database/database.module';
-import { LoggerModule } from '@/logger/logger.module';
-import { TraceModule } from '@/trace/trace.module';
-import { UsersModule } from '@/users/users.module';
-import { ReqResInterceptor } from '@/utils/interceptors/reqRes.interceptor';
+import { ReqResInterceptor } from '@/interceptors/reqRes.interceptor';
+import { ApiKeysModule } from '@/modules/api-keys/api-keys.module';
+import { AuthModule } from '@/modules/auth/auth.module';
+import { DatabaseModule } from '@/modules/database/database.module';
+import { LoggerModule } from '@/modules/logger/logger.module';
+import { RepositoriesModule } from '@/modules/repositories/repositories.module';
+import { TraceModule } from '@/modules/trace/trace.module';
+import { UsersModule } from '@/modules/users/users.module';
 
 @Module({
   imports: [

@@ -9,6 +9,10 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "build:web": "turbo build --filter=waypoint-app",
+    "build:backend": "turbo build --filter=nest-auth",
+    "build:shared": "turbo build --filter=@lil-frankenstack/shared-services",
+    "build:types": "turbo build --filter=@lil-frankenstack/types",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "clean": "turbo run clean && rm -rf node_modules",

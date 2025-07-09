@@ -1,9 +1,15 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode, useEffect, useState, useMemo } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { useUsers } from '@/hooks/use-users';
-import { User } from '@/types/users.types';
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useEffect,
+  useState,
+  useMemo,
+} from 'react';
+import { useAuth, useUsers } from '@/hooks';
+import { User } from '@/types';
 
 interface UserContextType {
   user: User | null;
@@ -20,8 +26,17 @@ interface UserProviderProps {
 
 export function UserProvider({ children }: Readonly<UserProviderProps>) {
   const [user, setUser] = useState<User | null>(null);
-  const { isAuthenticated, isLoading: authLoading, error: authError } = useAuth();
-  const { currentUser, isLoadingCurrentUser, currentUserError, refetchCurrentUser } = useUsers();
+  const {
+    isAuthenticated,
+    isLoading: authLoading,
+    error: authError,
+  } = useAuth();
+  const {
+    currentUser,
+    isLoadingCurrentUser,
+    currentUserError,
+    refetchCurrentUser,
+  } = useUsers();
 
   // Update user when current user data changes
   useEffect(() => {
@@ -40,25 +55,28 @@ export function UserProvider({ children }: Readonly<UserProviderProps>) {
         try {
           await refetchCurrentUser();
         } catch (error) {
-          console.error("Failed to fetch current user:", error);
+          console.error('Failed to fetch current user:', error);
         }
       })();
     }
   }, [isAuthenticated, refetchCurrentUser]);
 
-  const value = useMemo(() => ({
-    user,
-    isLoading: authLoading || isLoadingCurrentUser,
-    error: authError || currentUserError,
-    isAuthenticated,
-  }), [
-    user,
-    authLoading,
-    isLoadingCurrentUser,
-    authError,
-    currentUserError,
-    isAuthenticated
-  ]);
+  const value = useMemo(
+    () => ({
+      user,
+      isLoading: authLoading || isLoadingCurrentUser,
+      error: authError || currentUserError,
+      isAuthenticated,
+    }),
+    [
+      user,
+      authLoading,
+      isLoadingCurrentUser,
+      authError,
+      currentUserError,
+      isAuthenticated,
+    ],
+  );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }

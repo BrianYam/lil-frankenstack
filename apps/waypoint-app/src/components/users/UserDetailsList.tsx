@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import { UserDetails } from '@/types/users.types';
-import { useUserDetails } from '@/hooks/use-user-details';
+import { UserDetails } from '@/types';
+import { useUserDetails } from '@/hooks';
 import { useToast } from '../ui/use-toast';
 import { UserDetailsCard } from './UserDetailsCard';
 import { CreateUserDetailsDialog } from './CreateUserDetailsDialog';
@@ -10,7 +10,10 @@ interface UserDetailsListProps {
   defaultDetails?: UserDetails;
 }
 
-export const UserDetailsList: React.FC<UserDetailsListProps> = ({ details, defaultDetails }) => {
+export const UserDetailsList: React.FC<UserDetailsListProps> = ({
+  details,
+  defaultDetails,
+}) => {
   const { setDefaultUserDetails } = useUserDetails();
   const { toast } = useToast();
 
@@ -18,19 +21,25 @@ export const UserDetailsList: React.FC<UserDetailsListProps> = ({ details, defau
     (id: string) => {
       setDefaultUserDetails(id, {
         onSuccess: () => {
-          toast({ title: 'Success', description: 'Default user details updated.' });
+          toast({
+            title: 'Success',
+            description: 'Default user details updated.',
+          });
         },
         onError: (error) => {
-          toast({ title: 'Error', description: `Failed to set default user details: ${error.message}` });
+          toast({
+            title: 'Error',
+            description: `Failed to set default user details: ${error.message}`,
+          });
           console.error('Failed to set default user details:', error);
         },
       });
     },
-    [setDefaultUserDetails, toast]
+    [setDefaultUserDetails, toast],
   );
 
   const otherDetails = details?.filter(
-    (detail) => !defaultDetails || detail.id !== defaultDetails.id
+    (detail) => !defaultDetails || detail.id !== defaultDetails.id,
   );
 
   return (
@@ -39,10 +48,7 @@ export const UserDetailsList: React.FC<UserDetailsListProps> = ({ details, defau
         <CreateUserDetailsDialog />
       </div>
       {defaultDetails && (
-        <UserDetailsCard
-          detail={defaultDetails}
-          isDefault={true}
-        />
+        <UserDetailsCard detail={defaultDetails} isDefault={true} />
       )}
 
       {otherDetails && otherDetails.length > 0 && (

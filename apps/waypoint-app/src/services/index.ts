@@ -1,67 +1,57 @@
+import {
+  ApiServices,
+  AuthService,
+  UsersService,
+  UserDetailsService,
+  ApiConfigOptions,
+  DEFAULT_API_CONFIG
+} from '@lil-frankenstack/shared-services';
 
-import { AuthService } from './auth.service';
-import { UsersService } from './users.service';
-import { UserDetailsService } from './user-details.service';
+// Create configuration from environment variables
+const apiConfig: ApiConfigOptions = {
+  baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4001/api',
+  apiKey: process.env.NEXT_PUBLIC_AUTH_API_KEY ?? '',
+  cookies: {
+    accessToken: DEFAULT_API_CONFIG.COOKIES.ACCESS_TOKEN
+  },
+};
 
 /**
- * API Services Factory
- * Creates instances of all API services with proper dependencies
+ * API Services Factory for Waypoint App
+ * Creates instances of all API services with proper configuration
  */
-export class ApiServices {
-  private static _authService: AuthService;
-  private static _usersService: UsersService;
-  private static _userDetailsService: UserDetailsService;
-  
+export class WaypointApiServices {
   /**
    * Gets the singleton AuthService instance
-   * @param apiUrl - Optional API URL override
-   * @returns AuthService instance
    */
-  static getAuthService(apiUrl?: string): AuthService {
-    if (!this._authService) {
-      this._authService = new AuthService(apiUrl);
-    }
-    return this._authService;
+  static getAuthService(): AuthService {
+    return ApiServices.getAuthService(apiConfig);
   }
   
   /**
    * Gets the singleton UsersService instance
-   * @param apiUrl - Optional API URL override
-   * @returns UsersService instance
    */
-  static getUsersService(apiUrl?: string): UsersService {
-    if (!this._usersService) {
-      const authService = this.getAuthService(apiUrl);
-      this._usersService = new UsersService(authService, apiUrl);
-    }
-    return this._usersService;
+  static getUsersService(): UsersService {
+    return ApiServices.getUsersService(apiConfig);
   }
 
   /**
    * Gets the singleton UserDetailsService instance
-   * @param apiUrl - Optional API URL override
-   * @returns UserDetailsService instance
    */
-  static getUserDetailsService(apiUrl?: string): UserDetailsService {
-    if (!this._userDetailsService) {
-      const authService = this.getAuthService(apiUrl);
-      this._userDetailsService = new UserDetailsService(authService, apiUrl);
-    }
-    return this._userDetailsService;
+  static getUserDetailsService(): UserDetailsService {
+    return ApiServices.getUserDetailsService(apiConfig);
   }
 
   /**
    * Reset all service instances
-   * Useful for testing or when configuration changes
    */
   static resetServices(): void {
-    this._authService = undefined as unknown as AuthService;
-    this._usersService = undefined as unknown as UsersService;
-    this._userDetailsService = undefined as unknown as UserDetailsService;
+    ApiServices.resetServices();
   }
 }
 
 // Export service classes for direct import if needed
-export { AuthService } from './auth.service';
-export { UsersService } from './users.service';
-export { UserDetailsService } from './user-details.service';
+export { AuthService, UsersService, UserDetailsService } from '@lil-frankenstack/shared-services';
+
+// For backward compatibility, export the services factory as default
+export { WaypointApiServices as ApiServices };

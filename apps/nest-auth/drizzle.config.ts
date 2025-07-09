@@ -1,5 +1,5 @@
 import { defineConfig } from 'drizzle-kit';
-import { getDatabaseConfig } from '@/database/utils.database';
+import { getDatabaseConfig } from '@/modules/database/utils.database';
 
 const config = getDatabaseConfig();
 
