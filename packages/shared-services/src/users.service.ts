@@ -1,34 +1,32 @@
-// filepath: /Users/brianyam/Documents/BrianLabProject/lil-frankenstack/waypoint-app/src/services/users.service.ts
-
-import { AuthService } from './auth.service';
-import { ApiClient } from './api-client';
-import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
-import { 
-  User, 
-  CreateUserRequest, 
+import { ApiClient, TokenRefreshCallback, TokenRefreshFailureCallback } from './api-client';
+import {
+  User,
+  CreateUserRequest,
   DeleteUserResponse,
   UpdateUserRequest,
   UserWithDetails
-} from '@/types/users.types';
+} from './types';
+import { API_ENDPOINTS, ApiConfigOptions } from './config';
 
 /**
  * Users Service
  * Handles user management API requests
  */
 export class UsersService {
-  private readonly baseUrl: string;
-  private readonly authService: AuthService;
   private readonly apiClient: ApiClient;
 
   /**
    * Creates a new instance of UsersService
-   * @param authService - Auth service instance for token management
-   * @param apiUrl - Base URL for API requests
+   * @param configOptions - Configuration options for the API client
+   * @param tokenRefreshCallback - Optional callback for token refresh
+   * @param tokenRefreshFailureCallback - Optional callback for token refresh failure
    */
-  constructor(authService: AuthService, apiUrl?: string) {
-    this.authService = authService;
-    this.baseUrl = apiUrl ?? API_CONFIG.BASE_URL;
-    this.apiClient = this.authService.getApiClient();
+  constructor(
+    configOptions: ApiConfigOptions = {},
+    tokenRefreshCallback?: TokenRefreshCallback,
+    tokenRefreshFailureCallback?: TokenRefreshFailureCallback
+  ) {
+    this.apiClient = new ApiClient(configOptions, tokenRefreshCallback, tokenRefreshFailureCallback);
   }
 
   /**
