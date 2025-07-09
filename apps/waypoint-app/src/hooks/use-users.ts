@@ -121,28 +121,12 @@ export function useUsers() {
 
   return {
     // Queries
-    users: usersQuery.data || [],
-    currentUser: currentUserQuery.data,
-    isLoadingUsers: usersQuery.isLoading,
-    isLoadingCurrentUser: currentUserQuery.isLoading,
-    usersError: usersQuery.error,
-    currentUserError: currentUserQuery.error,
+    usersQuery,
+    currentUserQuery,
 
     // Mutations
-    createUser: createUserMutation.mutate,
-    isCreatingUser: createUserMutation.isPending,
-    createUserError: createUserMutation.error,
-
-    updateUser: updateUserMutation.mutate,
-    isUpdatingUser: updateUserMutation.isPending,
-    updateUserError: updateUserMutation.error,
-
-    deleteUser: deleteUserMutation.mutate,
-    isDeletingUser: deleteUserMutation.isPending,
-    deleteUserError: deleteUserMutation.error,
-
-    // Refetch methods
-    refetchUsers: usersQuery.refetch,
-    refetchCurrentUser: currentUserQuery.refetch,
+    createUserMutation,
+    updateUserMutation,
+    deleteUserMutation,
   };
 }
