@@ -1,30 +1,28 @@
-import { AuthService } from './auth.service';
 import { ApiClient } from './api-client';
-import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
-import { 
+import { AuthService } from './auth.service';
+import {
   UserDetails,
   CreateUserDetailsRequest,
   UpdateUserDetailsRequest
-} from '@/types/users.types';
+} from './types';
+import { API_ENDPOINTS, ApiConfigOptions } from './config';
 
 /**
  * User Details Service
  * Handles user details management API requests
  */
 export class UserDetailsService {
-  private readonly baseUrl: string;
-  private readonly authService: AuthService;
   private readonly apiClient: ApiClient;
+  private readonly authService?: AuthService;
 
   /**
    * Creates a new instance of UserDetailsService
-   * @param authService - Auth service instance for token management
-   * @param apiUrl - Base URL for API requests
+   * @param configOptions - Configuration options for the API client
+   * @param authService - Optional auth service instance for token management
    */
-  constructor(authService: AuthService, apiUrl?: string) {
+  constructor(configOptions: ApiConfigOptions = {}, authService?: AuthService) {
     this.authService = authService;
-    this.baseUrl = apiUrl ?? API_CONFIG.BASE_URL;
-    this.apiClient = this.authService.getApiClient();
+    this.apiClient = authService?.getApiClient() ?? new ApiClient(configOptions);
   }
 
   /**
