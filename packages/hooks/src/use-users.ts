@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
-import { CreateUserRequest, UpdateUserRequest } from '@/types';
+import { ApiServices } from '@lil-frankenstack/shared-services';
+import { CreateUserRequest, UpdateUserRequest } from '@lil-frankenstack/types';
 
 const usersService = ApiServices.getUsersService();
 

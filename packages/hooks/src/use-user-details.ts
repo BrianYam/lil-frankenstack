@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
+import { ApiServices } from '@lil-frankenstack/shared-services';
 import {
   UserDetails,
   CreateUserDetailsRequest,
   UpdateUserDetailsRequest,
-} from '@/types';
+} from '@lil-frankenstack/types';
 
 const userDetailsService = ApiServices.getUserDetailsService();
 

@@ -3,14 +3,14 @@ import {
   QueryClient,
   useQueryClient,
 } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
+import { ApiServices } from '@lil-frankenstack/shared-services';
 import {
   LoginRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
   VerifyEmailRequest,
-} from '@/types';
+} from '@lil-frankenstack/types';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 

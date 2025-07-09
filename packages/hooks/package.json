@@ -1,0 +1,26 @@
+{
+  "name": "@lil-frankenstack/hooks",
+  "version": "1.0.0",
+  "description": "Shared React hooks for the frankenstack monorepo",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@lil-frankenstack/shared-services": "workspace:*",
+    "@lil-frankenstack/types": "workspace:*"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "next": "^15.0.0",
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+
