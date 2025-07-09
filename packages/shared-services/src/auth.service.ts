@@ -1,70 +1,62 @@
-// filepath: /Users/brianyam/Documents/BrianLabProject/lil-frankenstack/waypoint-app/src/services/auth.service.ts
-import axios from 'axios';
 import Cookies from 'js-cookie';
-import { 
+import { ApiClient } from './api-client';
+import {
   LoginRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
   VerifyEmailRequest,
   ApiResponse
-} from '@/types/auth.types';
-import { ApiClient } from './api-client';
-import { API_CONFIG, API_ENDPOINTS } from '@/config/api.config';
+} from './types';
+import { API_ENDPOINTS, ApiConfigOptions } from './config';
+import axios from "axios";
 
 const AUTHENTICATED = 'authenticated';
+
 /**
  * Auth Service
  * Handles authentication-related API requests and token management
  */
 export class AuthService {
-  private readonly baseUrl: string;
-  private readonly accessTokenKey = API_CONFIG.COOKIES.ACCESS_TOKEN;
-  private apiClient?: ApiClient;
+  private readonly apiClient: ApiClient;
+  private readonly accessTokenKey: string;
 
   /**
    * Creates a new instance of AuthService
-   * @param apiUrl - Base URL for API requests
+   * @param configOptions - Configuration options for the API client
    */
-  constructor(apiUrl?: string) {
-    this.baseUrl = apiUrl ?? API_CONFIG.BASE_URL;
+  constructor(configOptions: ApiConfigOptions = {}) {
+    this.apiClient = new ApiClient(configOptions);
+    this.accessTokenKey = this.apiClient.getConfig().COOKIES.ACCESS_TOKEN;
   }
 
   /**
    * Get the API client instance
-   * @returns ApiClient instance
    */
   getApiClient(): ApiClient {
-    this.apiClient ??= new ApiClient(this, this.baseUrl);
     return this.apiClient;
   }
 
   /**
    * Get the configured API URL
-   * @returns The base URL for API calls
    */
   getApiUrl(): string {
-    return this.baseUrl;
+    return this.apiClient.getBaseUrl();
   }
 
   /**
    * Logs in a user with email and password
-   * @param credentials - The login credentials (email and password)
    */
   async login(credentials: LoginRequest): Promise<void> {
-    console.log(`Logging in with credentials: ${JSON.stringify(credentials)}`);
     try {
-      // Use a temporary API client that has the API key interceptor
-      const tempClient = new ApiClient(this, this.baseUrl);
-
       // Backend doesn't return any body, just sets HTTP-only cookies
-      await tempClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
+      await this.apiClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
 
       // Set a client-side marker for auth state tracking
       this.setAccessToken(AUTHENTICATED);
     } catch (error) {
       this.handleError('Login failed', error);
-      throw error; // Re-throw so the calling code can handle it
+      throw error;
     }
   }
 
@@ -73,11 +65,8 @@ export class AuthService {
    */
   async refreshTokens(): Promise<void> {
     try {
-      // Use a temporary API client that has the API key interceptor
-      const tempClient = new ApiClient(this, this.baseUrl);
-
-      // Backend doesn't return any body, just refreshes HTTP-only cookies
-      await tempClient.post(API_ENDPOINTS.AUTH.REFRESH, {});
+      // Backend doesn't return any response body, just refreshes HTTP-only cookies
+      await this.apiClient.post(API_ENDPOINTS.AUTH.REFRESH, {});
 
       // Reset client-side marker for auth state tracking
       this.setAccessToken(AUTHENTICATED);
@@ -90,11 +79,10 @@ export class AuthService {
 
   /**
    * Logs out the current user
-   * @returns Promise indicating success
    */
   async logout(): Promise<void> {
     try {
-      await this.getApiClient().post(API_ENDPOINTS.AUTH.LOGOUT, {});
+      await this.apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, {});
       this.clearTokens();
     } catch (error) {
       // Still clear tokens locally even if API call fails
@@ -105,12 +93,10 @@ export class AuthService {
 
   /**
    * Requests a password reset for the specified email
-   * @param data - Contains the email address
-   * @returns Promise with the API response
    */
   async requestPasswordReset(data: ForgotPasswordRequest): Promise<ApiResponse> {
     try {
-      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.FORGOT, data);
+      return await this.apiClient.post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.FORGOT, data);
     } catch (error) {
       this.handleError('Password reset request failed', error);
       throw error;
@@ -119,12 +105,10 @@ export class AuthService {
 
   /**
    * Resets a password using a token
-   * @param data - Contains the reset token and new password
-   * @returns Promise with the API response
    */
   async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse> {
     try {
-      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.RESET, data);
+      return await this.apiClient.post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.RESET, data);
     } catch (error) {
       this.handleError('Password reset failed', error);
       throw error;
@@ -133,12 +117,10 @@ export class AuthService {
 
   /**
    * Changes the user's password
-   * @param data - Contains the current password and new password
-   * @returns Promise with the API response
    */
   async changePassword(data: ChangePasswordRequest): Promise<ApiResponse> {
     try {
-      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.CHANGE, data);
+      return await this.apiClient.post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.CHANGE, data);
     } catch (error) {
       this.handleError('Password change failed', error);
       throw error;
@@ -147,36 +129,14 @@ export class AuthService {
 
   /**
    * Verifies a user's email with the provided token
-   * @param data - Contains the verification token
-   * @returns Promise with the API response
    */
   async verifyEmail(data: VerifyEmailRequest): Promise<ApiResponse> {
     try {
-      return await this.getApiClient().post<ApiResponse>(API_ENDPOINTS.AUTH.EMAIL.VERIFY, data);
+      return await this.apiClient.post<ApiResponse>(API_ENDPOINTS.AUTH.EMAIL.VERIFY, data);
     } catch (error) {
       this.handleError('Email verification failed', error);
       throw error;
     }
-  }
-
-  /**
-   * Initiates Google OAuth login
-   * Uses the Next.js API as a proxy to securely add the API key to the request
-   */
-  googleLogin(): void {
-    window.location.href = `${this.baseUrl}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`;
-  }
-
-  /**
-   * Checks if the user is authenticated
-   * @returns Boolean indicating if user is authenticated
-   *
-   * Note: This doesn't check the actual token as we're using cookie-based auth.
-   * Instead, it relies on the presence of the cookie which the browser will
-   * automatically send with requests when withCredentials is true.
-   */
-  isAuthenticated(): boolean {
-    return !!Cookies.get(this.accessTokenKey);
   }
 
   /**
@@ -201,36 +161,47 @@ export class AuthService {
     }
   }
 
-  // Private methods
-
   /**
-   * Note on token storage:
-   * Our backend uses HTTP-only cookies for authentication tokens.
-   * These methods are now primarily for client-side detection of authentication state.
-   * The actual secure tokens are managed by the server via HTTP-only cookies.
+   * Initiates Google OAuth login
+   * Uses the Next.js API as a proxy to securely add the API key to the request
    */
+  googleLogin(): void {
+    window.location.href = `${this.apiClient.getConfig().BASE_URL}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`;
+  }
 
   /**
-   * Sets a marker cookie to track authentication state client-side
-   * @param token - The token value
+   * Checks if user is authenticated
+   */
+  isAuthenticated(): boolean {
+    return !!this.getAccessToken();
+  }
+
+  /**
+   * Gets the access token from cookies
+   */
+  getAccessToken(): string | undefined {
+    return Cookies.get(this.accessTokenKey);
+  }
+
+  /**
+   * Sets the access token in cookies
    */
   private setAccessToken(token: string): void {
-    Cookies.set(this.accessTokenKey, token, { path: '/', sameSite: 'strict' });
+    Cookies.set(this.accessTokenKey, token, {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
   }
 
-
   /**
-   * Clears authentication token markers
-   * The actual secure tokens are cleared by the server
+   * Clears all authentication tokens
    */
   private clearTokens(): void {
-    Cookies.remove(this.accessTokenKey, { path: '/' });
+    Cookies.remove(this.accessTokenKey);
   }
 
   /**
-   * Handles API errors
-   * @param message - Custom error message
-   * @param error - The error object
+   * Handles and logs errors
    */
   private handleError(message: string, error: unknown): void {
     // Extract the error message from axios error if available
@@ -239,7 +210,7 @@ export class AuthService {
       const serverError = error.response.data;
       errorMessage = serverError?.message ?? `${message} (${error.response.status})`;
     }
-    
+
     console.error(`${errorMessage}:`, error);
   }
 }
