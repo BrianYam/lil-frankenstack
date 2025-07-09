@@ -1,5 +1,4 @@
-import { ApiClient } from './api-client';
-import { AuthService } from './auth.service';
+import { ApiClient, TokenRefreshCallback, TokenRefreshFailureCallback } from './api-client';
 import {
   UserDetails,
   CreateUserDetailsRequest,
@@ -13,16 +12,19 @@ import { API_ENDPOINTS, ApiConfigOptions } from './config';
  */
 export class UserDetailsService {
   private readonly apiClient: ApiClient;
-  private readonly authService?: AuthService;
 
   /**
    * Creates a new instance of UserDetailsService
    * @param configOptions - Configuration options for the API client
-   * @param authService - Optional auth service instance for token management
+   * @param tokenRefreshCallback - Optional callback for token refresh
+   * @param tokenRefreshFailureCallback - Optional callback for token refresh failure
    */
-  constructor(configOptions: ApiConfigOptions = {}, authService?: AuthService) {
-    this.authService = authService;
-    this.apiClient = authService?.getApiClient() ?? new ApiClient(configOptions);
+  constructor(
+    configOptions: ApiConfigOptions = {},
+    tokenRefreshCallback?: TokenRefreshCallback,
+    tokenRefreshFailureCallback?: TokenRefreshFailureCallback
+  ) {
+    this.apiClient = new ApiClient(configOptions, tokenRefreshCallback, tokenRefreshFailureCallback);
   }
 
   /**

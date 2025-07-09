@@ -26,7 +26,12 @@ export class AuthService {
    * @param configOptions - Configuration options for the API client
    */
   constructor(configOptions: ApiConfigOptions = {}) {
-    this.apiClient = new ApiClient(configOptions);
+    // Create ApiClient with token refresh callback and failure callback
+    this.apiClient = new ApiClient(
+      configOptions,
+      () => this.refreshTokens(),
+      () => this.handleTokenRefreshFailure()
+    );
     this.accessTokenKey = this.apiClient.getConfig().COOKIES.ACCESS_TOKEN;
   }
 
@@ -49,7 +54,7 @@ export class AuthService {
    */
   async login(credentials: LoginRequest): Promise<void> {
     try {
-      // Backend doesn't return any body, just sets HTTP-only cookies
+      // Backend doesn't return any response body, just sets HTTP-only cookies
       await this.apiClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
 
       // Set a client-side marker for auth state tracking
@@ -212,5 +217,41 @@ export class AuthService {
     }
 
     console.error(`${errorMessage}:`, error);
+  }
+
+  /**
+   * Handles token refresh failure by logging out and redirecting if needed
+   * Made public so it can be used as a callback by other services
+   */
+  async handleTokenRefreshFailure(): Promise<void> {
+    console.log('Token refresh failed, logging out user');
+
+    // Logout the user (clear tokens)
+    await this.logout();
+
+    // Only redirect if we're in the browser and the current URL is not whitelisted
+    if (typeof window !== 'undefined') {
+      const shouldRedirectToLogin = this.shouldRedirectToLogin();
+
+      if (shouldRedirectToLogin) {
+        window.location.href = '/login';
+      }
+    }
+  }
+
+  /**
+   * Determines if the current URL should trigger a redirect to login
+   * @returns boolean indicating whether to redirect
+   */
+  private shouldRedirectToLogin(): boolean {
+    const currentPath = window.location.pathname;
+
+    // Import AUTH_CONFIG from config
+    const { AUTH_CONFIG } = require('./config');
+
+    // Don't redirect if the current path is in the whitelist
+    return !AUTH_CONFIG.NON_AUTH_REDIRECT_URLS.some((path: string) =>
+      path === currentPath || currentPath.startsWith(`${path}/`)
+    );
   }
 }
