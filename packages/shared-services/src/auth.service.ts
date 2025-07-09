@@ -6,10 +6,10 @@ import {
   ResetPasswordRequest,
   ChangePasswordRequest,
   VerifyEmailRequest,
-  ApiResponse
-} from './types';
+  ApiResponse,
+} from '@lil-frankenstack/types';
 import { API_ENDPOINTS, ApiConfigOptions } from './config';
-import axios from "axios";
+import axios from 'axios';
 
 const AUTHENTICATED = 'authenticated';
 
@@ -30,7 +30,7 @@ export class AuthService {
     this.apiClient = new ApiClient(
       configOptions,
       () => this.refreshTokens(),
-      () => this.handleTokenRefreshFailure()
+      () => this.handleTokenRefreshFailure(),
     );
     this.accessTokenKey = this.apiClient.getConfig().COOKIES.ACCESS_TOKEN;
   }
@@ -99,9 +99,14 @@ export class AuthService {
   /**
    * Requests a password reset for the specified email
    */
-  async requestPasswordReset(data: ForgotPasswordRequest): Promise<ApiResponse> {
+  async requestPasswordReset(
+    data: ForgotPasswordRequest,
+  ): Promise<ApiResponse> {
     try {
-      return await this.apiClient.post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.FORGOT, data);
+      return await this.apiClient.post<ApiResponse>(
+        API_ENDPOINTS.AUTH.PASSWORD.FORGOT,
+        data,
+      );
     } catch (error) {
       this.handleError('Password reset request failed', error);
       throw error;
@@ -113,7 +118,10 @@ export class AuthService {
    */
   async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse> {
     try {
-      return await this.apiClient.post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.RESET, data);
+      return await this.apiClient.post<ApiResponse>(
+        API_ENDPOINTS.AUTH.PASSWORD.RESET,
+        data,
+      );
     } catch (error) {
       this.handleError('Password reset failed', error);
       throw error;
@@ -125,7 +133,10 @@ export class AuthService {
    */
   async changePassword(data: ChangePasswordRequest): Promise<ApiResponse> {
     try {
-      return await this.apiClient.post<ApiResponse>(API_ENDPOINTS.AUTH.PASSWORD.CHANGE, data);
+      return await this.apiClient.post<ApiResponse>(
+        API_ENDPOINTS.AUTH.PASSWORD.CHANGE,
+        data,
+      );
     } catch (error) {
       this.handleError('Password change failed', error);
       throw error;
@@ -137,7 +148,10 @@ export class AuthService {
    */
   async verifyEmail(data: VerifyEmailRequest): Promise<ApiResponse> {
     try {
-      return await this.apiClient.post<ApiResponse>(API_ENDPOINTS.AUTH.EMAIL.VERIFY, data);
+      return await this.apiClient.post<ApiResponse>(
+        API_ENDPOINTS.AUTH.EMAIL.VERIFY,
+        data,
+      );
     } catch (error) {
       this.handleError('Email verification failed', error);
       throw error;
@@ -153,7 +167,7 @@ export class AuthService {
     try {
       const response = await this.getApiClient().post<ApiResponse>(
         API_ENDPOINTS.AUTH.COMPLETE_OAUTH,
-        { token }
+        { token },
       );
 
       // Set a client-side marker for auth state tracking
@@ -213,7 +227,8 @@ export class AuthService {
     let errorMessage = message;
     if (axios.isAxiosError(error) && error.response) {
       const serverError = error.response.data;
-      errorMessage = serverError?.message ?? `${message} (${error.response.status})`;
+      errorMessage =
+        serverError?.message ?? `${message} (${error.response.status})`;
     }
 
     console.error(`${errorMessage}:`, error);
@@ -250,8 +265,9 @@ export class AuthService {
     const { AUTH_CONFIG } = require('./config');
 
     // Don't redirect if the current path is in the whitelist
-    return !AUTH_CONFIG.NON_AUTH_REDIRECT_URLS.some((path: string) =>
-      path === currentPath || currentPath.startsWith(`${path}/`)
+    return !AUTH_CONFIG.NON_AUTH_REDIRECT_URLS.some(
+      (path: string) =>
+        path === currentPath || currentPath.startsWith(`${path}/`),
     );
   }
 }

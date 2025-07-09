@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { CreateUserDetailsRequest } from '@/types/users.types';
+import { CreateUserDetailsRequest } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,16 +15,19 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useUserDetails } from '@/hooks';
 import { useToast } from '../ui/use-toast';
-import { createUserDetailsFormSchema, CreateUserDetailsFormRequest } from '@/lib/schemas';
+import {
+  createUserDetailsFormSchema,
+  CreateUserDetailsFormRequest,
+} from '@/lib/schemas';
 import { PlusCircle } from 'lucide-react';
 
 interface CreateUserDetailsDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export const CreateUserDetailsDialog: React.FC<CreateUserDetailsDialogProps> = ({
-  onOpenChange,
-}) => {
+export const CreateUserDetailsDialog: React.FC<
+  CreateUserDetailsDialogProps
+> = ({ onOpenChange }) => {
   const [open, setOpen] = useState(false); // Internal state for dialog
   const { createUserDetails, isCreatingUserDetails } = useUserDetails();
   const { toast } = useToast();
@@ -58,28 +61,37 @@ export const CreateUserDetailsDialog: React.FC<CreateUserDetailsDialogProps> = (
         mobileNumber: values.mobileNumber,
       };
 
-      createUserDetails(
-        createRequest,
-        {
-          onSuccess: () => {
-            toast({ title: 'Success', description: 'User details created.' });
-            setOpen(false); // Close the dialog
-            form.reset(); // Reset form fields
-          },
-          onError: (error) => {
-            toast({ title: 'Error', description: `Failed to create user details: ${error.message}` });
-            console.error('Failed to create user details:', error);
-          },
-        }
-      );
+      createUserDetails(createRequest, {
+        onSuccess: () => {
+          toast({ title: 'Success', description: 'User details created.' });
+          setOpen(false); // Close the dialog
+          form.reset(); // Reset form fields
+        },
+        onError: (error) => {
+          toast({
+            title: 'Error',
+            description: `Failed to create user details: ${error.message}`,
+          });
+          console.error('Failed to create user details:', error);
+        },
+      });
     },
-    [createUserDetails, toast, form]
+    [createUserDetails, toast, form],
   );
 
   return (
-    <Dialog open={open} onOpenChange={(newOpen) => { setOpen(newOpen); onOpenChange?.(newOpen); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        setOpen(newOpen);
+        onOpenChange?.(newOpen);
+      }}
+    >
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-700 bg-white">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 text-indigo-700 bg-white"
+        >
           <PlusCircle size={16} />
           Add New User Details
         </Button>
@@ -91,13 +103,21 @@ export const CreateUserDetailsDialog: React.FC<CreateUserDetailsDialogProps> = (
             Fill in the details for the new user.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4 text-gray-700">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="grid gap-4 py-4 text-gray-700"
+        >
           {Object.keys(createUserDetailsFormSchema.shape).map((key) => {
             const fieldName = key as keyof CreateUserDetailsFormRequest;
             return (
-              <div key={fieldName} className="grid grid-cols-4 items-center gap-4">
+              <div
+                key={fieldName}
+                className="grid grid-cols-4 items-center gap-4"
+              >
                 <Label htmlFor={fieldName} className="text-right">
-                  {fieldName.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                  {fieldName
+                    .replace(/([A-Z])/g, ' $1')
+                    .replace(/^./, (str) => str.toUpperCase())}
                 </Label>
                 <Controller
                   name={fieldName}
@@ -119,7 +139,11 @@ export const CreateUserDetailsDialog: React.FC<CreateUserDetailsDialogProps> = (
               </div>
             );
           })}
-          <Button type="submit" disabled={isCreatingUserDetails} variant="indigo">
+          <Button
+            type="submit"
+            disabled={isCreatingUserDetails}
+            variant="indigo"
+          >
             {isCreatingUserDetails ? 'Creating...' : 'Create User Details'}
           </Button>
         </form>

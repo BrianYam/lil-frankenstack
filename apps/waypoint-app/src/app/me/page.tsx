@@ -3,13 +3,24 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/user-context';
-import { LockKeyhole, Users, Settings, Activity, User as UserIcon, Mail, Shield, CalendarDays, Clock, CheckCircle2 } from 'lucide-react';
+import {
+  LockKeyhole,
+  Users,
+  Settings,
+  Activity,
+  User as UserIcon,
+  Mail,
+  Shield,
+  CalendarDays,
+  Clock,
+  CheckCircle2,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Container } from '@/components/ui/container';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserRole, UserWithDetails } from '@/types/users.types';
+import { UserRole, UserWithDetails } from '@/types';
 import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm';
 import { UserDetailsList } from '@/components/users/UserDetailsList';
 
@@ -19,13 +30,13 @@ export default function ProfilePage() {
   const router = useRouter();
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [activeTab, setActiveTab] = useState('account');
-  
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/login');
     }
   }, [isLoading, isAuthenticated, router]);
-  
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-blue-50">
@@ -33,7 +44,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-  
+
   const renderAccountInfo = () => (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start gap-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 shadow-sm">
@@ -46,10 +57,15 @@ export default function ProfilePage() {
             <Shield size={14} className="mr-1" />
             <span className="capitalize">{user?.role} Account</span>
           </div>
-          <p className="text-sm text-gray-500 mt-1">Account created: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Account created:{' '}
+            {user?.createdAt
+              ? new Date(user.createdAt).toLocaleDateString()
+              : 'N/A'}
+          </p>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border border-blue-100 shadow-sm overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 py-4 px-5 border-b border-blue-100">
@@ -59,8 +75,12 @@ export default function ProfilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5">
-            <p className="text-lg font-medium text-gray-800 break-all">{user?.email}</p>
-            <p className="text-sm text-gray-500 mt-1">Your email is used for logging in and account recovery</p>
+            <p className="text-lg font-medium text-gray-800 break-all">
+              {user?.email}
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              Your email is used for logging in and account recovery
+            </p>
           </CardContent>
         </Card>
 
@@ -72,12 +92,14 @@ export default function ProfilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5">
-            <p className="text-lg font-medium text-gray-800 capitalize">{user?.role}</p>
+            <p className="text-lg font-medium text-gray-800 capitalize">
+              {user?.role}
+            </p>
             <p className="text-sm text-gray-500 mt-1">
-              {user?.role === UserRole.ADMIN 
-                ? 'Administrators have full access to all features' 
-                : user?.role === UserRole.EDITOR 
-                  ? 'Editors can create and manage content' 
+              {user?.role === UserRole.ADMIN
+                ? 'Administrators have full access to all features'
+                : user?.role === UserRole.EDITOR
+                  ? 'Editors can create and manage content'
                   : 'Standard users have basic access'}
             </p>
           </CardContent>
@@ -85,7 +107,7 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-  
+
   const renderSettings = () => (
     <div className="space-y-6">
       <div className="bg-blue-50 border border-blue-100 p-5 rounded-lg mb-6">
@@ -94,11 +116,12 @@ export default function ProfilePage() {
           Password Management
         </h3>
         <p className="text-gray-600 mb-4 text-sm">
-          It&apos;s recommended to use a strong password that you don&apos;t use elsewhere and to change it periodically.
+          It&apos;s recommended to use a strong password that you don&apos;t use
+          elsewhere and to change it periodically.
         </p>
         {showChangePassword ? (
           <div className="mt-4 p-5 bg-white rounded-lg border border-blue-100 shadow-sm">
-            <ChangePasswordForm 
+            <ChangePasswordForm
               onSuccess={() => {
                 setShowChangePassword(false);
               }}
@@ -106,7 +129,7 @@ export default function ProfilePage() {
             />
           </div>
         ) : (
-          <Button 
+          <Button
             onClick={() => setShowChangePassword(true)}
             variant="outline"
             size="sm"
@@ -117,7 +140,7 @@ export default function ProfilePage() {
           </Button>
         )}
       </div>
-      
+
       <div className="bg-blue-50 border border-blue-100 p-5 rounded-lg">
         <h3 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
           <Activity size={18} className="text-indigo-600" />
@@ -127,24 +150,34 @@ export default function ProfilePage() {
           <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-blue-100">
             <CalendarDays size={18} className="text-indigo-500 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-gray-700">Account Created</p>
-              <p className="text-sm text-gray-600">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              }) : 'N/A'}</p>
+              <p className="text-sm font-medium text-gray-700">
+                Account Created
+              </p>
+              <p className="text-sm text-gray-600">
+                {user?.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                  : 'N/A'}
+              </p>
             </div>
           </div>
-          
+
           <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-blue-100">
             <Clock size={18} className="text-indigo-500 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-gray-700">Last Login</p>
-              <p className="text-sm text-gray-600">{user?.updatedAt ? new Date(user.updatedAt).toLocaleString('en-US', {
-                dateStyle: 'full',
-                timeStyle: 'short'
-              }) : 'N/A'}</p>
+              <p className="text-sm text-gray-600">
+                {user?.updatedAt
+                  ? new Date(user.updatedAt).toLocaleString('en-US', {
+                      dateStyle: 'full',
+                      timeStyle: 'short',
+                    })
+                  : 'N/A'}
+              </p>
             </div>
           </div>
         </div>
@@ -160,11 +193,12 @@ export default function ProfilePage() {
           Administrative Tools
         </h3>
         <p className="text-indigo-700 mb-6">
-          As an administrator, you have access to the following system management tools:
+          As an administrator, you have access to the following system
+          management tools:
         </p>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Button 
+          <Button
             variant="default"
             size="default"
             className="flex items-center gap-3 bg-indigo-600 hover:bg-indigo-700 h-auto py-3"
@@ -175,11 +209,13 @@ export default function ProfilePage() {
             </div>
             <div className="text-left">
               <span className="block font-medium">User Management</span>
-              <span className="text-xs text-indigo-200">Manage user accounts & permissions</span>
+              <span className="text-xs text-indigo-200">
+                Manage user accounts & permissions
+              </span>
             </div>
           </Button>
-          
-          <Button 
+
+          <Button
             variant="default"
             size="default"
             className="flex items-center gap-3 bg-indigo-600 hover:bg-indigo-700 h-auto py-3"
@@ -189,7 +225,9 @@ export default function ProfilePage() {
             </div>
             <div className="text-left">
               <span className="block font-medium">System Settings</span>
-              <span className="text-xs text-indigo-200">Configure system preferences</span>
+              <span className="text-xs text-indigo-200">
+                Configure system preferences
+              </span>
             </div>
           </Button>
         </div>
@@ -200,7 +238,10 @@ export default function ProfilePage() {
   const renderUserDetails = () => (
     <div className="space-y-6">
       {typedUser?.details && typedUser.defaultDetails && (
-        <UserDetailsList details={typedUser.details} defaultDetails={typedUser.defaultDetails} />
+        <UserDetailsList
+          details={typedUser.details}
+          defaultDetails={typedUser.defaultDetails}
+        />
       )}
       {typedUser?.details && !typedUser.defaultDetails && (
         <UserDetailsList details={typedUser.details} />
@@ -212,7 +253,7 @@ export default function ProfilePage() {
       )}
     </div>
   );
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50 py-12">
       <Container className="py-8">
@@ -224,9 +265,11 @@ export default function ProfilePage() {
               </div>
               Your Profile
             </CardTitle>
-            <p className="text-indigo-100 mt-1">Manage your account settings and preferences</p>
+            <p className="text-indigo-100 mt-1">
+              Manage your account settings and preferences
+            </p>
           </CardHeader>
-          
+
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
             <div className="bg-white border-b border-blue-100">
               <TabsList className="flex overflow-x-auto h-auto rounded-none bg-transparent p-0">
@@ -262,20 +305,26 @@ export default function ProfilePage() {
                 </TabsTrigger>
               </TabsList>
             </div>
-            
+
             <CardContent className="bg-white p-6">
               {user ? (
                 <div className="py-2">
-                  <TabsContent value="account">{renderAccountInfo()}</TabsContent>
+                  <TabsContent value="account">
+                    {renderAccountInfo()}
+                  </TabsContent>
                   <TabsContent value="settings">{renderSettings()}</TabsContent>
                   {user.role === UserRole.ADMIN && (
                     <TabsContent value="admin">{renderAdmin()}</TabsContent>
                   )}
-                  <TabsContent value="details">{renderUserDetails()}</TabsContent>
+                  <TabsContent value="details">
+                    {renderUserDetails()}
+                  </TabsContent>
                 </div>
               ) : (
                 <div className="text-center p-8 bg-blue-50 rounded-lg">
-                  <p className="text-indigo-600">User information not available</p>
+                  <p className="text-indigo-600">
+                    User information not available
+                  </p>
                 </div>
               )}
             </CardContent>

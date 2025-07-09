@@ -20,8 +20,7 @@ import { CurrentUser } from '@/decorators/current-user.decorator';
 import { UserJwtAuthGuard } from '@/guards/user-jwt-auth.guard';
 import { CustomLoggerService } from '@/modules/logger/custom-logger.service';
 import { LoggerFactory } from '@/modules/logger/logger-factory.service';
-import { User } from '@/types';
-import { CreateApiKeyDto } from '@/types/api-keys.types';
+import { User, CreateApiKeyDto } from '@/types';
 
 @ApiTags('api-keys')
 @Controller('api-keys')
