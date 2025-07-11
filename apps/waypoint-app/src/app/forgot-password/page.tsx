@@ -13,7 +13,7 @@ import { ForgotPasswordFormRequest, forgotPasswordSchema } from '@/lib/schemas';
 export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { forgotPassword, isLoading, error } = useAuth();  // Changed from useUser to useAuth
-  
+
   const {
     register,
     handleSubmit,
@@ -74,11 +74,11 @@ export default function ForgotPasswordPage() {
                 {error.message}
               </div>
             )}
-            
+
             <div className="mb-6 text-sm text-gray-600">
               Enter the email address associated with your account, and we&#39;ll email you a link to reset your password.
             </div>
-            
+
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-indigo-700 mb-1">

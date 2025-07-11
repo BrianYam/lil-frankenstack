@@ -11,9 +11,9 @@ interface UserDetailsListProps {
 }
 
 export const UserDetailsList: React.FC<UserDetailsListProps> = ({
-  details,
-  defaultDetails,
-}) => {
+                                                                  details,
+                                                                  defaultDetails,
+                                                                }) => {
   const { setDefaultUserDetailsMutation } = useUserDetails();
   const setDefaultUserDetails = setDefaultUserDetailsMutation.mutate;
   const { toast } = useToast();

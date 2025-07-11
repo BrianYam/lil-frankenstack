@@ -76,13 +76,13 @@ function VerifyEmailContent() {
     <AuthLayout
       title={
         verificationState === 'verifying' ? 'Verifying Your Email...' :
-        verificationState === 'success' ? 'Email Verified Successfully!' :
-        'Verification Failed'
+          verificationState === 'success' ? 'Email Verified Successfully!' :
+            'Verification Failed'
       }
       subtitle={
         verificationState === 'success' ? 'Redirecting to login...' :
-        verificationState === 'error' ? 'Please try again' :
-        'Please wait'
+          verificationState === 'error' ? 'Please try again' :
+            'Please wait'
       }
       alternateLink={{
         text: 'return to login',

@@ -1,13 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
 import {
   UserDetails,
   CreateUserDetailsRequest,
   UpdateUserDetailsRequest,
 } from '@/types';
-import { queryKeys } from '@/hooks/index';
-
-const userDetailsService = ApiServices.getUserDetailsService();
+import { queryKeys, apiServices } from '@/hooks/index';
 
 /**
  * Custom hook for user details operations
@@ -30,7 +27,7 @@ export function useUserDetails() {
     queryKey: queryKeys.userDetails.all,
     queryFn: async () => {
       console.log('Fetching all user details...');
-      const result = await userDetailsService.getAllUserDetails();
+      const result = await apiServices.userDetails.getAllUserDetails();
       console.log('All user details fetched:', result.length);
       return result;
     },
@@ -43,7 +40,7 @@ export function useUserDetails() {
     queryKey: queryKeys.userDetails.default,
     queryFn: async () => {
       console.log('Fetching default user details...');
-      const result = await userDetailsService.getDefaultUserDetails();
+      const result = await apiServices.userDetails.getDefaultUserDetails();
       console.log('Default user details fetched:', result);
       return result;
     },
@@ -57,7 +54,7 @@ export function useUserDetails() {
       queryKey: queryKeys.userDetails.byId(id),
       queryFn: async () => {
         console.log(`Fetching user details with ID: ${id}...`);
-        const result = await userDetailsService.getUserDetailsById(id);
+        const result = await apiServices.userDetails.getUserDetailsById(id);
         console.log(`User details with ID ${id} fetched:`, result);
         return result;
       },
@@ -69,7 +66,7 @@ export function useUserDetails() {
    */
   const createUserDetailsMutation = useMutation({
     mutationFn: (userDetailsData: CreateUserDetailsRequest) => {
-      return userDetailsService.create(userDetailsData);
+      return apiServices.userDetails.create(userDetailsData);
     },
     onSuccess: () => {
       queryClient
@@ -98,13 +95,13 @@ export function useUserDetails() {
    */
   const updateUserDetailsMutation = useMutation({
     mutationFn: ({
-      id,
-      userDetailsData,
-    }: {
+                   id,
+                   userDetailsData,
+                 }: {
       id: string;
       userDetailsData: UpdateUserDetailsRequest;
     }) => {
-      return userDetailsService.updateUserDetails(id, userDetailsData);
+      return apiServices.userDetails.updateUserDetails(id, userDetailsData);
     },
     onSuccess: (data: UserDetails) => {
       queryClient
@@ -138,7 +135,7 @@ export function useUserDetails() {
    */
   const setDefaultUserDetailsMutation = useMutation({
     mutationFn: (id: string) => {
-      return userDetailsService.setDefaultUserDetails(id);
+      return apiServices.userDetails.setDefaultUserDetails(id);
     },
     onSuccess: (data: UserDetails) => {
       queryClient
@@ -172,7 +169,7 @@ export function useUserDetails() {
    */
   const deleteUserDetailsMutation = useMutation({
     mutationFn: (id: string) => {
-      return userDetailsService.deleteUserDetails(id);
+      return apiServices.userDetails.deleteUserDetails(id);
     },
     onSuccess: () => {
       queryClient
