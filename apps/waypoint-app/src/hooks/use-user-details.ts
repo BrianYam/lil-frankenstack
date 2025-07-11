@@ -198,33 +198,15 @@ export function useUserDetails() {
 
   return {
     // Queries
-    allUserDetails: allUserDetailsQuery.data || [],
-    defaultUserDetails: defaultUserDetailsQuery.data,
+
+    allUserDetailsQuery,
     useUserDetailsById,
-    isLoadingAllUserDetails: allUserDetailsQuery.isLoading,
-    isLoadingDefaultUserDetails: defaultUserDetailsQuery.isLoading,
-    allUserDetailsError: allUserDetailsQuery.error,
-    defaultUserDetailsError: defaultUserDetailsQuery.error,
+    defaultUserDetailsQuery,
 
     // Mutations
-    createUserDetails: createUserDetailsMutation.mutate,
-    isCreatingUserDetails: createUserDetailsMutation.isPending,
-    createUserDetailsError: createUserDetailsMutation.error,
-
-    updateUserDetails: updateUserDetailsMutation.mutate,
-    isUpdatingUserDetails: updateUserDetailsMutation.isPending,
-    updateUserDetailsError: updateUserDetailsMutation.error,
-
-    setDefaultUserDetails: setDefaultUserDetailsMutation.mutate,
-    isSettingDefaultUserDetails: setDefaultUserDetailsMutation.isPending,
-    setDefaultUserDetailsError: setDefaultUserDetailsMutation.error,
-
-    deleteUserDetails: deleteUserDetailsMutation.mutate,
-    isDeletingUserDetails: deleteUserDetailsMutation.isPending,
-    deleteUserDetailsError: deleteUserDetailsMutation.error,
-
-    // Refetch methods
-    refetchAllUserDetails: allUserDetailsQuery.refetch,
-    refetchDefaultUserDetails: defaultUserDetailsQuery.refetch,
+    createUserDetailsMutation,
+    updateUserDetailsMutation,
+    setDefaultUserDetailsMutation,
+    deleteUserDetailsMutation,
   };
 }
