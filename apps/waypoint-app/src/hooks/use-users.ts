@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiServices } from '@/services';
 import { CreateUserRequest, UpdateUserRequest } from '@/types';
+import { queryKeys } from '@/hooks/index';
 
 const usersService = ApiServices.getUsersService();
 
@@ -20,7 +21,7 @@ export function useUsers() {
    * Get all users query
    */
   const usersQuery = useQuery({
-    queryKey: ['users'],
+    queryKey: queryKeys.users.all,
     queryFn: async () => {
       console.log('Fetching all users...');
       const result = await usersService.getAllUsers();
@@ -35,7 +36,7 @@ export function useUsers() {
    * Get current user profile query
    */
   const currentUserQuery = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: queryKeys.users.currentUser,
     queryFn: async () => {
       const isAuthenticated = ApiServices.getAuthService().isAuthenticated();
       console.log('Fetching current user, auth status:', isAuthenticated);
@@ -64,7 +65,7 @@ export function useUsers() {
     onSuccess: () => {
       // Invalidate users query to refresh the list
       queryClient
-        .invalidateQueries({ queryKey: ['users'] }) //TODO dont do this since we need them to confirm the user creation
+        .invalidateQueries({ queryKey: queryKeys.users.all })
         .catch((error) => {
           console.error('Error invalidating users queries:', error);
         });
@@ -87,7 +88,7 @@ export function useUsers() {
     onSuccess: () => {
       // Invalidate users query and manually trigger refetch since enabled: false
       queryClient
-        .invalidateQueries({ queryKey: ['users'] })
+        .invalidateQueries({ queryKey: queryKeys.users.all })
         .then(() => usersQuery.refetch())
         .catch((error) => {
           console.error(
@@ -108,7 +109,7 @@ export function useUsers() {
     onSuccess: () => {
       // Invalidate users query and manually trigger refetch since enabled: false
       queryClient
-        .invalidateQueries({ queryKey: ['users'] })
+        .invalidateQueries({ queryKey: queryKeys.users.all })
         .then(() => usersQuery.refetch())
         .catch((error) => {
           console.error(
@@ -121,28 +122,12 @@ export function useUsers() {
 
   return {
     // Queries
-    users: usersQuery.data || [],
-    currentUser: currentUserQuery.data,
-    isLoadingUsers: usersQuery.isLoading,
-    isLoadingCurrentUser: currentUserQuery.isLoading,
-    usersError: usersQuery.error,
-    currentUserError: currentUserQuery.error,
+    usersQuery,
+    currentUserQuery,
 
     // Mutations
-    createUser: createUserMutation.mutate,
-    isCreatingUser: createUserMutation.isPending,
-    createUserError: createUserMutation.error,
-
-    updateUser: updateUserMutation.mutate,
-    isUpdatingUser: updateUserMutation.isPending,
-    updateUserError: updateUserMutation.error,
-
-    deleteUser: deleteUserMutation.mutate,
-    isDeletingUser: deleteUserMutation.isPending,
-    deleteUserError: deleteUserMutation.error,
-
-    // Refetch methods
-    refetchUsers: usersQuery.refetch,
-    refetchCurrentUser: currentUserQuery.refetch,
+    createUserMutation,
+    updateUserMutation,
+    deleteUserMutation,
   };
 }

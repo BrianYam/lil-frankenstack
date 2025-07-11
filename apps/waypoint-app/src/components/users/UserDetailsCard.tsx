@@ -29,11 +29,13 @@ export const UserDetailsCard: React.FC<UserDetailsCardProps> = ({
   isDefault = false,
   onSetDefault,
 }) => {
-  const {
-    deleteUserDetails,
-    isDeletingUserDetails,
-    isSettingDefaultUserDetails,
-  } = useUserDetails();
+  const { deleteUserDetailsMutation, setDefaultUserDetailsMutation } =
+    useUserDetails();
+
+  const deleteUserDetails = deleteUserDetailsMutation.mutate;
+  const isDeletingUserDetails = deleteUserDetailsMutation.isPending;
+  const isSettingDefaultUserDetails = setDefaultUserDetailsMutation.isPending;
+
   const { toast } = useToast();
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);

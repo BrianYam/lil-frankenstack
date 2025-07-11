@@ -13,6 +13,7 @@ import {
 } from '@/types';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { queryKeys } from '@/hooks/index';
 
 const authService = ApiServices.getAuthService();
 
@@ -44,7 +45,7 @@ export function useAuth() {
     onSuccess: () => {
       console.log('Successfully logged in');
       // Immediately invalidate current user query to update UI
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser });
       router.push('/');
       setIsLoading(false);
     },
@@ -65,7 +66,7 @@ export function useAuth() {
     },
     onSuccess: () => {
       // Immediately invalidate current user query to update UI
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser });
       router.push('/login');
       setIsLoading(false);
     },
@@ -234,7 +235,7 @@ export function useAuth() {
       await authService.completeOAuthAuthentication(token);
 
       // Invalidate queries to refresh user data
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser });
 
       setIsLoading(false);
       return true;
@@ -285,7 +286,10 @@ export function setupAuthInvalidations(queryClient: QueryClient) {
 
       // Force an immediate refresh of the currentUser data
       queryClient
-        .invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' })
+        .invalidateQueries({
+          queryKey: queryKeys.users.currentUser,
+          refetchType: 'all',
+        })
         .catch((error) => {
           console.error('Error invalidating currentUser queries:', error);
         });

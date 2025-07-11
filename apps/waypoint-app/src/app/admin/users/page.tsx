@@ -41,17 +41,23 @@ export default function UsersManagementPage() {
 
   // Users data and mutations
   const {
-    users,
-    refetchUsers,
-    isLoadingUsers,
-    usersError,
-    updateUser,
-    isUpdatingUser,
-    updateUserError,
-    deleteUser,
-    isDeletingUser,
-    deleteUserError,
+    usersQuery,
+    updateUserMutation,
+    deleteUserMutation,
   } = useUsers();
+
+  const users = usersQuery.data ?? [];
+  const isLoadingUsers = usersQuery.isLoading;
+  const usersError = usersQuery.error;
+  const refetchUsers = usersQuery.refetch;
+
+  const updateUser = updateUserMutation.mutate;
+  const isUpdatingUser = updateUserMutation.isPending;
+  const updateUserError = updateUserMutation.error;
+
+  const deleteUser = deleteUserMutation.mutate;
+  const isDeletingUser = deleteUserMutation.isPending;
+  const deleteUserError = deleteUserMutation.error;
 
   // State for notifications
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);

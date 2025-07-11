@@ -14,7 +14,8 @@ export const UserDetailsList: React.FC<UserDetailsListProps> = ({
   details,
   defaultDetails,
 }) => {
-  const { setDefaultUserDetails } = useUserDetails();
+  const { setDefaultUserDetailsMutation } = useUserDetails();
+  const setDefaultUserDetails = setDefaultUserDetailsMutation.mutate;
   const { toast } = useToast();
 
   const handleSetDefault = useCallback(
