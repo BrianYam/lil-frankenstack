@@ -3,7 +3,6 @@ import {
   QueryClient,
   useQueryClient,
 } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
 import {
   LoginRequest,
   ForgotPasswordRequest,
@@ -11,48 +10,47 @@ import {
   ChangePasswordRequest,
   VerifyEmailRequest,
 } from '@/types';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { queryKeys } from '@/hooks/index';
-
-const authService = ApiServices.getAuthService();
+import { queryKeys, apiServices } from '@/hooks/index';
+import { useCallback, useMemo } from 'react';
 
 /**
  * Custom hook for authentication actions and state
  */
 export function useAuth() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
   const queryClient = useQueryClient();
+
+  // Memoize the authentication state to prevent unnecessary re-renders
+  const isAuthenticated = useMemo(() => apiServices.auth.isAuthenticated(), []);
+
+  /**
+   * Centralized query invalidation for auth-related data
+   */
+  const invalidateAuthQueries = useCallback(() => {
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDetails.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDetails.default }),
+    ]);
+  }, [queryClient]);
 
   /**
    * Login mutation
    */
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginRequest) => {
-      setIsLoading(true);
-      setError(null);
       console.log('Auth service login called with:', credentials);
-      try {
-        await authService.login(credentials);
-        return true;
-      } catch (err) {
-        console.error('Error in login mutation function:', err);
-        throw err; // Re-throw to be caught by onError
-      }
+      await apiServices.auth.login(credentials);
+      return true;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       console.log('Successfully logged in');
-      // Immediately invalidate current user query to update UI
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser });
+      await invalidateAuthQueries();
       router.push('/');
-      setIsLoading(false);
     },
     onError: (error: unknown) => {
       console.error('Login mutation error:', error);
-      setError(error instanceof Error ? error : new Error('Login failed'));
-      setIsLoading(false);
     },
   });
 
@@ -60,19 +58,13 @@ export function useAuth() {
    * Logout mutation
    */
   const logoutMutation = useMutation({
-    mutationFn: () => {
-      setIsLoading(true);
-      return authService.logout();
-    },
-    onSuccess: () => {
-      // Immediately invalidate current user query to update UI
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser });
+    mutationFn: () => apiServices.auth.logout(),
+    onSuccess: async () => {
+      await invalidateAuthQueries();
       router.push('/login');
-      setIsLoading(false);
     },
     onError: (error: Error) => {
-      setError(error);
-      setIsLoading(false);
+      console.error('Logout mutation error:', error);
     },
   });
 
@@ -80,121 +72,91 @@ export function useAuth() {
    * Forgot password mutation
    */
   const forgotPasswordMutation = useMutation({
-    mutationFn: (data: ForgotPasswordRequest) => {
-      setIsLoading(true);
-      return authService.requestPasswordReset(data);
-    },
-    onSuccess: () => {
-      setIsLoading(false);
-    },
-    onError: (error: Error) => {
-      setError(error);
-      setIsLoading(false);
-    },
+    mutationFn: (data: ForgotPasswordRequest) =>
+      apiServices.auth.requestPasswordReset(data),
   });
 
   /**
    * Reset password mutation
    */
   const resetPasswordMutation = useMutation({
-    mutationFn: (data: ResetPasswordRequest) => {
-      setIsLoading(true);
-      return authService.resetPassword(data);
-    },
-    onSuccess: () => {
-      setIsLoading(false);
-    },
-    onError: (error: Error) => {
-      setError(error);
-      setIsLoading(false);
-    },
+    mutationFn: (data: ResetPasswordRequest) =>
+      apiServices.auth.resetPassword(data),
   });
 
   /**
    * Change password mutation
    */
   const changePasswordMutation = useMutation({
-    mutationFn: (data: ChangePasswordRequest) => {
-      setIsLoading(true);
-      return authService.changePassword(data);
-    },
-    onSuccess: () => {
-      setIsLoading(false);
-    },
-    onError: (error: Error) => {
-      setError(error);
-      setIsLoading(false);
-    },
+    mutationFn: (data: ChangePasswordRequest) =>
+      apiServices.auth.changePassword(data),
   });
 
   /**
    * Email verification mutation
    */
   const verifyEmailMutation = useMutation({
-    mutationFn: (data: VerifyEmailRequest) => {
-      setIsLoading(true);
-      return authService.verifyEmail(data);
-    },
-    onSuccess: () => {
-      setIsLoading(false);
-    },
-    onError: (error: Error) => {
-      setError(error);
-      setIsLoading(false);
+    mutationFn: (data: VerifyEmailRequest) =>
+      apiServices.auth.verifyEmail(data),
+  });
+
+  /**
+   * OAuth completion mutation
+   */
+  const completeOAuthMutation = useMutation({
+    mutationFn: (token: string) =>
+      apiServices.auth.completeOAuthAuthentication(token),
+    onSuccess: async () => {
+      await invalidateAuthQueries();
     },
   });
 
   /**
-   * Get authentication state
-   */
-  const isAuthenticated = authService.isAuthenticated();
-
-  /**
    * Google OAuth login
    */
-  const googleLogin = () => {
-    authService.googleLogin();
-  };
+  const googleLogin = useCallback(() => {
+    apiServices.auth.googleLogin();
+  }, []);
 
   /**
    * Login with email and password
    */
-  const login = (email: string, password: string) => {
+  const login = useCallback((email: string, password: string) => {
     console.log('useAuth login called with:', email, password);
     loginMutation.mutate({ email, password });
-  };
+  }, [loginMutation]);
 
   /**
    * Forgot password with email
    * Returns a promise for better handling in components
    */
-  const forgotPassword = (data: { email: string }) => {
+  const forgotPassword = useCallback((data: { email: string }) => {
     return new Promise<void>((resolve, reject) => {
       forgotPasswordMutation.mutate(data, {
         onSuccess: () => resolve(),
         onError: (error) => reject(error),
       });
     });
-  };
+  }, [forgotPasswordMutation]);
 
   /**
    * Reset password with token and new password
    * Returns a promise for better handling in components
    */
-  const resetPassword = (data: { token: string; password: string }) => {
+  const resetPassword = useCallback((data: { token: string; password: string }) => {
     return new Promise<void>((resolve, reject) => {
       resetPasswordMutation.mutate(data, {
         onSuccess: () => resolve(),
         onError: (error) => reject(error),
       });
     });
-  };
+  }, [resetPasswordMutation]);
 
   /**
    * Change password
    * Returns a promise for better handling in components
    */
-  const changePassword = (data: {
+  const changePassword = useCallback((data: {
     currentPassword: string;
     newPassword: string;
   }) => {
@@ -204,13 +166,13 @@ export function useAuth() {
         onError: (error) => reject(error),
       });
     });
-  };
+  }, [changePasswordMutation]);
 
   /**
    * Verify email with token
    * Returns a promise for better handling in components
    */
-  const verifyEmail = (token: string) => {
+  const verifyEmail = useCallback((token: string) => {
     return new Promise<void>((resolve, reject) => {
       verifyEmailMutation.mutate(
         { token },
@@ -220,32 +182,65 @@ export function useAuth() {
         },
       );
     });
-  };
+  }, [verifyEmailMutation]);
 
   /**
    * Complete OAuth authentication after redirect
    * @param token - The token from the URL hash
    * @returns Promise that resolves when authentication is complete
    */
-  const completeOAuthAuthentication = async (token: string) => {
+  const completeOAuthAuthentication = useCallback(async (token: string) => {
     try {
-      setIsLoading(true);
-      setError(null);
-
-      await authService.completeOAuthAuthentication(token);
-
-      // Invalidate queries to refresh user data
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser });
-
-      setIsLoading(false);
+      await completeOAuthMutation.mutateAsync(token);
       return true;
     } catch (err) {
       console.error('OAuth authentication completion error:', err);
-      setError(err instanceof Error ? err : new Error('Authentication failed'));
-      setIsLoading(false);
       throw err;
     }
-  };
+  }, [completeOAuthMutation]);
+
+  // Derive loading state from mutations
+  const isLoading =
+    loginMutation.isPending ||
+    logoutMutation.isPending ||
+    forgotPasswordMutation.isPending ||
+    resetPasswordMutation.isPending ||
+    changePasswordMutation.isPending ||
+    verifyEmailMutation.isPending ||
+    completeOAuthMutation.isPending;
+
+  // Derive and normalize error state from mutations
+  const rawError =
+    loginMutation.error ||
+    logoutMutation.error ||
+    forgotPasswordMutation.error ||
+    resetPasswordMutation.error ||
+    changePasswordMutation.error ||
+    verifyEmailMutation.error ||
+    completeOAuthMutation.error;
+
+  const error = useMemo(() => {
+    if (!rawError) return null;
+
+    if (rawError instanceof Error) {
+      return {
+        message: rawError.message,
+        originalError: rawError,
+      };
+    }
+
+    if (typeof rawError === 'object' && rawError !== null && 'message' in rawError) {
+      return {
+        message: String((rawError as { message: unknown }).message),
+        originalError: rawError,
+      };
+    }
+
+    return {
+      message: 'An unexpected error occurred.',
+      originalError: rawError,
+    };
+  }, [rawError]);
 
   return {
     // Auth state

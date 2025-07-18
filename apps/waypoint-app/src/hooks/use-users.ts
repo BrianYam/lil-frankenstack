@@ -1,9 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
 import { CreateUserRequest, UpdateUserRequest } from '@/types';
-import { queryKeys } from '@/hooks/index';
-
-const usersService = ApiServices.getUsersService();
+import { queryKeys, apiServices } from '@/hooks/index';
+import { useCallback } from 'react';
 
 /**
  * Custom hook for user operations
@@ -18,13 +16,23 @@ export function useUsers() {
   const queryClient = useQueryClient();
 
   /**
+   * Centralized query invalidation for user-related data
+   */
+  const invalidateUserQueries = useCallback(() => {
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser }),
+    ]);
+  }, [queryClient]);
+
+  /**
    * Get all users query
    */
   const usersQuery = useQuery({
     queryKey: queryKeys.users.all,
     queryFn: async () => {
       console.log('Fetching all users...');
-      const result = await usersService.getAllUsers();
+      const result = await apiServices.users.getAllUsers();
       console.log('Users fetched:', result.length);
       return result;
     },
@@ -38,21 +46,21 @@ export function useUsers() {
   const currentUserQuery = useQuery({
     queryKey: queryKeys.users.currentUser,
     queryFn: async () => {
-      const isAuthenticated = ApiServices.getAuthService().isAuthenticated();
+      const isAuthenticated = apiServices.auth.isAuthenticated();
       console.log('Fetching current user, auth status:', isAuthenticated);
       if (!isAuthenticated) {
         return null;
       }
-      return usersService.getCurrentUser();
+      return apiServices.users.getCurrentUser();
     },
-    // Don't cache null results when not authenticated
-    meta: {
-      skipCache: !ApiServices.getAuthService().isAuthenticated(),
+    enabled: apiServices.auth.isAuthenticated(), // Only run when authenticated
+    retry: (failureCount, error: Error) => {
+      // Don't retry on 401 errors (unauthorized)
+      if (error && 'status' in error && error.status === 401) return false;
+      return failureCount < 2;
     },
-    // Run the query immediately when mounted, regardless of cache
-    refetchOnMount: 'always',
-    // Cache time reduced for more responsive auth state updates
-    gcTime: 1000 * 30, // 30 seconds (formerly cacheTime)
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
   });
 
   /**
@@ -60,15 +68,13 @@ export function useUsers() {
    */
   const createUserMutation = useMutation({
     mutationFn: (userData: CreateUserRequest) => {
-      return usersService.createUser(userData);
+      return apiServices.users.createUser(userData);
     },
-    onSuccess: () => {
-      // Invalidate users query to refresh the list
-      queryClient
-        .invalidateQueries({ queryKey: queryKeys.users.all })
-        .catch((error) => {
-          console.error('Error invalidating users queries:', error);
-        });
+    onSuccess: async () => {
+      await invalidateUserQueries();
+    },
+    onError: (error: Error) => {
+      console.error('Create user mutation error:', error);
     },
   });
 
@@ -83,19 +89,15 @@ export function useUsers() {
       userId: string;
       userData: UpdateUserRequest;
     }) => {
-      return usersService.updateUser(userId, userData);
+      return apiServices.users.updateUser(userId, userData);
     },
-    onSuccess: () => {
-      // Invalidate users query and manually trigger refetch since enabled: false
-      queryClient
-        .invalidateQueries({ queryKey: queryKeys.users.all })
-        .then(() => usersQuery.refetch())
-        .catch((error) => {
-          console.error(
-            'Error invalidating and refetching users queries:',
-            error,
-          );
-        });
+    onSuccess: async () => {
+      await invalidateUserQueries();
+      // Manually trigger refetch for disabled queries
+      await usersQuery.refetch();
+    },
+    onError: (error: Error) => {
+      console.error('Update user mutation error:', error);
     },
   });
 
@@ -104,19 +106,15 @@ export function useUsers() {
    */
   const deleteUserMutation = useMutation({
     mutationFn: (userId: string) => {
-      return usersService.deleteUser(userId);
+      return apiServices.users.deleteUser(userId);
     },
-    onSuccess: () => {
-      // Invalidate users query and manually trigger refetch since enabled: false
-      queryClient
-        .invalidateQueries({ queryKey: queryKeys.users.all })
-        .then(() => usersQuery.refetch())
-        .catch((error) => {
-          console.error(
-            'Error invalidating and refetching users queries:',
-            error,
-          );
-        });
+    onSuccess: async () => {
+      await invalidateUserQueries();
+      // Manually trigger refetch for disabled queries
+      await usersQuery.refetch();
+    },
+    onError: (error: Error) => {
+      console.error('Delete user mutation error:', error);
     },
   });
 

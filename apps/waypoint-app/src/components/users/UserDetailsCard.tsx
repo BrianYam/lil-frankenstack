@@ -25,10 +25,10 @@ interface UserDetailsCardProps {
 }
 
 export const UserDetailsCard: React.FC<UserDetailsCardProps> = ({
-  detail,
-  isDefault = false,
-  onSetDefault,
-}) => {
+                                                                  detail,
+                                                                  isDefault = false,
+                                                                  onSetDefault,
+                                                                }) => {
   const { deleteUserDetailsMutation, setDefaultUserDetailsMutation } =
     useUserDetails();
 
