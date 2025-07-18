@@ -14,7 +14,7 @@ import { User } from '@/types';
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
-  error: Error | null;
+  error: { message: string } | Error | null;
   isAuthenticated: boolean;
 }
 

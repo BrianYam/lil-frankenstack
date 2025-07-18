@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CreateUserRequest, UpdateUserRequest } from '@/types';
 import { queryKeys, apiServices } from '@/hooks/index';
+import { useCallback } from 'react';
 
 /**
  * Custom hook for user operations
@@ -13,6 +14,16 @@ import { queryKeys, apiServices } from '@/hooks/index';
  */
 export function useUsers() {
   const queryClient = useQueryClient();
+
+  /**
+   * Centralized query invalidation for user-related data
+   */
+  const invalidateUserQueries = useCallback(() => {
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser }),
+    ]);
+  }, [queryClient]);
 
   /**
    * Get all users query
@@ -42,14 +53,14 @@ export function useUsers() {
       }
       return apiServices.users.getCurrentUser();
     },
-    // Don't cache null results when not authenticated
-    meta: {
-      skipCache: !apiServices.auth.isAuthenticated(),
+    enabled: apiServices.auth.isAuthenticated(), // Only run when authenticated
+    retry: (failureCount, error: Error) => {
+      // Don't retry on 401 errors (unauthorized)
+      if (error && 'status' in error && error.status === 401) return false;
+      return failureCount < 2;
     },
-    // Run the query immediately when mounted, regardless of cache
-    refetchOnMount: 'always',
-    // Cache time reduced for more responsive auth state updates
-    gcTime: 1000 * 30, // 30 seconds (formerly cacheTime)
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
   });
 
   /**
@@ -59,13 +70,11 @@ export function useUsers() {
     mutationFn: (userData: CreateUserRequest) => {
       return apiServices.users.createUser(userData);
     },
-    onSuccess: () => {
-      // Invalidate users query to refresh the list
-      queryClient
-        .invalidateQueries({ queryKey: queryKeys.users.all })
-        .catch((error) => {
-          console.error('Error invalidating users queries:', error);
-        });
+    onSuccess: async () => {
+      await invalidateUserQueries();
+    },
+    onError: (error: Error) => {
+      console.error('Create user mutation error:', error);
     },
   });
 
@@ -74,25 +83,21 @@ export function useUsers() {
    */
   const updateUserMutation = useMutation({
     mutationFn: ({
-                   userId,
-                   userData,
-                 }: {
+      userId,
+      userData,
+    }: {
       userId: string;
       userData: UpdateUserRequest;
     }) => {
       return apiServices.users.updateUser(userId, userData);
     },
-    onSuccess: () => {
-      // Invalidate users query and manually trigger refetch since enabled: false
-      queryClient
-        .invalidateQueries({ queryKey: queryKeys.users.all })
-        .then(() => usersQuery.refetch())
-        .catch((error) => {
-          console.error(
-            'Error invalidating and refetching users queries:',
-            error,
-          );
-        });
+    onSuccess: async () => {
+      await invalidateUserQueries();
+      // Manually trigger refetch for disabled queries
+      await usersQuery.refetch();
+    },
+    onError: (error: Error) => {
+      console.error('Update user mutation error:', error);
     },
   });
 
@@ -103,17 +108,13 @@ export function useUsers() {
     mutationFn: (userId: string) => {
       return apiServices.users.deleteUser(userId);
     },
-    onSuccess: () => {
-      // Invalidate users query and manually trigger refetch since enabled: false
-      queryClient
-        .invalidateQueries({ queryKey: queryKeys.users.all })
-        .then(() => usersQuery.refetch())
-        .catch((error) => {
-          console.error(
-            'Error invalidating and refetching users queries:',
-            error,
-          );
-        });
+    onSuccess: async () => {
+      await invalidateUserQueries();
+      // Manually trigger refetch for disabled queries
+      await usersQuery.refetch();
+    },
+    onError: (error: Error) => {
+      console.error('Delete user mutation error:', error);
     },
   });
 
