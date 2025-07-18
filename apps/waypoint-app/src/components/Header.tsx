@@ -114,10 +114,10 @@ export function Header() {
         </div>
 
         {/* Mobile Menu with smooth transition */}
-        <div 
+        <div
           className={`md:hidden absolute left-0 right-0 bg-white border-t border-gray-200 shadow-lg transition-all duration-300 ease-in-out overflow-hidden px-4 ${
-            isMenuOpen 
-              ? 'max-h-[500px] opacity-100' 
+            isMenuOpen
+              ? 'max-h-[500px] opacity-100'
               : 'max-h-0 opacity-0 py-0'
           }`}
         >
@@ -164,17 +164,17 @@ export function Header() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col gap-2">
-                  <Link 
-                    href="/me" 
+                  <Link
+                    href="/me"
                     className="text-sm font-medium bg-white border border-indigo-100 rounded-md py-2 px-3 text-indigo-700 hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <User size={16} />
                     View Profile
                   </Link>
-                  
+
                   <Button
                     onClick={() => {
                       logout();

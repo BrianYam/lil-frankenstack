@@ -3,7 +3,6 @@ import {
   QueryClient,
   useQueryClient,
 } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
 import {
   LoginRequest,
   ForgotPasswordRequest,
@@ -13,9 +12,7 @@ import {
 } from '@/types';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { queryKeys } from '@/hooks/index';
-
-const authService = ApiServices.getAuthService();
+import { queryKeys, apiServices } from '@/hooks/index';
 
 /**
  * Custom hook for authentication actions and state
@@ -35,7 +32,7 @@ export function useAuth() {
       setError(null);
       console.log('Auth service login called with:', credentials);
       try {
-        await authService.login(credentials);
+        await apiServices.auth.login(credentials);
         return true;
       } catch (err) {
         console.error('Error in login mutation function:', err);
@@ -62,7 +59,7 @@ export function useAuth() {
   const logoutMutation = useMutation({
     mutationFn: () => {
       setIsLoading(true);
-      return authService.logout();
+      return apiServices.auth.logout();
     },
     onSuccess: () => {
       // Immediately invalidate current user query to update UI
@@ -82,7 +79,7 @@ export function useAuth() {
   const forgotPasswordMutation = useMutation({
     mutationFn: (data: ForgotPasswordRequest) => {
       setIsLoading(true);
-      return authService.requestPasswordReset(data);
+      return apiServices.auth.requestPasswordReset(data);
     },
     onSuccess: () => {
       setIsLoading(false);
@@ -99,7 +96,7 @@ export function useAuth() {
   const resetPasswordMutation = useMutation({
     mutationFn: (data: ResetPasswordRequest) => {
       setIsLoading(true);
-      return authService.resetPassword(data);
+      return apiServices.auth.resetPassword(data);
     },
     onSuccess: () => {
       setIsLoading(false);
@@ -116,7 +113,7 @@ export function useAuth() {
   const changePasswordMutation = useMutation({
     mutationFn: (data: ChangePasswordRequest) => {
       setIsLoading(true);
-      return authService.changePassword(data);
+      return apiServices.auth.changePassword(data);
     },
     onSuccess: () => {
       setIsLoading(false);
@@ -133,7 +130,7 @@ export function useAuth() {
   const verifyEmailMutation = useMutation({
     mutationFn: (data: VerifyEmailRequest) => {
       setIsLoading(true);
-      return authService.verifyEmail(data);
+      return apiServices.auth.verifyEmail(data);
     },
     onSuccess: () => {
       setIsLoading(false);
@@ -147,13 +144,13 @@ export function useAuth() {
   /**
    * Get authentication state
    */
-  const isAuthenticated = authService.isAuthenticated();
+  const isAuthenticated = apiServices.auth.isAuthenticated();
 
   /**
    * Google OAuth login
    */
   const googleLogin = () => {
-    authService.googleLogin();
+    apiServices.auth.googleLogin();
   };
 
   /**
@@ -232,7 +229,7 @@ export function useAuth() {
       setIsLoading(true);
       setError(null);
 
-      await authService.completeOAuthAuthentication(token);
+      await apiServices.auth.completeOAuthAuthentication(token);
 
       // Invalidate queries to refresh user data
       queryClient.invalidateQueries({ queryKey: queryKeys.users.currentUser });

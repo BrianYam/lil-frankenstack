@@ -1,9 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiServices } from '@/services';
 import { CreateUserRequest, UpdateUserRequest } from '@/types';
-import { queryKeys } from '@/hooks/index';
-
-const usersService = ApiServices.getUsersService();
+import { queryKeys, apiServices } from '@/hooks/index';
 
 /**
  * Custom hook for user operations
@@ -24,7 +21,7 @@ export function useUsers() {
     queryKey: queryKeys.users.all,
     queryFn: async () => {
       console.log('Fetching all users...');
-      const result = await usersService.getAllUsers();
+      const result = await apiServices.users.getAllUsers();
       console.log('Users fetched:', result.length);
       return result;
     },
@@ -38,16 +35,16 @@ export function useUsers() {
   const currentUserQuery = useQuery({
     queryKey: queryKeys.users.currentUser,
     queryFn: async () => {
-      const isAuthenticated = ApiServices.getAuthService().isAuthenticated();
+      const isAuthenticated = apiServices.auth.isAuthenticated();
       console.log('Fetching current user, auth status:', isAuthenticated);
       if (!isAuthenticated) {
         return null;
       }
-      return usersService.getCurrentUser();
+      return apiServices.users.getCurrentUser();
     },
     // Don't cache null results when not authenticated
     meta: {
-      skipCache: !ApiServices.getAuthService().isAuthenticated(),
+      skipCache: !apiServices.auth.isAuthenticated(),
     },
     // Run the query immediately when mounted, regardless of cache
     refetchOnMount: 'always',
@@ -60,7 +57,7 @@ export function useUsers() {
    */
   const createUserMutation = useMutation({
     mutationFn: (userData: CreateUserRequest) => {
-      return usersService.createUser(userData);
+      return apiServices.users.createUser(userData);
     },
     onSuccess: () => {
       // Invalidate users query to refresh the list
@@ -77,13 +74,13 @@ export function useUsers() {
    */
   const updateUserMutation = useMutation({
     mutationFn: ({
-      userId,
-      userData,
-    }: {
+                   userId,
+                   userData,
+                 }: {
       userId: string;
       userData: UpdateUserRequest;
     }) => {
-      return usersService.updateUser(userId, userData);
+      return apiServices.users.updateUser(userId, userData);
     },
     onSuccess: () => {
       // Invalidate users query and manually trigger refetch since enabled: false
@@ -104,7 +101,7 @@ export function useUsers() {
    */
   const deleteUserMutation = useMutation({
     mutationFn: (userId: string) => {
-      return usersService.deleteUser(userId);
+      return apiServices.users.deleteUser(userId);
     },
     onSuccess: () => {
       // Invalidate users query and manually trigger refetch since enabled: false
