@@ -23,3 +23,4 @@ export const queryKeys = {
     byId: (id: string) => ['userDetails', id],
   },
 };
+
