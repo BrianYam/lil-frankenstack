@@ -14,7 +14,7 @@ interface AuthFormProps {
   onSubmit: (data: { email: string; password: string; confirmPassword?: string }) => void;
   onGoogleAuth: () => void;
   isLoading: boolean;
-  error: Error | null | string;
+  error: { message: string } | null;
   formError: string;
 }
 
@@ -35,7 +35,7 @@ export function AuthForm({
     <Card className="w-full max-w-md py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-blue-100 backdrop-blur-sm bg-white">
       {(error || formError) && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium shadow-sm">
-          {formError || (error instanceof Error ? error.message : error ?? 'An error occurred')}
+          {formError || (error ? error.message : 'An error occurred')}
         </div>
       )}
       

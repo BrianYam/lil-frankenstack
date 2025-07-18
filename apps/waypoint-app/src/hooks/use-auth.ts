@@ -209,8 +209,8 @@ export function useAuth() {
     verifyEmailMutation.isPending ||
     completeOAuthMutation.isPending;
 
-  // Derive error state from mutations
-  const error =
+  // Derive and normalize error state from mutations
+  const rawError =
     loginMutation.error ||
     logoutMutation.error ||
     forgotPasswordMutation.error ||
@@ -218,6 +218,29 @@ export function useAuth() {
     changePasswordMutation.error ||
     verifyEmailMutation.error ||
     completeOAuthMutation.error;
+
+  const error = useMemo(() => {
+    if (!rawError) return null;
+
+    if (rawError instanceof Error) {
+      return {
+        message: rawError.message,
+        originalError: rawError,
+      };
+    }
+
+    if (typeof rawError === 'object' && rawError !== null && 'message' in rawError) {
+      return {
+        message: String((rawError as { message: unknown }).message),
+        originalError: rawError,
+      };
+    }
+
+    return {
+      message: 'An unexpected error occurred.',
+      originalError: rawError,
+    };
+  }, [rawError]);
 
   return {
     // Auth state
