@@ -17,6 +17,7 @@ import { LoggerModule } from '@/modules/logger/logger.module';
 import { RepositoriesModule } from '@/modules/repositories/repositories.module';
 import { TraceModule } from '@/modules/trace/trace.module';
 import { UsersModule } from '@/modules/users/users.module';
+import { LlmModule } from './modules/llm/llm.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UsersModule } from '@/modules/users/users.module';
       maxListeners: 10,
       verboseMemoryLeak: true,
     }),
+    LlmModule,
   ],
   controllers: [AppController],
   providers: [
