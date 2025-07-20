@@ -3,10 +3,10 @@
  */
 export const AUTH_CONFIG = {
   /**
-   * URLs that should not trigger a redirect to login when authentication fails
+   * Path that should not trigger a redirect to FE login when authentication fails
    * These include public pages and authentication-related pages
    */
-  NON_AUTH_REDIRECT_URLS: [
+  NON_FE_LOGIN_REDIRECT_PATHS: [
     // Authentication related paths
     '/login',
     '/signup',
