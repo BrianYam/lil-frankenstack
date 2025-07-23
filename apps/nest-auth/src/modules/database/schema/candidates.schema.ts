@@ -11,25 +11,18 @@ import {
   vector,
   jsonb,
 } from 'drizzle-orm/pg-core';
+import { CandidateStatus, ExperienceLevel } from '@/types';
 
 // Enums for candidate status and experience level
-export const candidateStatusEnum = pgEnum('candidate_status', [
-  'active',
-  'inactive',
-  'hired',
-  'rejected',
-  'on_hold',
-]);
+export const candidateStatusEnum = pgEnum(
+  'candidate_status',
+  Object.values(CandidateStatus) as [string, ...string[]],
+);
 
-export const experienceLevelEnum = pgEnum('experience_level', [
-  'entry',
-  'junior',
-  'mid',
-  'senior',
-  'lead',
-  'principal',
-  'executive',
-]);
+export const experienceLevelEnum = pgEnum(
+  'experience_level',
+  Object.values(ExperienceLevel) as [string, ...string[]],
+);
 
 /**
  * Candidates table schema

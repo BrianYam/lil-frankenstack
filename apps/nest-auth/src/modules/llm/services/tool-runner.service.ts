@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { executeWeatherTool, weatherToolSchema } from '../tools/weather.tool';
-import { ToolCall } from '../types/ai.types';
+import { TOOLS_CONFIG } from '@/modules/llm/tools/tools.config';
+import { ToolCall } from '@/types';
 
 @Injectable()
 export class ToolRunnerService {
@@ -11,7 +12,7 @@ export class ToolRunnerService {
       const args = JSON.parse(argsString);
 
       switch (name) {
-        case 'get_weather':
+        case TOOLS_CONFIG.NAME.GET_WEATHER:
           const parsedArgs = weatherToolSchema.parse(args);
           return await executeWeatherTool(parsedArgs);
 

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { AIMessage } from '../types/ai.types';
+import { ChatRole, ChatMessage } from '@/types';
 
-export interface MessageWithMetadata extends AIMessage {
+interface MessageWithMetadata extends ChatMessage {
   id: string;
   createdAt: string;
   sessionId: string;
@@ -17,10 +17,10 @@ interface ChatSession {
 
 @Injectable()
 export class MemoryService {
-  private sessions: Map<string, ChatSession> = new Map();
+  private readonly sessions: Map<string, ChatSession> = new Map();
 
   private addMetadata(
-    message: AIMessage,
+    message: ChatMessage,
     sessionId: string,
   ): MessageWithMetadata {
     return {
@@ -31,9 +31,20 @@ export class MemoryService {
     };
   }
 
-  private removeMetadata(message: MessageWithMetadata): AIMessage {
-    const { id, createdAt, sessionId, ...rest } = message;
-    return rest;
+  private removeMetadata(message: MessageWithMetadata): ChatMessage {
+    // TypeScript's Omit utility type removes specified properties
+    return message as Omit<
+      MessageWithMetadata,
+      'id' | 'createdAt' | 'sessionId'
+    >;
+  }
+
+  private getSession(sessionId: string): ChatSession {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new NotFoundException(`Session ${sessionId} not found`);
+    }
+    return session;
   }
 
   createSession(): string {
@@ -47,12 +58,8 @@ export class MemoryService {
     return sessionId;
   }
 
-  addMessages(sessionId: string, messages: AIMessage[]): void {
-    const session = this.sessions.get(sessionId);
-    if (!session) {
-      throw new Error(`Session ${sessionId} not found`);
-    }
-
+  addMessages(sessionId: string, messages: ChatMessage[]): void {
+    const session = this.getSession(sessionId);
     const messagesWithMetadata = messages.map((msg) =>
       this.addMetadata(msg, sessionId),
     );
@@ -60,11 +67,9 @@ export class MemoryService {
     session.updatedAt = new Date().toISOString();
   }
 
-  getMessages(sessionId: string): AIMessage[] {
-    const session = this.sessions.get(sessionId);
-    if (!session) {
-      throw new Error(`Session ${sessionId} not found`);
-    }
+  getMessages(sessionId: string): ChatMessage[] {
+    const session = this.getSession(sessionId);
+    // same as return session.messages.map((message) => this.removeMetadata(message));
     return session.messages.map(this.removeMetadata);
   }
 
@@ -75,15 +80,11 @@ export class MemoryService {
   ): void {
     this.addMessages(sessionId, [
       {
-        role: 'tool',
+        role: ChatRole.TOOL,
         content: toolResponse,
         tool_call_id: toolCallId,
       },
     ]);
-  }
-
-  getSession(sessionId: string): ChatSession | undefined {
-    return this.sessions.get(sessionId);
   }
 
   getAllSessions(): ChatSession[] {

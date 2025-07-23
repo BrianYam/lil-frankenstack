@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TOOLS_CONFIG } from '@/modules/llm/tools/tools.config';
 
 export const weatherToolSchema = z.object({
   location: z.string().describe('The location to get weather for'),
@@ -7,7 +8,7 @@ export const weatherToolSchema = z.object({
 export const weatherTool = {
   type: 'function' as const,
   function: {
-    name: 'get_weather',
+    name: TOOLS_CONFIG.NAME.GET_WEATHER,
     description: 'Get the current weather for a specific location',
     parameters: {
       type: 'object',
