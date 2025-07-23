@@ -8,8 +8,8 @@ import {
   VerifyEmailRequest,
   ApiResponse,
 } from '@lil-frankenstack/types';
-import { API_ENDPOINTS, ApiConfigOptions } from './config';
-import axios from 'axios';
+import { API_ENDPOINTS, ApiConfigOptions, AUTH_CONFIG } from './config';
+import { handleError } from './utils';
 
 const AUTHENTICATED = 'authenticated';
 
@@ -51,6 +51,7 @@ export class AuthService {
 
   /**
    * Logs in a user with email and password
+   * Used via: WaypointApiServices.getAuthService().login() in waypoint-app
    */
   async login(credentials: LoginRequest): Promise<void> {
     try {
@@ -60,7 +61,7 @@ export class AuthService {
       // Set a client-side marker for auth state tracking
       this.setAccessToken(AUTHENTICATED);
     } catch (error) {
-      this.handleError('Login failed', error);
+      handleError('Login failed', error);
       throw error;
     }
   }
@@ -77,7 +78,7 @@ export class AuthService {
       this.setAccessToken(AUTHENTICATED);
     } catch (error) {
       this.logout();
-      this.handleError('Token refresh failed', error);
+      handleError('Token refresh failed', error);
       throw error;
     }
   }
@@ -92,7 +93,7 @@ export class AuthService {
     } catch (error) {
       // Still clear tokens locally even if API call fails
       this.clearTokens();
-      this.handleError('Logout failed', error);
+      handleError('Logout failed', error);
     }
   }
 
@@ -108,7 +109,7 @@ export class AuthService {
         data,
       );
     } catch (error) {
-      this.handleError('Password reset request failed', error);
+      handleError('Password reset request failed', error);
       throw error;
     }
   }
@@ -123,7 +124,7 @@ export class AuthService {
         data,
       );
     } catch (error) {
-      this.handleError('Password reset failed', error);
+      handleError('Password reset failed', error);
       throw error;
     }
   }
@@ -138,7 +139,7 @@ export class AuthService {
         data,
       );
     } catch (error) {
-      this.handleError('Password change failed', error);
+      handleError('Password change failed', error);
       throw error;
     }
   }
@@ -153,7 +154,7 @@ export class AuthService {
         data,
       );
     } catch (error) {
-      this.handleError('Email verification failed', error);
+      handleError('Email verification failed', error);
       throw error;
     }
   }
@@ -175,7 +176,7 @@ export class AuthService {
 
       return response;
     } catch (error) {
-      this.handleError('OAuth authentication completion failed', error);
+      handleError('OAuth authentication completion failed', error);
       throw error;
     }
   }
@@ -220,21 +221,6 @@ export class AuthService {
   }
 
   /**
-   * Handles and logs errors
-   */
-  private handleError(message: string, error: unknown): void {
-    // Extract the error message from axios error if available
-    let errorMessage = message;
-    if (axios.isAxiosError(error) && error.response) {
-      const serverError = error.response.data;
-      errorMessage =
-        serverError?.message ?? `${message} (${error.response.status})`;
-    }
-
-    console.error(`${errorMessage}:`, error);
-  }
-
-  /**
    * Handles token refresh failure by logging out and redirecting if needed
    * Made public so it can be used as a callback by other services
    */
@@ -246,7 +232,7 @@ export class AuthService {
 
     // Only redirect if we're in the browser and the current URL is not whitelisted
     if (typeof window !== 'undefined') {
-      const shouldRedirectToLogin = this.shouldRedirectToLogin();
+      const shouldRedirectToLogin = this.shouldRedirectToFELogin();
 
       if (shouldRedirectToLogin) {
         window.location.href = '/login';
@@ -255,17 +241,14 @@ export class AuthService {
   }
 
   /**
-   * Determines if the current URL should trigger a redirect to login
+   * Determines if the current URL should trigger a redirect to FE login
    * @returns boolean indicating whether to redirect
    */
-  private shouldRedirectToLogin(): boolean {
+  private shouldRedirectToFELogin(): boolean {
     const currentPath = window.location.pathname;
 
-    // Import AUTH_CONFIG from config
-    const { AUTH_CONFIG } = require('./config');
-
     // Don't redirect if the current path is in the whitelist
-    return !AUTH_CONFIG.NON_AUTH_REDIRECT_URLS.some(
+    return !AUTH_CONFIG.NON_FE_LOGIN_REDIRECT_PATHS.some(
       (path: string) =>
         path === currentPath || currentPath.startsWith(`${path}/`),
     );

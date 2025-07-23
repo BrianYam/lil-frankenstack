@@ -9,6 +9,7 @@ import {
   UpdateUserDetailsRequest,
 } from '@lil-frankenstack/types';
 import { API_ENDPOINTS, ApiConfigOptions } from './config';
+import { handleError } from './utils';
 
 /**
  * User Details Service
@@ -49,7 +50,7 @@ export class UserDetailsService {
         userDetailsData,
       );
     } catch (error) {
-      this.handleError('Failed to create user details', error);
+      handleError('Failed to create user details', error);
       throw error;
     }
   }
@@ -64,7 +65,7 @@ export class UserDetailsService {
         API_ENDPOINTS.USER_DETAILS.BASE,
       );
     } catch (error) {
-      this.handleError('Failed to fetch all user details', error);
+      handleError('Failed to fetch all user details', error);
       throw error;
     }
   }
@@ -79,7 +80,7 @@ export class UserDetailsService {
         API_ENDPOINTS.USER_DETAILS.DEFAULT,
       );
     } catch (error) {
-      this.handleError('Failed to fetch default user details', error);
+      handleError('Failed to fetch default user details', error);
       throw error;
     }
   }
@@ -95,7 +96,7 @@ export class UserDetailsService {
         API_ENDPOINTS.USER_DETAILS.BY_ID(id),
       );
     } catch (error) {
-      this.handleError(`Failed to fetch user details with ID ${id}`, error);
+      handleError(`Failed to fetch user details with ID ${id}`, error);
       throw error;
     }
   }
@@ -116,7 +117,7 @@ export class UserDetailsService {
         userDetailsData,
       );
     } catch (error) {
-      this.handleError(`Failed to update user details with ID ${id}`, error);
+      handleError(`Failed to update user details with ID ${id}`, error);
       throw error;
     }
   }
@@ -133,10 +134,7 @@ export class UserDetailsService {
         {},
       );
     } catch (error) {
-      this.handleError(
-        `Failed to set default user details with ID ${id}`,
-        error,
-      );
+      handleError(`Failed to set default user details with ID ${id}`, error);
       throw error;
     }
   }
@@ -152,17 +150,8 @@ export class UserDetailsService {
         API_ENDPOINTS.USER_DETAILS.BY_ID(id),
       );
     } catch (error) {
-      this.handleError(`Failed to delete user details with ID ${id}`, error);
+      handleError(`Failed to delete user details with ID ${id}`, error);
       throw error;
     }
-  }
-
-  /**
-   * Handles API errors
-   * @param message - Custom error message
-   * @param error - The error object
-   */
-  private handleError(message: string, error: unknown): void {
-    console.error(`${message}:`, error);
   }
 }

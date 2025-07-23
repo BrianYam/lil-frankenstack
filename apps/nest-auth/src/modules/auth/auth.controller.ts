@@ -65,10 +65,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh Token' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Refresh Token' })
-  @ApiResponse({
-    status: HttpStatus.NOT_IMPLEMENTED,
-    description: 'Not implemented yet',
-  })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad request' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden' })
