@@ -24,11 +24,13 @@ interface EditUserDetailsDialogProps {
 }
 
 export const EditUserDetailsDialog: React.FC<EditUserDetailsDialogProps> = ({
-  userDetails,
-  onOpenChange,
-}) => {
+                                                                              userDetails,
+                                                                              onOpenChange,
+                                                                            }) => {
   const [open, setOpen] = useState(false); // Internal state for dialog
-  const { updateUserDetails, isUpdatingUserDetails } = useUserDetails();
+  const { updateUserDetailsMutation } = useUserDetails();
+  const updateUserDetails = updateUserDetailsMutation.mutate;
+  const isUpdatingUserDetails = updateUserDetailsMutation.isPending;
   const { toast } = useToast();
 
   const form = useForm<UserDetailsFormRequest>({

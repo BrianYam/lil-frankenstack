@@ -12,12 +12,12 @@ export default function LoginPage() {
 
   const handleSubmit = async (data: { email: string; password: string }) => {
     setFormError('');
-    
+
     if (!data.email || !data.password) {
       setFormError('Email and password are required');
       return;
     }
-    
+
     try {
       console.log('Submitting login with:', data.email, data.password);
       login(data.email, data.password);

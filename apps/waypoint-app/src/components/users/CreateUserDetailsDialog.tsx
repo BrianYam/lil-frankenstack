@@ -29,7 +29,10 @@ export const CreateUserDetailsDialog: React.FC<
   CreateUserDetailsDialogProps
 > = ({ onOpenChange }) => {
   const [open, setOpen] = useState(false); // Internal state for dialog
-  const { createUserDetails, isCreatingUserDetails } = useUserDetails();
+  const { createUserDetailsMutation } = useUserDetails();
+  const createUserDetails = createUserDetailsMutation.mutate;
+  const isCreatingUserDetails = createUserDetailsMutation.isPending;
+
   const { toast } = useToast();
 
   const form = useForm<CreateUserDetailsFormRequest>({

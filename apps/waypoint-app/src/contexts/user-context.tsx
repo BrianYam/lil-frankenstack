@@ -14,7 +14,7 @@ import { User } from '@/types';
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
-  error: Error | null;
+  error: { message: string } | Error | null;
   isAuthenticated: boolean;
 }
 
@@ -31,12 +31,12 @@ export function UserProvider({ children }: Readonly<UserProviderProps>) {
     isLoading: authLoading,
     error: authError,
   } = useAuth();
-  const {
-    currentUser,
-    isLoadingCurrentUser,
-    currentUserError,
-    refetchCurrentUser,
-  } = useUsers();
+  const { currentUserQuery } = useUsers();
+
+  const currentUser = currentUserQuery.data;
+  const isLoadingCurrentUser = currentUserQuery.isLoading;
+  const currentUserError = currentUserQuery.error;
+  const refetchCurrentUser = currentUserQuery.refetch;
 
   // Update user when current user data changes
   useEffect(() => {

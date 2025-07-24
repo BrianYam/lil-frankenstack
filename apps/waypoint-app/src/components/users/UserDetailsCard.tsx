@@ -25,15 +25,17 @@ interface UserDetailsCardProps {
 }
 
 export const UserDetailsCard: React.FC<UserDetailsCardProps> = ({
-  detail,
-  isDefault = false,
-  onSetDefault,
-}) => {
-  const {
-    deleteUserDetails,
-    isDeletingUserDetails,
-    isSettingDefaultUserDetails,
-  } = useUserDetails();
+                                                                  detail,
+                                                                  isDefault = false,
+                                                                  onSetDefault,
+                                                                }) => {
+  const { deleteUserDetailsMutation, setDefaultUserDetailsMutation } =
+    useUserDetails();
+
+  const deleteUserDetails = deleteUserDetailsMutation.mutate;
+  const isDeletingUserDetails = deleteUserDetailsMutation.isPending;
+  const isSettingDefaultUserDetails = setDefaultUserDetailsMutation.isPending;
+
   const { toast } = useToast();
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);

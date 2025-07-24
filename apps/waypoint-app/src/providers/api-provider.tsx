@@ -1,10 +1,9 @@
-
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ReactNode, useState } from 'react';
-import { setupAuthInvalidations } from '@/hooks';
+import { ReactNode, useState, useEffect } from 'react';
+import { setupAuthInvalidations } from '@/hooks'
 
 interface ApiProviderProps {
   children: ReactNode;
@@ -26,11 +25,14 @@ export function ApiProvider({ children }: Readonly<ApiProviderProps>) {
       },
     });
     
-    // Set up auth invalidations
-    setupAuthInvalidations(client);
-    
     return client;
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setupAuthInvalidations(queryClient);
+    }
+  }, [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

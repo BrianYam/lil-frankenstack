@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,18 @@ interface ChangePasswordProps {
 
 export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePasswordProps>) {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { changePassword, isLoading } = useAuth();
+  const [hookError, setHookError] = useState<string | null>(null);
+  const { changePassword, isLoading, error: authHookError } = useAuth();
+
+  // Update error state based on authHookError
+  useEffect(() => {
+    if (authHookError) {
+      setHookError(authHookError.message);
+    } else {
+      setHookError(null);
+    }
+  }, [authHookError]);
+
 
   const {
     register,
@@ -42,7 +52,7 @@ export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePassw
       }, 3000);
     } catch (err) {
       console.error('Change password error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to change password');
+      setHookError(err instanceof Error ? err.message : 'Failed to change password');
     }
   };
 
@@ -60,9 +70,9 @@ export function ChangePasswordForm({ onSuccess, onCancel }: Readonly<ChangePassw
         </div>
       ) : (
         <>
-          {error && (
+          {hookError && (
             <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium shadow-sm">
-              {error}
+              {hookError}
             </div>
           )}
           

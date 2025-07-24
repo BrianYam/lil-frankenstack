@@ -6,7 +6,7 @@ const config = getDatabaseConfig();
 // For drizzle SSL only works with db credentials not connection string
 export default defineConfig({
   out: './drizzle',
-  schema: './src/database/schema/**.schema.ts',
+  schema: './src/modules/database/schema/**.schema.ts',
   dialect: 'postgresql',
   dbCredentials: {
     ...(config.ssl

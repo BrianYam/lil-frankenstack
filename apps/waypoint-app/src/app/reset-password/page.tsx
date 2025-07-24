@@ -140,18 +140,18 @@ export default function ResetPasswordPage() {
                 {error.message}
               </div>
             )}
-            
+
             <div className="mb-6 text-sm text-gray-600">
               Enter your new password below. Make sure it&#39;s at least 8 characters and includes uppercase, lowercase, numbers, and special characters.
             </div>
-            
+
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-indigo-700 mb-1">
                   New Password
                 </label>
                 <PasswordInput
-                  id="password" 
+                  id="password"
                   autoComplete="new-password"
                   className="border-blue-200 bg-white hover:border-blue-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black"
                   error={errors.password?.message}

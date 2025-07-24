@@ -41,17 +41,23 @@ export default function UsersManagementPage() {
 
   // Users data and mutations
   const {
-    users,
-    refetchUsers,
-    isLoadingUsers,
-    usersError,
-    updateUser,
-    isUpdatingUser,
-    updateUserError,
-    deleteUser,
-    isDeletingUser,
-    deleteUserError,
+    usersQuery,
+    updateUserMutation,
+    deleteUserMutation,
   } = useUsers();
+
+  const users = usersQuery.data ?? [];
+  const isLoadingUsers = usersQuery.isLoading;
+  const usersError = usersQuery.error;
+  const refetchUsers = usersQuery.refetch;
+
+  const updateUser = updateUserMutation.mutate;
+  const isUpdatingUser = updateUserMutation.isPending;
+  const updateUserError = updateUserMutation.error;
+
+  const deleteUser = deleteUserMutation.mutate;
+  const isDeletingUser = deleteUserMutation.isPending;
+  const deleteUserError = deleteUserMutation.error;
 
   // State for notifications
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -370,10 +376,10 @@ export default function UsersManagementPage() {
               className={`
                 shadow-lg border animate-in fade-in slide-in-from-right-5 sm:slide-in-from-top-5 
                 ${
-                  notification.type === 'success'
-                    ? 'bg-green-50 border-green-200 text-green-800'
-                    : 'bg-red-50 border-red-200 text-red-800'
-                }
+                notification.type === 'success'
+                  ? 'bg-green-50 border-green-200 text-green-800'
+                  : 'bg-red-50 border-red-200 text-red-800'
+              }
               `}
             >
               <div className="flex items-center">

@@ -11,6 +11,7 @@ import {
   UserWithDetails,
 } from '@lil-frankenstack/types';
 import { API_ENDPOINTS, ApiConfigOptions } from './config';
+import { handleError } from './utils';
 
 /**
  * Users Service
@@ -49,7 +50,7 @@ export class UsersService {
         userData,
       );
     } catch (error) {
-      this.handleError('Failed to create user', error);
+      handleError('Failed to create user', error);
       throw error;
     }
   }
@@ -63,7 +64,7 @@ export class UsersService {
       console.log('Fetching all users from:', API_ENDPOINTS.USERS.BASE);
       return await this.apiClient.get<User[]>(API_ENDPOINTS.USERS.BASE);
     } catch (error) {
-      this.handleError('Failed to fetch users', error);
+      handleError('Failed to fetch users', error);
       throw error;
     }
   }
@@ -76,7 +77,7 @@ export class UsersService {
     try {
       return await this.apiClient.get<UserWithDetails>(API_ENDPOINTS.USERS.ME);
     } catch (error) {
-      this.handleError('Failed to fetch current user', error);
+      handleError('Failed to fetch current user', error);
       throw error;
     }
   }
@@ -94,7 +95,7 @@ export class UsersService {
         userData,
       );
     } catch (error) {
-      this.handleError(`Failed to update user ${userId}`, error);
+      handleError(`Failed to update user ${userId}`, error);
       throw error;
     }
   }
@@ -110,17 +111,8 @@ export class UsersService {
         API_ENDPOINTS.USERS.BY_ID(userId),
       );
     } catch (error) {
-      this.handleError(`Failed to delete user ${userId}`, error);
+      handleError(`Failed to delete user ${userId}`, error);
       throw error;
     }
-  }
-
-  /**
-   * Handles API errors
-   * @param message - Custom error message
-   * @param error - The error object
-   */
-  private handleError(message: string, error: unknown): void {
-    console.error(`${message}:`, error);
   }
 }

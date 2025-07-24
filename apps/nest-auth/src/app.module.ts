@@ -3,7 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppService } from './app.service';
+import { LlmModule } from './modules/llm/llm.module';
 import { AppController } from '@/app.controller';
+import aiConfig from '@/configs/ai.config';
 import authConfig from '@/configs/auth.config';
 import emailConfig from '@/configs/email.config';
 import generalConfig from '@/configs/general.config';
@@ -12,6 +14,7 @@ import telegramConfig from '@/configs/telegram.config';
 import { ReqResInterceptor } from '@/interceptors/reqRes.interceptor';
 import { ApiKeysModule } from '@/modules/api-keys/api-keys.module';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { CandidateModule } from '@/modules/candidates/candidate.module';
 import { DatabaseModule } from '@/modules/database/database.module';
 import { LoggerModule } from '@/modules/logger/logger.module';
 import { RepositoriesModule } from '@/modules/repositories/repositories.module';
@@ -29,6 +32,7 @@ import { UsersModule } from '@/modules/users/users.module';
         googleOauthConfig,
         emailConfig,
         telegramConfig,
+        aiConfig,
       ],
     }),
     LoggerModule,
@@ -44,6 +48,8 @@ import { UsersModule } from '@/modules/users/users.module';
       maxListeners: 10,
       verboseMemoryLeak: true,
     }),
+    LlmModule,
+    CandidateModule,
   ],
   controllers: [AppController],
   providers: [
